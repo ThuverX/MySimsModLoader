@@ -1,0 +1,9 @@
+[submodule "libs/minhook"]
+	path = libs/minhook
+	url = git@github.com:TsudaKageyu/minhook.git
+[submodule "libs/sigmatch"]
+	path = libs/sigmatch
+	url = git@github.com:SpriteOvO/sigmatch.git
+[submodule "libs/pugixml"]
+	path = libs/pugixml
+	url = git@github.com:zeux/pugixml.git
