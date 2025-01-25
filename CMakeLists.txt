@@ -4,9 +4,12 @@ project(MySimsModLoader)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-#add_subdirectory(libs/minhook)
-#add_subdirectory(libs/sigmatch)
-#add_subdirectory(libs/pugixml)
+# Disable sigmatch tests to speed up compilation
+set(SIGMATCH_BUILD_TESTS OFF CACHE BOOL "Disable sigmatch tests" FORCE)
+
+add_subdirectory(libs/minhook)
+add_subdirectory(libs/sigmatch)
+add_subdirectory(libs/pugixml)
 
 add_library(MySimsModLoader SHARED src/Main.cpp
         src/dsound.h
@@ -46,7 +49,7 @@ target_include_directories(MySimsModLoader PRIVATE libs/pugixml/src)
 target_include_directories(MySimsModLoader PRIVATE libs/minhook/include)
 target_include_directories(MySimsModLoader PRIVATE libs/sigmatch/include)
 
-target_link_libraries(MySimsModLoader PRIVATE "libs/minhook/Debug/minhook.x32d")
-target_link_libraries(MySimsModLoader PRIVATE "libs/pugixml/Debug/pugixml")
+target_link_libraries(MySimsModLoader PRIVATE minhook)
+target_link_libraries(MySimsModLoader PRIVATE pugixml-static)
 
 set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "dsound")

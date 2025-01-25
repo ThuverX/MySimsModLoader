@@ -5,3 +5,4 @@ run
 cmake-build-debug-visual-studio
 src/Version.h
 .idea
+build/
