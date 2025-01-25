@@ -18,10 +18,7 @@ void* __fastcall PFRecordRead_1Hook(void* this_ptr, void* _ECX, uint32_t a, uint
     if (const Asset* asset = Assets::GetInstance().GetAsset(key->instance, key->group, key->type)) {
         auto bytes = File::ReadAsBytes(asset->path.c_str());
 
-        void* data = bytes.data();
-        const uint32_t size = bytes.size();
-
-        return EA::ResourceMan::PFRecordRead::PFRecordRead_2Hook.Original(this_ptr, data, size, false, key, db);
+        return EA::ResourceMan::PFRecordRead::PFRecordRead_2Hook.Original(this_ptr, bytes.data(), bytes.size(), false, key, db);
     }
 
     return EA::ResourceMan::PFRecordRead::PFRecordRead_1Hook.Original(this_ptr, a, b, key, db);
@@ -31,12 +28,8 @@ void* __fastcall PFRecordRead_2Hook(void* this_ptr, void* _ECX, void* data, uint
     if (const Asset* asset = Assets::GetInstance().GetAsset(key->instance, key->group, key->type)) {
         auto bytes = File::ReadAsBytes(asset->path.c_str());
 
-        void* data = bytes.data();
-        const uint32_t size = bytes.size();
-
-        return EA::ResourceMan::PFRecordRead::PFRecordRead_2Hook.Original(this_ptr, data, size, false, key, db);
+        return EA::ResourceMan::PFRecordRead::PFRecordRead_2Hook.Original(this_ptr, bytes.data(), bytes.size(), false, key, db);
     }
-
 
     return EA::ResourceMan::PFRecordRead::PFRecordRead_2Hook.Original(this_ptr, data, size, ukn, key, db);
 }

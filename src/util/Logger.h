@@ -13,6 +13,7 @@ public:
         INFO,
         WARNING,
         ERR,
+        LUA,
         DEBUG
     };
     static void Log(LogLevel level, const char *file, int line, const char* format, ...);
@@ -37,5 +38,7 @@ private:
 #define MSML_LOG_DEBUG(format, ...) \
     MSML_LOGLEVEL(DEBUG, format, ##__VA_ARGS__)
 
+#define MSML_LOG_LUA(format, ...) \
+    MSML_LOGLEVEL(LUA, format, ##__VA_ARGS__)
 
 #endif //LOGGER_H

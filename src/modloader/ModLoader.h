@@ -12,6 +12,7 @@ public:
     static ModLoader& GetInstance();
     void Initialize();
 private:
+    void InstallLuaHooks();
     Console console;
 };
 

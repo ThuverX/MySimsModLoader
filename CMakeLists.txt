@@ -32,6 +32,7 @@ add_library(MySimsModLoader SHARED src/Main.cpp
         src/assets/Asset.h
         src/util/FNV.cpp
         src/util/FNV.h
+        src/signatures/lua.h
 )
 
 add_custom_target(version
