@@ -49,8 +49,4 @@ target_include_directories(MySimsModLoader PRIVATE libs/sigmatch/include)
 target_link_libraries(MySimsModLoader PRIVATE "libs/minhook/Debug/minhook.x32d")
 target_link_libraries(MySimsModLoader PRIVATE "libs/pugixml/Debug/pugixml")
 
-set(targetfile "D:/MySimsTacoBell/bin/dsound.dll")
-
-add_custom_command(TARGET MySimsModLoader POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:MySimsModLoader> ${targetfile}
-)
+set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "dsound")
