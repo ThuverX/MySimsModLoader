@@ -5,8 +5,8 @@
 #ifndef SIGNATURES_H
 #define SIGNATURES_H
 
-#include <string>
 #include <sigmatch/sigmatch.hpp>
+#include <unordered_map>
 
 template <typename OriginalFuncPtr>
 class SigSearch;
@@ -16,14 +16,18 @@ class SigSearchBase;
 class Signatures {
 public:
     static Signatures& GetInstance();
-    bool Search(const sigmatch::signature &sig, void*& address, uint32_t offset, bool first);
-    void SearchAll() const;
-    void Append(SigSearchBase* sig);
+    bool Search(const sigmatch::signature &sig, void*& address, uint32_t offset, bool first) const;
+    void SearchAll();
+    void Append(std::string name, SigSearchBase* sig);
+    uint64_t GetCheckSum();
 
 private:
     Signatures();
-    std::vector<SigSearchBase*> signatures;
+    std::unordered_map<std::string, SigSearchBase*> signatures;
     sigmatch::search_context context;
+
+    bool LoadDatabase();
+    void SaveDatabase();
 };
 
 #endif //SIGNATURES_H

@@ -63,28 +63,43 @@ class SigSearchBase {
 public:
     virtual ~SigSearchBase() = default;
     virtual void Search() const = 0;
+    virtual std::string GetName() const = 0;
+    virtual void* GetAddress() const = 0;
+    virtual void ApplyAddress(void* addr) const = 0;
 };
 
 template <typename OriginalFuncPtr>
 class SigSearch: public SigSearchBase {
 public:
-    const char* name;
+    std::string name;
     sigmatch::signature signature;
     void*& address;
     OriginalFuncPtr Original = nullptr;
     uint32_t offset;
     bool first = false;
 
-    SigSearch(const char* name, const sigmatch::signature &sig, void*& address, const int offset, bool first): name(name), signature(sig), address(address), offset(offset), first(first) {
-        Signatures::GetInstance().Append(this);
+    SigSearch(std::string name, const sigmatch::signature &sig, void*& address, const int offset, bool first): name(name), signature(sig), address(address), offset(offset), first(first) {
+        Signatures::GetInstance().Append(name, this);
     }
 
     void Search() const override {
         if (!Signatures::GetInstance().Search(signature, address, offset, first)) {
-            MSML_LOG_INFO("Failed to find an address for %s", name);
+            MSML_LOG_INFO("Failed to find an address for %s", name.c_str());
         } else {
-            MSML_LOG_INFO("Found %s 0x%x", name, address);
+            MSML_LOG_INFO("Found %s 0x%x", name.c_str(), address);
         }
+    }
+
+    std::string GetName() const override {
+        return name;
+    }
+
+    void* GetAddress() const override {
+        return address;
+    }
+
+    void ApplyAddress(void *addr) const override {
+        address = addr;
     }
 
     void Install(void *detour) {
