@@ -4,13 +4,17 @@
 
 #include "Signatures.h"
 #include "../util/Logger.h"
+#include <chrono>
+#include <ranges>
+
+#include "sigdef.h"
 
 Signatures & Signatures::GetInstance() {
     static Signatures signatures;
     return signatures;
 }
 
-bool Signatures::Search(const sigmatch::signature &sig, void *&address, const uint32_t offset) {
+bool Signatures::Search(const sigmatch::signature &sig, void *&address, const uint32_t offset, bool first) {
     sigmatch::search_result result = context.search(sig);
 
     auto matches = result.matches();
@@ -22,7 +26,7 @@ bool Signatures::Search(const sigmatch::signature &sig, void *&address, const ui
         return false;
     }
 
-    if(matchCount > 1) {
+    if(!first && matchCount > 1) {
         MSML_LOG_ERROR("Too many matches: %d", matchCount);
         for (const std::byte *foundAddress : matches) {
             MSML_LOG_ERROR(" Matched: %p", foundAddress);
@@ -37,6 +41,20 @@ bool Signatures::Search(const sigmatch::signature &sig, void *&address, const ui
     }
 
     return false;
+}
+
+void Signatures::Append(SigSearchBase* sig){
+    signatures.emplace_back(sig);
+}
+
+void Signatures::SearchAll() const {
+    auto start = std::chrono::high_resolution_clock::now();
+    for(const auto &sig: signatures) {
+        sig->Search();
+    }
+    auto elapsed = std::chrono::high_resolution_clock::now() - start;
+    double elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count() / 1000.0;
+    MSML_LOG_INFO("Search time: %.3f milliseconds", elapsed_ms);
 }
 
 Signatures::Signatures() {

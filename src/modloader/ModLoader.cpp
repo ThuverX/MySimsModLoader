@@ -4,15 +4,13 @@
 
 #include "ModLoader.h"
 
-#include <iostream>
-
 #include "../util/Logger.h"
 #include "../assets/Assets.h"
 #include "../hooks/Hooks.h"
 #include "../mods/Mods.h"
 
 #include "../Version.h"
-
+#include "../signatures/sigdef.h"
 
 ModLoader & ModLoader::GetInstance() {
     static ModLoader instance;
@@ -46,13 +44,24 @@ void lua_pushvalueHooked(lua_State* L, int index) {
     lua_pushvalueHook.Original(L, index);
 }
 
+void __fastcall ResourceSystemInitHooked(void* this_ptr) {
+    Assets::GetInstance().CreateDatabase();
+    Revo::ResourceSystem::InitHook.Original(this_ptr);
+}
+
 void ModLoader::Initialize() {
     MSML_LOG_INFO("MSML Version: %s", MSML_VERSION);
     Mods::GetInstance().Find();
 
     Hooks::GetInstance().Initialize();
+
+    Signatures::GetInstance().SearchAll();
+
     Assets::GetInstance().Install();
+
     InstallLuaHooks();
+    Revo::ResourceSystem::InitHook.Install(&ResourceSystemInitHooked);
+
     Hooks::GetInstance().Enable();
 
     Mods::GetInstance().LoadAssets();
@@ -62,4 +71,3 @@ void ModLoader::Initialize() {
 void ModLoader::InstallLuaHooks() {
     lua_pushvalueHook.Install(&lua_pushvalueHooked);
 }
-

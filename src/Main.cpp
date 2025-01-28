@@ -6,6 +6,10 @@
 #include "dsound.h"
 #include "modloader/modloader.h"
 
+#define SIG_DEFINE
+#include "signatures/sigdef.h"
+#undef SIG_DEFINE
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  reason, LPVOID lpReserved) {
     if (reason == DLL_PROCESS_ATTACH) {
 

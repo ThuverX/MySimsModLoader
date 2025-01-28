@@ -5,8 +5,9 @@
 #ifndef ASSET_H
 #define ASSET_H
 
-#include "../signatures/Signatures.h"
 #include <unordered_map>
+
+#include "../signatures/sigdef.h"
 
 enum DDFFileType {
     MODEL = 0x01661233,
@@ -102,7 +103,7 @@ static const std::unordered_map<std::string, DDFFileType> stringToEnum = {
 class Asset {
 public:
     EA::ResourceMan::Key key;
-    std::string path;
+    std::filesystem::path path;
 
     static EA::ResourceMan::Key* FromAssetName(const std::string name);
     static DDFFileType GetFileType(const std::string &extension);

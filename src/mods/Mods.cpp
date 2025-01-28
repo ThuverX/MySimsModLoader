@@ -5,10 +5,11 @@
 #include "Mods.h"
 #include <filesystem>
 
+#include "../modloader/ModLoader.h"
 #include "../util/Logger.h"
 
 Mods & Mods::GetInstance() {
-    static Mods instance("../mods/");
+    static Mods instance(MODS_PATH);
     return instance;
 }
 
