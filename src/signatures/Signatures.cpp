@@ -86,6 +86,10 @@ Signatures::Signatures() {
 #define SIGCACHE_DB_NAME "sigcache.db"
 
 bool Signatures::LoadDatabase() {
+#ifndef NDEBUG
+    return false;
+#endif
+
     std::ifstream infile(SIGCACHE_DB_NAME, std::ios::in | std::ios::binary);
     if (!infile.good()) {
         MSML_LOG_ERROR("Failed to open sigcache");
@@ -127,6 +131,10 @@ bool Signatures::LoadDatabase() {
 }
 
 void Signatures::SaveDatabase() {
+#ifndef NDEBUG
+    return;
+#endif
+
     std::ofstream outfile(SIGCACHE_DB_NAME, std::ios::out | std::ios::binary);
 
     uint64_t checksum = GetCheckSum();
