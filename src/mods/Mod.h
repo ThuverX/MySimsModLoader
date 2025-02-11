@@ -20,13 +20,12 @@ public:
     std::string description;
     std::string author;
     std::string path;
+    std::string assetsPath;
 
     static Mod* fromXML(std::string path);
-    void LoadAssets();
     void LoadHooks();
 
     std::vector<LuaHook> hooks;
-    std::vector<std::string> assets;
 
 };
 

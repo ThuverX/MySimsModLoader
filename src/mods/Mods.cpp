@@ -4,6 +4,7 @@
 
 #include "Mods.h"
 #include <filesystem>
+#include <utility>
 
 #include "../modloader/ModLoader.h"
 #include "../util/Logger.h"
@@ -23,8 +24,7 @@ void Mods::Find() {
                     std::string modXmlPath = entry.path().string() + "/mod.xml";
 
                     if (std::filesystem::exists(modXmlPath)) {
-                        Mod* mod = Mod::fromXML(entry.path().string());
-                        if (mod) {
+                        if (Mod* mod = Mod::fromXML(entry.path().string())) {
                             mods.emplace_back(mod);
                         }
                     }
@@ -36,16 +36,10 @@ void Mods::Find() {
     }
 }
 
-void Mods::LoadAssets() {
-    for (const auto& mod : mods) {
-        mod->LoadAssets();
-    }
-}
 
 void Mods::LoadHooks() {
 }
 
 Mods::Mods(std::string rootPath) {
-    this->rootPath = rootPath;
-
+    this->rootPath = std::move(rootPath);
 }

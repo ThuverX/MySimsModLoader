@@ -76,7 +76,7 @@ void Signatures::SearchAll() {
 }
 
 Signatures::Signatures() {
-    sigmatch::this_process_target target;
+    const sigmatch::this_process_target target;
     context = target.in_module("MySims.exe");
 }
 

@@ -89,9 +89,9 @@ public:
 
     void Search() const override {
         if (!Signatures::GetInstance().Search(signature, address, offset, first)) {
-            MSML_LOG_INFO("Failed to find an address for %s", name.c_str());
+            MSML_LOG_ERROR("Failed to find an address for %s", name.c_str());
         } else {
-            MSML_LOG_INFO("Found %s 0x%x", name.c_str(), address);
+            MSML_LOG_DEBUG("Found %s 0x%x", name.c_str(), address);
         }
     }
 
@@ -141,7 +141,8 @@ namespace IO {
         TruncateExisting = 5,
         /// Default (implementation-specific) disposition
         Default = 6,
-        LoadAllFiles = 7, // Specific to MySims
+        // Specific to MySims
+        LoadAllFiles = 7,
     };
 }
 
@@ -176,10 +177,10 @@ namespace EA::ResourceMan {
     namespace Manager {
         struct Manager {};
 
-        CREATE_MEMBER_CALLABLE_SIGNATURE(GetResource, EA::ResourceMan::Manager::GetResource, void*,"83 EC 10 53 56 32 DB 38 5C 24 1C 57 8B F1 ?? ?? 8B 7C 24 38 85 FF", 0, bool,const Key& key, void**, void*, void* database, void* factory, const Key*, uint32_t, uint32_t, uint32_t, uint32_t);
         CREATE_NORMAL_CALLABLE_SIGNATURE(GetManager, EA::ResourceMan::Manager::GetManager, Manager*, "a1 ?? ?? ?? ?? c3 cc cc cc cc cc cc cc cc cc cc 8b 4c 24 04 a1 c4 5b 09 01 89 0d c4 5b 09 01", 0);
+        CREATE_MEMBER_CALLABLE_SIGNATURE(GetResource, EA::ResourceMan::Manager::GetResource, void*,"83 EC 10 53 56 32 DB 38 5C 24 1C 57 8B F1 ?? ?? 8B 7C 24 38 85 FF", 0, bool,const Key& key, void**, void*, void* database, void* factory, const Key*, uint32_t, uint32_t, uint32_t, uint32_t);
         CREATE_MEMBER_CALLABLE_SIGNATURE(RegisterDatabase, EA::ResourceMan::Manager::RegisterDatabase, void, "83 EC 10 53 55 56 57 8B F9 8D 4F 48 68 2C 95 E7 00 89 4C 24 18 ?? ?? ?? ?? ?? 80 7C", 0, bool add, void* pDatabase, uint32_t priority);
-    };
+    }
 
     namespace DatabaseDirectoryFiles {
         struct DatabaseDirectoryFiles{};
@@ -210,7 +211,7 @@ namespace EA::ResourceMan {
         CREATE_MEMBER_CALLABLE_SIGNATURE(ctor, EA::ResourceMan::DDFRecord::DDFRecord, void*, "56 8B F1 57 C7 06 04 E7 E4 00 33 C0 8D 4E 04 87 01 8D 7E", 0, void*, const Key*)
     }
 
-    CREATE_NORMAL_CALLABLE_SIGNATURE(SetupDatabaseDirectoryFiles,EA::ResourceMan::SetupDatabaseDirectoryFiles,void,"81 ec e0 08 00 00 a1 ?? ?? ?? ?? 33 c4 89 84 24 dc 08 00 00 8b 84 24 e4 08 00 00 53 55 8b ac 24 fc 08 00 00 56 8b b4 24 fc 08 00 00 89 44 24 0c 8b 84 24 f4 08 00 00 57 33 db 33 ff 3b c3 89 44 24 2c 89 7c 24 14 75 11", 0, const wchar_t*, void* manager, uint32_t, bool (*)(const wchar_t*, void*), void*, int)
+    CREATE_NORMAL_CALLABLE_SIGNATURE(SetupDatabaseDirectoryFiles,EA::ResourceMan::SetupDatabaseDirectoryFiles,void,"81 ec e0 08 00 00 a1 ?? ?? ?? ?? 33 c4 89 84 24 dc 08 00 00 8b 84 24 e4 08 00 00 53 55 8b ac 24 fc 08 00 00 56 8b b4 24 fc 08 00 00 89 44 24 0c 8b 84 24 f4 08 00 00 57 33 db 33 ff 3b c3 89 44 24 2c 89 7c 24 14 75 11", 0, const wchar_t*, void* manager, IO::AccessFlags, bool (*)(const wchar_t*, void*), void*, int)
 }
 
 #pragma region lua functions

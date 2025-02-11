@@ -7,6 +7,7 @@
 #include "pugixml.hpp"
 #include "../util/File.h"
 #include <filesystem>
+#include <regex>
 
 #include "../assets/Asset.h"
 #include "../assets/Assets.h"
@@ -18,29 +19,28 @@ Mod * Mod::fromXML(const std::string path) {
 
     pugi::xml_document doc;
 
-    pugi::xml_parse_result result = doc.load_file((path + "/mod.xml").c_str());
-    if (!result)
+    if (pugi::xml_parse_result result = doc.load_file((path + "/mod.xml").c_str()); !result)
         return nullptr;
 
-    pugi::xml_node child = doc.child("Mod");
-    if (!child)
+    pugi::xml_node modNode = doc.child("Mod");
+    if (!modNode)
         return nullptr;
 
-    const char* name = child.child("Name").text().as_string();
-    const char* description = child.child("Description").text().as_string();
-    const char* author = child.child("Author").text().as_string();
+    std::string name = modNode.child("Name").text().as_string();
+    std::string description = modNode.child("Description").text().as_string();
+    std::string author = modNode.child("Author").text().as_string();
 
-    if (!name) {
+    if (name.empty()) {
         MSML_LOG_ERROR("Mod %s is missing <Name>", path);
         return nullptr;
     }
 
-    if (!description) {
+    if (description.empty()) {
         MSML_LOG_ERROR("Mod %s is missing <Description>", path);
         return nullptr;
     }
 
-    if (!author) {
+    if (author.empty()) {
         MSML_LOG_ERROR("Mod %s is missing <Author>", path);
         return nullptr;
     }
@@ -48,38 +48,50 @@ Mod * Mod::fromXML(const std::string path) {
     mod->name = name;
     mod->description = description;
     mod->author = author;
-    mod->path = path.c_str();
+    mod->path = path;
 
-    std::string assetsPath = path + "/assets/";
-    uint32_t assetCount = 0;
+    pugi::xml_node assetsNode = modNode.child("Assets");
 
-    try {
-        if (std::filesystem::exists(assetsPath) && std::filesystem::is_directory(assetsPath)) {
-            for (const auto& entry : std::filesystem::directory_iterator(assetsPath)) {
-                if (std::filesystem::is_regular_file(entry)) {
-                    const auto& filePath = entry.path().string();
+    uint32_t replacerCount = 0;
 
-                    mod->assets.emplace_back(filePath.c_str());
-                    assetCount++;
-                }
+    if (assetsNode != nullptr) {
+        if (assetsNode.attribute("path").empty()) {
+            MSML_LOG_ERROR("Mod %s is missing <Assets path>", path);
+            return nullptr;
+        }
+
+        mod->assetsPath = assetsNode.attribute("path").as_string();
+
+        for (pugi::xml_node replacer: assetsNode.children("Replacer")) {
+            std::string keyName = replacer.attribute("key").as_string();
+            std::string typeName = replacer.attribute("type").as_string();
+            std::string filePath = replacer.text().as_string();
+
+            std::regex keyPattern(R"((0x[0-9A-Fa-f]+)[ !](0x[0-9A-Fa-f]+))");
+
+            if (std::smatch matches; std::regex_match(keyName, matches, keyPattern) && matches.size() == 3) {
+                uint32_t group = std::stoul(matches[1].str(), nullptr, 16);
+                uint64_t instance = std::stoull(matches[2].str(), nullptr, 16);
+
+                uint32_t type = Asset::GetFileType(typeName);
+
+                EA::ResourceMan::Key key = {
+                    instance, type, group
+                };
+
+                std::string fullpath = (std::filesystem::path(path) / std::filesystem::path(filePath)).string();
+
+                Assets::GetInstance().RegisterReplacer(fullpath, &key);
+                replacerCount++;
             }
         }
-    } catch (const std::exception& e) {
-        MSML_LOG_ERROR("Failed load assets from directory %s: %s", assetsPath.c_str(), e.what());
     }
 
-    MSML_LOG_INFO("%s registered %d asset(s)", mod->name.c_str(), assetCount);
+    MSML_LOG_INFO("%s registered %d replacer(s)", mod->name.c_str(), replacerCount);
 
     return mod;
 }
 
-void Mod::LoadAssets() {
-    for (const auto& entry : assets) {
-        const EA::ResourceMan::Key* key = Asset::FromAssetName(entry);
-
-        Assets::GetInstance().RegisterAsset(entry, key);
-    }
-}
 
 void Mod::LoadHooks() {
 }

@@ -10,6 +10,7 @@
 #include <cstdarg>
 #include <string>
 
+#include "../modloader/ModLoader.h"
 
 
 void Logger::Log(const LogLevel level, const char *file, int line, const char *format, ...) {
@@ -25,7 +26,7 @@ void Logger::Log(const LogLevel level, const char *file, int line, const char *f
 
     char dateBuffer[11];
     std::strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d", &timeInfo);
-    const std::string logFileName = std::string("log_") + dateBuffer + ".txt";
+    const std::string logFileName = ModLoader::GetInstance().modulePath + std::string("log_") + dateBuffer + ".txt";
 
     std::ofstream logFile(logFileName, std::ios::app);
     if (!logFile) {

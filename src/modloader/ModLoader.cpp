@@ -12,6 +12,7 @@
 #include "../Version.h"
 #include "../signatures/sigdef.h"
 
+
 ModLoader & ModLoader::GetInstance() {
     static ModLoader instance;
     return instance;
@@ -23,7 +24,7 @@ int lua_print_hook(lua_State* L) {
 
     for (int i = 1; i <= nargs; ++i) {
         const char* arg = lua_tostring(L, i);
-        logMessage += (arg ? arg : "(nil)");
+        logMessage += arg ? arg : "(nil)";
 
         if (i < nargs) {
             logMessage += " ";
@@ -44,18 +45,20 @@ void lua_pushvalueHooked(lua_State* L, int index) {
     lua_pushvalueHook.Original(L, index);
 }
 
-void __fastcall ResourceSystemInitHooked(void* this_ptr) {
-    Assets::GetInstance().CreateDatabase();
+void __fastcall ResourceSystemInitHooked(void* this_ptr, void* _ECX) {
     Revo::ResourceSystem::InitHook.Original(this_ptr);
+
+    Assets::GetInstance().CreateDatabase(this_ptr);
 }
+
 
 void ModLoader::Initialize() {
     MSML_LOG_INFO("MSML Version: %s", MSML_VERSION);
-    Mods::GetInstance().Find();
-
     Hooks::GetInstance().Initialize();
 
     Signatures::GetInstance().SearchAll();
+
+    Mods::GetInstance().Find();
 
     Assets::GetInstance().Install();
 
@@ -64,10 +67,13 @@ void ModLoader::Initialize() {
 
     Hooks::GetInstance().Enable();
 
-    Mods::GetInstance().LoadAssets();
     Mods::GetInstance().LoadHooks();
 }
 
 void ModLoader::InstallLuaHooks() {
     lua_pushvalueHook.Install(&lua_pushvalueHooked);
+}
+
+ModLoader::ModLoader() {
+    modulePath = absolute(std::filesystem::current_path()).string() + "/";
 }

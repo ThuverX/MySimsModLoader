@@ -13,12 +13,11 @@ class Mods {
 public:
     static Mods& GetInstance();
     void Find();
-    void LoadAssets();
     void LoadHooks();
+    std::vector<Mod*> mods;
 private:
     explicit Mods(std::string rootPath);
     std::string rootPath;
-    std::vector<Mod*> mods;
 };
 
 

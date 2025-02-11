@@ -4,17 +4,23 @@
 
 #ifndef MODLOADER_H
 #define MODLOADER_H
+
+#include <string>
+
 #include "../util/Console.h"
 
-#define MODS_PATH "../mods"
-#define W_MODS_PATH L"../mods"
+#define MODS_PATH "../mods/"
+#define W_MODS_PATH L"../mods/"
 
 class ModLoader {
 public:
     static ModLoader& GetInstance();
     void Initialize();
+    std::string modulePath;
 private:
     void InstallLuaHooks();
+
+    ModLoader();
     Console console;
 };
 

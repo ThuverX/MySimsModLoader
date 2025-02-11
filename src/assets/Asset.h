@@ -103,9 +103,9 @@ static const std::unordered_map<std::string, DDFFileType> stringToEnum = {
 class Asset {
 public:
     EA::ResourceMan::Key key;
+    mutable EA::ResourceMan::Key selfKey={0,0,0};
     std::filesystem::path path;
 
-    static EA::ResourceMan::Key* FromAssetName(const std::string name);
     static DDFFileType GetFileType(const std::string &extension);
 };
 

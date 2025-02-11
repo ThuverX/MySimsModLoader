@@ -10,8 +10,18 @@
 #include "signatures/sigdef.h"
 #undef SIG_DEFINE
 
+
+// TODO: This would be nice if it worked
+LONG WINAPI CrashHandler(EXCEPTION_POINTERS* exceptionInfo) {
+    MSML_LOG_ERROR("MySims Crashed!");
+
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  reason, LPVOID lpReserved) {
     if (reason == DLL_PROCESS_ATTACH) {
+
+        SetUnhandledExceptionFilter(CrashHandler);
 
         char bufd[200];
         GetSystemDirectoryA(bufd, 200);
