@@ -13,7 +13,7 @@
 #include "../modloader/ModLoader.h"
 
 
-void Logger::Log(const LogLevel level, const char *file, int line, const char *format, ...) {
+void Logger::Log(const LogLevel level, bool cout, const char *file, int line, const char *format, ...) {
     const std::time_t now = std::time(nullptr);
     std::tm timeInfo{};
     if (localtime_s(&timeInfo, &now) != 0) {
@@ -42,7 +42,8 @@ void Logger::Log(const LogLevel level, const char *file, int line, const char *f
 
     const std::string logEntry = "[" + std::string(timeBuffer) + "] [" + LogLevelToString(level) + "] (" + file + ":" + std::to_string(line) + ") " + logMessage + "\n";
 
-    std::cout << logEntry;
+    if (cout)
+        std::cout << logEntry;
     logFile << logEntry;
 }
 

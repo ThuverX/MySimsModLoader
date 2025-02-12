@@ -9,14 +9,13 @@
 
 #include "../modloader/ModLoader.h"
 #include "../mods/Mods.h"
-#include "../util/File.h"
 
 Assets &Assets::GetInstance() {
     static Assets instance;
     return instance;
 }
 
-void * __fastcall AddFileHooked(void *this_ptr, void *_ECX, const EA::ResourceMan::Key *key, const wchar_t *path,
+void * __fastcall AddFileHooked(EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *this_ptr, void *_ECX, const EA::ResourceMan::Key *key, const wchar_t *path,
                                 const wchar_t *name) {
 
     for (const auto asset : Assets::GetInstance().GetReplacersByPath(path)) {
@@ -30,7 +29,7 @@ void * __fastcall AddFileHooked(void *this_ptr, void *_ECX, const EA::ResourceMa
     return EA::ResourceMan::DatabaseDirectoryFiles::AddFileHook.Original(this_ptr, key, path, name);
 }
 
-void * __fastcall GetResourceSystemResourceHooked(void *this_ptr, void *_ECX, const EA::ResourceMan::Key &key,
+void * __fastcall GetResourceSystemResourceHooked(Revo::ResourceSystem::ResourceSystem *this_ptr, void *_ECX, const EA::ResourceMan::Key &key,
                                                   void **outResource, void *b, void *database, void *factory,
                                                   const EA::ResourceMan::Key *key2, uint32_t f, uint32_t g, uint32_t h,
                                                   uint32_t i) {
@@ -43,6 +42,9 @@ void * __fastcall GetResourceSystemResourceHooked(void *this_ptr, void *_ECX, co
             asset->selfKey.group,
         };
     }
+
+    // TODO: if a file is not found, respond with a debug version of the file. So the game doesn't crash
+    // mostly needed for models, materials and textures
 
     return Revo::ResourceSystem::GetResourceHook.Original(this_ptr, modKey, outResource, b, database, factory, key2, f,
                                                           g, h, i);
@@ -61,13 +63,16 @@ void Assets::RegisterReplacer(const std::string &path, const EA::ResourceMan::Ke
     replacers.emplace_back(asset);
 }
 
-void Assets::CreateDatabase(void *manager) {
+#pragma optimize("", off)
+void Assets::CreateDatabase(EA::ResourceMan::Manager::Manager * manager) {
     for (const auto &mod: Mods::GetInstance().mods) {
         if (!mod->assetsPath.empty()) {
             std::filesystem::path mod_path(mod->path);
             std::filesystem::path assets_path(mod->assetsPath);
-            void *databaseStruct = Rvl_Malloc(0x98, "ResourceHelper", 0, 0, nullptr, 0, 0x10);
-            void *database = EA::ResourceMan::DatabaseDirectoryFiles::ctor(
+
+            auto *databaseStruct = static_cast<EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *>(Rvl_Malloc(
+                0x98, "ResourceHelper", 0, 0, nullptr, 0, 0x10));
+            auto *database = EA::ResourceMan::DatabaseDirectoryFiles::ctor(
                 databaseStruct, (mod_path / assets_path).wstring().c_str());
 
             MSML_LOG_DEBUG("Creating database at %s", (mod_path / assets_path).string().c_str());
@@ -76,9 +81,12 @@ void Assets::CreateDatabase(void *manager) {
             EA::ResourceMan::DatabaseDirectoryFiles::Init(database);
             EA::ResourceMan::DatabaseDirectoryFiles::Open(database, IO::AccessFlags::Read, IO::CD::LoadAllFiles, false,
                                                           false);
+
+            // Maybe list the keys out here? instead of doing the add file hook? This way we can also programmatically call upon files
         }
     }
 }
+#pragma optimize("", on)
 
 Asset *Assets::GetReplacerByKey(const uint64_t instance, const uint32_t group, const uint32_t type) const {
     for (auto &asset: replacers) {

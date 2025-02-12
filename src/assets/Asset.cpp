@@ -5,8 +5,6 @@
 #include "Asset.h"
 #include <regex>
 
-#include "../util/FNV.h"
-
 DDFFileType Asset::GetFileType(const std::string& extension) {
     std::string ext = extension;
 

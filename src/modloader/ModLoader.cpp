@@ -18,7 +18,7 @@ ModLoader & ModLoader::GetInstance() {
     return instance;
 }
 
-int lua_print_hook(lua_State* L) {
+int lua_print(lua_State* L) {
     const int nargs = lua_gettop(L);
     std::string logMessage;
 
@@ -35,20 +35,21 @@ int lua_print_hook(lua_State* L) {
     return 0;
 }
 
-void lua_pushvalueHooked(lua_State* L, int index) {
-
-    lua_getfield(L, LUA_GLOBALSINDEX, "_G");
-    lua_pushcclosure(L, lua_print_hook, 0);
-    lua_setfield(L, -2, "print");
-    lua_pop(L, 1);
-
-    lua_pushvalueHook.Original(L, index);
-}
-
-void __fastcall ResourceSystemInitHooked(void* this_ptr, void* _ECX) {
+void __fastcall ResourceSystemInitHooked(Revo::ResourceSystem::ResourceSystem* this_ptr, void* _ECX) {
     Revo::ResourceSystem::InitHook.Original(this_ptr);
 
-    Assets::GetInstance().CreateDatabase(this_ptr);
+    Assets::GetInstance().CreateDatabase(reinterpret_cast<EA::ResourceMan::Manager::Manager *>(this_ptr));
+}
+
+void __fastcall LuaScriptingSystemStartupHooked(EA::ScriptOs::LuaScriptingSystem::LuaScriptingSystem* this_ptr) {
+    EA::ScriptOs::LuaScriptingSystem::StartupHook.Original(this_ptr);
+
+    lua_State* L = this_ptr->state;
+
+    lua_getfield(L, LUA_GLOBALSINDEX, "_G");
+    lua_pushcclosure(L, lua_print, 0);
+    lua_setfield(L, -2, "print");
+    lua_pop(L, 1);
 }
 
 
@@ -71,7 +72,7 @@ void ModLoader::Initialize() {
 }
 
 void ModLoader::InstallLuaHooks() {
-    lua_pushvalueHook.Install(&lua_pushvalueHooked);
+    EA::ScriptOs::LuaScriptingSystem::StartupHook.Install(&LuaScriptingSystemStartupHooked);
 }
 
 ModLoader::ModLoader() {

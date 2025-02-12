@@ -3,6 +3,7 @@ cmake
 old
 run
 cmake-build-debug-visual-studio
+cmake-build-release-visual-studio
 src/Version.h
 .idea
 build/

@@ -16,7 +16,7 @@ public:
         LUA,
         DEBUG
     };
-    static void Log(LogLevel level, const char *file, int line, const char* format, ...);
+    static void Log(LogLevel level, bool cout, const char *file, int line, const char* format, ...);
 
 private:
     static const char* LogLevelToString(LogLevel level);
@@ -24,7 +24,7 @@ private:
 
 
 #define MSML_LOGLEVEL(level, format, ...) \
-    Logger::Log(Logger::LogLevel::level, __FILE__, __LINE__, format, ##__VA_ARGS__)
+    Logger::Log(Logger::LogLevel::level, true, __FILE__, __LINE__, format, ##__VA_ARGS__)
 
 #define MSML_LOG_INFO(format, ...) \
     MSML_LOGLEVEL(INFO, format, ##__VA_ARGS__)
@@ -35,8 +35,13 @@ private:
 #define MSML_LOG_ERROR(format, ...) \
     MSML_LOGLEVEL(ERR, format, ##__VA_ARGS__)
 
+#ifndef NDEBUG
 #define MSML_LOG_DEBUG(format, ...) \
     MSML_LOGLEVEL(DEBUG, format, ##__VA_ARGS__)
+#else
+#define MSML_LOG_DEBUG(format, ...) \
+    Logger::Log(Logger::LogLevel::DEBUG, false, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#endif
 
 #define MSML_LOG_LUA(format, ...) \
     MSML_LOGLEVEL(LUA, format, ##__VA_ARGS__)

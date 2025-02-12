@@ -14,7 +14,7 @@ public:
     static Assets& GetInstance();
     void Install();
     void RegisterReplacer(const std::string& path, const EA::ResourceMan::Key* key);
-    void CreateDatabase(void* manager);
+    void CreateDatabase(EA::ResourceMan::Manager::Manager * manager);
 
     [[nodiscard]] Asset* GetReplacerByKey(uint64_t instance, uint32_t group, uint32_t type) const;
 
@@ -22,7 +22,7 @@ public:
 
     [[nodiscard]] Asset* GetReplacerByPath(const std::wstring& path) const;
 
-    std::vector<Asset *> GetReplacersByPath(const std::wstring &path) const;
+    [[nodiscard]] std::vector<Asset *> GetReplacersByPath(const std::wstring &path) const;
 
     EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles* database;
 private:
