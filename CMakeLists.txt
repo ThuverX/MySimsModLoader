@@ -42,6 +42,8 @@ add_library(MySimsModLoader SHARED src/Main.cpp
         # Format
         src/formats/CharacterDef.h
         src/formats/CharacterDef.cpp
+        src/formats/ObjectDef.h
+        src/formats/ObjectDef.cpp
         src/formats/World.h
         src/formats/World.cpp
 )
@@ -74,9 +76,12 @@ if (BUILD_TESTS)
         add_executable(Tests
                 # Tests
                 tests/CharacterDefTest.cpp
+                tests/ObjectDefTest.cpp
                 # Format
                 src/formats/CharacterDef.h
                 src/formats/CharacterDef.cpp
+                src/formats/ObjectDef.h
+                src/formats/ObjectDef.cpp
                 # Utilities
                 src/util/Logger.h
                 src/util/Logger.cpp)

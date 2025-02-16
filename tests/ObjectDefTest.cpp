@@ -58,14 +58,17 @@ TEST(ObjectDefTest, ReadFromStream) {
 
     // Create ObjectDef instance and call Read method
     ObjectDef objectDef;
-    ObjectDef::Read(objectDef, buffer, size);
+    bool result = ObjectDef::Read(objectDef, buffer, size);
+
+    // Ensure the data is read correctly
+    ASSERT_TRUE(result) << "ObjectDef::Read failed to parse data";
 
     // Validate that CharacterDef correctly parsed the data (assuming GetName() method exists)
     EXPECT_EQ(objectDef.Model, "flairSymbolMock");
     EXPECT_EQ(objectDef.Rig, "essenceSymbolRig-rig");
     EXPECT_EQ(objectDef.Script, "Essence");
     //EXPECT_EQ(objectDef.HavokInfo, "2");
-    EXPECT_EQ(objectDef.NoFootPrint, "1");
+    ASSERT_TRUE(objectDef.NoFootPrint);
     //EXPECT_EQ(objectDef.RotateByHavok, "0");
     //EXPECT_EQ(objectDef.HavokLinearDamping, "2.0f");
     //EXPECT_EQ(objectDef.Shadow, "0");
