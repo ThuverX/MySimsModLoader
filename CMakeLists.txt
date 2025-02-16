@@ -42,6 +42,8 @@ add_library(MySimsModLoader SHARED src/Main.cpp
         # Format
         src/formats/CharacterDef.h
         src/formats/CharacterDef.cpp
+        src/formats/World.h
+        src/formats/World.cpp
 )
 
 add_custom_target(version
