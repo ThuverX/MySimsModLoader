@@ -3,10 +3,10 @@
 #include "pugixml.hpp"
 #include <iostream>
 
-void CharacterDef::Read(CharacterDef &instance, const std::string &path) {
+void CharacterDef::Read(CharacterDef &instance, void *data, size_t size) {
 
     pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_file(path.c_str());
+    pugi::xml_parse_result result = doc.load_string(static_cast<const char *>(data), size);
 
     // TODO: Add error handling
 
