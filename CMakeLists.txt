@@ -62,9 +62,22 @@ target_link_libraries(MySimsModLoader PRIVATE pugixml-static)
 set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "dsound")
 
 if (BUILD_TESTS)
-        add_executable(Tests tests/serialization.cpp
+        # For Windows: Prevent overriding the parent project's compiler/linker settings
+        # As per documentation: http://google.github.io/googletest/quickstart-cmake.html
+        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+        add_subdirectory(libs/googletest)
+
+        enable_testing()
+
+        add_executable(Tests
+                tests/Test.cpp
                 src/formats/CharacterDef.cpp)
+
         target_include_directories(Tests PRIVATE libs/pugixml/src)
         target_include_directories(Tests PRIVATE src)
-        target_link_libraries(Tests PRIVATE pugixml-static)
+
+        target_link_libraries(Tests PRIVATE GTest::gtest_main pugixml-static)
+
+        include(GoogleTest)
+        gtest_discover_tests(Tests)
 endif()
