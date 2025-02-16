@@ -4,6 +4,8 @@ project(MySimsModLoader)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(BUILD_TESTS "Build tests" ON)
+
 # Disable sigmatch tests to speed up compilation
 set(SIGMATCH_BUILD_TESTS OFF CACHE BOOL "Disable sigmatch tests" FORCE)
 
@@ -37,6 +39,9 @@ add_library(MySimsModLoader SHARED src/Main.cpp
         src/util/FNV.h
         src/signatures/lua.h
         src/signatures/sigdef.h
+        # Format
+        src/formats/CharacterDef.h
+        src/formats/CharacterDef.cpp
 )
 
 add_custom_target(version
@@ -55,3 +60,11 @@ target_link_libraries(MySimsModLoader PRIVATE minhook)
 target_link_libraries(MySimsModLoader PRIVATE pugixml-static)
 
 set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "dsound")
+
+if (BUILD_TESTS)
+        add_executable(Tests tests/serialization.cpp
+                src/formats/CharacterDef.cpp)
+        target_include_directories(Tests PRIVATE libs/pugixml/src)
+        target_include_directories(Tests PRIVATE src)
+        target_link_libraries(Tests PRIVATE pugixml-static)
+endif()
