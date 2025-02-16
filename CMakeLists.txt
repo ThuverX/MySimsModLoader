@@ -70,7 +70,10 @@ if (BUILD_TESTS)
         enable_testing()
 
         add_executable(Tests
-                tests/Test.cpp
+                # Tests
+                tests/CharacterDefTest.cpp
+                # Format
+                src/formats/CharacterDef.h
                 src/formats/CharacterDef.cpp)
 
         target_include_directories(Tests PRIVATE libs/pugixml/src)
