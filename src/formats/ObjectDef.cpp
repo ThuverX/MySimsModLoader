@@ -8,12 +8,6 @@ void ObjectDef::Read(ObjectDef &instance, void *data, size_t size) {
     pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_string(static_cast<const char *>(data), size);
 
-    /*std::string Model;
-    std::string Rig;
-    std::string Script;
-    std::string MaxAttachments;
-    std::string CollisionInfo;
-    bool NoFootPrint;*/
     instance.Model = doc.child("ObjectDef").child("Model").text().as_string();
     instance.Rig = doc.child("ObjectDef").child("Rig").text().as_string();
     instance.Script = doc.child("ObjectDef").child("Script").text().as_string();
