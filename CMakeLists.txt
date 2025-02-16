@@ -76,7 +76,13 @@ if (BUILD_TESTS)
                 tests/CharacterDefTest.cpp
                 # Format
                 src/formats/CharacterDef.h
-                src/formats/CharacterDef.cpp)
+                src/formats/CharacterDef.cpp
+                # Utilities
+                src/util/Logger.h
+                src/util/Logger.cpp)
+
+        # Set a define to indicate that we are running unit tests
+        target_compile_definitions(Tests PRIVATE -DUNIT_TESTING)
 
         target_include_directories(Tests PRIVATE libs/pugixml/src)
         target_include_directories(Tests PRIVATE src)

@@ -2,8 +2,6 @@
 #define OBJECTDEF_H
 
 #include <string>
-#include <vector>
-#include <unordered_map>
 
 struct ObjectDef {
 
@@ -14,8 +12,7 @@ struct ObjectDef {
     std::string CollisionInfo;
     bool NoFootPrint;
 
-    static void Read(ObjectDef &instance, void *data, size_t size);
-    
+    static bool Read(ObjectDef &instance, void *data, size_t size);
 };
 
 #endif // OBJECTDEF_H

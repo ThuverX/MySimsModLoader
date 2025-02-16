@@ -36,7 +36,7 @@ struct CharacterDef {
     LuaData LuaData;
     Influences Influences;
 
-    static void Read(CharacterDef &instance, void *data, size_t size);
+    static bool Read(CharacterDef &instance, void *data, size_t size);
 };
 
 #endif // CHARACTERDEF_H

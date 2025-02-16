@@ -63,7 +63,10 @@ TEST(CharacterDefTest, ReadFromStream) {
 
     // Create CharacterDef instance and call Read method
     CharacterDef characterDef;
-    CharacterDef::Read(characterDef, buffer, size);
+    bool result = CharacterDef::Read(characterDef, buffer, size);
+
+    // Ensure Read method returned true
+    ASSERT_TRUE(result) << "CharacterDef::Read failed to parse XML data";
 
     // Validate that CharacterDef correctly parsed the data (assuming GetName() method exists)
     EXPECT_EQ(characterDef.Script, "NPC_Mock");
