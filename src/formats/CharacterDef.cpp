@@ -21,6 +21,21 @@ void CharacterDef::Read(CharacterDef &instance, void *data, size_t size) {
     instance.SkinToneIndex = doc.child("CharacterDef").child("SkinToneIndex").text().as_int();
     instance.MiscOpIndex = doc.child("CharacterDef").child("MiscOpIndex").text().as_int();
     instance.MiscModIndex = doc.child("CharacterDef").child("MiscModIndex").text().as_int();
+    instance.VoxGroup = doc.child("CharacterDef").child("VoxGroup").text().as_string();
+    instance.PitchAdjustment = doc.child("CharacterDef").child("PitchAdjustment").text().as_double();
+    instance.Rig = doc.child("CharacterDef").child("Rig").text().as_string();
+    instance.CollisionInfo = doc.child("CharacterDef").child("CollisionInfo").text().as_string();
 
-    // TODO: Import the rest of the fields
+    // Read clips
+    for (pugi::xml_node clip : doc.child("CharacterDef").child("Clips").children()) {
+        instance.Clips[clip.name()] = clip.text().as_string();
+    }
+
+    // Read influences
+    for (pugi::xml_node interest : doc.child("CharacterDef").child("Influences").children()) {
+        instance.Influences.Interests.push_back(Interest{
+            interest.attribute("type").as_string(),
+            interest.text().as_int()
+        });
+    }
 }

@@ -77,9 +77,25 @@ TEST(CharacterDefTest, ReadFromStream) {
     EXPECT_EQ(characterDef.SkinToneIndex, 0);
     EXPECT_EQ(characterDef.MiscOpIndex, 0);
     EXPECT_EQ(characterDef.MiscModIndex, 0);
+    EXPECT_EQ(characterDef.VoxGroup, "F");
+    EXPECT_DOUBLE_EQ(characterDef.PitchAdjustment, 0.85);
+    EXPECT_EQ(characterDef.Rig, "skeleton-rig");
+    EXPECT_EQ(characterDef.CollisionInfo, "0 1 0 0.5 2 0.5");
 
-    // TODO: Add missing fields here
-    
+    // Validate Clips
+    EXPECT_EQ(characterDef.Clips.size(), 2);
+    EXPECT_EQ(characterDef.Clips.at("eIDLE2"), "a-idle-thighSlap");
+    EXPECT_EQ(characterDef.Clips.at("eIDLE3"), "a-idle-wave");
+
+    // Validate Influences
+    EXPECT_EQ(characterDef.Influences.Interests.size(), 3);
+    EXPECT_EQ(characterDef.Influences.Interests[0].Type, "Food");
+    EXPECT_EQ(characterDef.Influences.Interests[0].Value, 5);
+    EXPECT_EQ(characterDef.Influences.Interests[1].Type, "SciFi");
+    EXPECT_EQ(characterDef.Influences.Interests[1].Value, -1);
+    EXPECT_EQ(characterDef.Influences.Interests[2].Type, "Fun");
+    EXPECT_EQ(characterDef.Influences.Interests[2].Value, 2);
+
     // Cleanup allocated memory
     delete[] static_cast<char *>(buffer);
 }
