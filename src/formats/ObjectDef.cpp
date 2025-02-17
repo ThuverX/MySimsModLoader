@@ -13,12 +13,14 @@ bool ObjectDef::Read(ObjectDef &instance, void *data, size_t size) {
         return false;
     }
 
-    instance.Model = doc.child("ObjectDef").child("Model").text().as_string();
-    instance.Rig = doc.child("ObjectDef").child("Rig").text().as_string();
-    instance.Script = doc.child("ObjectDef").child("Script").text().as_string();
-    instance.MaxAttachments = doc.child("ObjectDef").child("MaxAttachments").text().as_string();
-    instance.CollisionInfo = doc.child("ObjectDef").child("CollisionInfo").text().as_string();
-    instance.NoFootPrint = doc.child("ObjectDef").child("NoFootPrint").text().as_bool();
+    auto ObjectDef = doc.child("ObjectDef");
+
+    instance.Model = ObjectDef.child("Model").text().as_string();
+    instance.Rig = ObjectDef.child("Rig").text().as_string();
+    instance.Script = ObjectDef.child("Script").text().as_string();
+    instance.MaxAttachments = ObjectDef.child("MaxAttachments").text().as_string();
+    instance.CollisionInfo = ObjectDef.child("CollisionInfo").text().as_string();
+    instance.NoFootPrint = ObjectDef.child("NoFootPrint").text().as_bool();
 
     return true;
 }
