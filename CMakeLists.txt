@@ -40,12 +40,12 @@ add_library(MySimsModLoader SHARED src/Main.cpp
         src/signatures/lua.h
         src/signatures/sigdef.h
         # Format
-        src/formats/CharacterDef.h
-        src/formats/CharacterDef.cpp
-        src/formats/ObjectDef.h
-        src/formats/ObjectDef.cpp
-        src/formats/World.h
-        src/formats/World.cpp
+        src/formats/xml/CharacterDef.h
+        src/formats/xml/CharacterDef.cpp
+        src/formats/xml/ObjectDef.h
+        src/formats/xml/ObjectDef.cpp
+        src/formats/xml/World.h
+        src/formats/xml/World.cpp
 )
 
 add_custom_target(version
@@ -78,10 +78,10 @@ if (BUILD_TESTS)
                 tests/CharacterDefTest.cpp
                 tests/ObjectDefTest.cpp
                 # Format
-                src/formats/CharacterDef.h
-                src/formats/CharacterDef.cpp
-                src/formats/ObjectDef.h
-                src/formats/ObjectDef.cpp
+                src/formats/xml/CharacterDef.h
+                src/formats/xml/CharacterDef.cpp
+                src/formats/xml/ObjectDef.h
+                src/formats/xml/ObjectDef.cpp
                 # Utilities
                 src/util/Logger.h
                 src/util/Logger.cpp)

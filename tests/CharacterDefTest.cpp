@@ -2,7 +2,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
-#include "formats/CharacterDef.h"
+#include "formats/xml/CharacterDef.h"
 
 // Mock XML data (simulating CharacterDef.xml)
 const std::string MockCharacterDef = R"(

@@ -4,7 +4,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
-#include "formats/ObjectDef.h"
+#include "formats/xml/ObjectDef.h"
 
 // Mock XML data (simulating ObjectDef.xml)
 const std::string MockObjectDef = R"(<?xml version="1.0" encoding="utf-8" ?>

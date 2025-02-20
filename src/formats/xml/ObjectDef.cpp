@@ -1,7 +1,7 @@
 #include "ObjectDef.h"
 
 #include "pugixml.hpp"
-#include "../util/Logger.h"
+#include "../../util/Logger.h"
 
 bool ObjectDef::Read(ObjectDef &instance, void *data, size_t size) {
 
