@@ -40,6 +40,10 @@ add_library(MySimsModLoader SHARED src/Main.cpp
         src/signatures/lua.h
         src/signatures/sigdef.h
         # Format
+        src/formats/BinaryReader.h
+        src/formats/BinaryReader.cpp
+        src/formats/materials/Material.h
+        src/formats/materials/Material.cpp
         src/formats/xml/CharacterDef.h
         src/formats/xml/CharacterDef.cpp
         src/formats/xml/ObjectDef.h
@@ -76,15 +80,20 @@ if (BUILD_TESTS)
         add_executable(Tests
                 # Tests
                 tests/CharacterDefTest.cpp
+                tests/MaterialTest.cpp
                 tests/ObjectDefTest.cpp
                 # Format
                 src/formats/xml/CharacterDef.h
                 src/formats/xml/CharacterDef.cpp
                 src/formats/xml/ObjectDef.h
                 src/formats/xml/ObjectDef.cpp
+                src/formats/materials/Material.h
+                src/formats/materials/Material.cpp
                 # Utilities
                 src/util/Logger.h
-                src/util/Logger.cpp)
+                src/util/Logger.cpp
+                src/formats/BinaryReader.h
+                src/formats/BinaryReader.cpp)
 
         # Set a define to indicate that we are running unit tests
         target_compile_definitions(Tests PRIVATE -DUNIT_TESTING)
