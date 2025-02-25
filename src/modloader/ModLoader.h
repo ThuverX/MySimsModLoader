@@ -9,8 +9,8 @@
 
 #include "../util/Console.h"
 
-#define MODS_PATH "../mods/"
-#define W_MODS_PATH L"../mods/"
+#define MODS_PATH "mods/"
+#define W_MODS_PATH L"mods/"
 
 class ModLoader {
 public:
