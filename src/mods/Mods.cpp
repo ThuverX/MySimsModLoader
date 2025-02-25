@@ -10,7 +10,10 @@
 #include "../util/Logger.h"
 
 Mods & Mods::GetInstance() {
-    static Mods instance(MODS_PATH);
+    auto absolutePath = std::filesystem::absolute(
+        ModLoader::GetInstance().modulePath + MODS_PATH).string();
+
+    static Mods instance(absolutePath);
     return instance;
 }
 
