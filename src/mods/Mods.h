@@ -13,8 +13,10 @@ class Mods {
 public:
     static Mods& GetInstance();
     void Find();
-    void LoadHooks();
+    std::vector<Mod*> GetModsSorted() const;
     std::vector<Mod*> mods;
+    void RunPostHooks(const std::string& modulePath) const;
+    void RunPreHooks(const std::string& modulePath) const;
 private:
     explicit Mods(std::string rootPath);
     std::string rootPath;

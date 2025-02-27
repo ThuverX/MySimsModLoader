@@ -9,9 +9,9 @@
 #include <vector>
 
 
-struct LuaHook {
+struct ScriptHook {
     std::string nativeFile;
-    std::string replacementFile;
+    std::string hookFile;
 };
 
 class Mod {
@@ -21,12 +21,14 @@ public:
     std::string author;
     std::string path;
     std::string assetsPath;
+    int priority = 0;
 
     static Mod* fromXML(std::string path);
-    void LoadHooks();
+    void RunPostHooks(const std::string& modulePath) const;
+    void RunPreHooks(const std::string& modulePath) const;
 
-    std::vector<LuaHook> hooks;
-
+    std::vector<ScriptHook> postHooks;
+    std::vector<ScriptHook> preHooks;
 };
 
 

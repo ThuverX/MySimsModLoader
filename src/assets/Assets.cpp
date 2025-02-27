@@ -15,10 +15,10 @@ Assets &Assets::GetInstance() {
     return instance;
 }
 
-void * __fastcall AddFileHooked(EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *this_ptr, void *_ECX, const EA::ResourceMan::Key *key, const wchar_t *path,
+void * __fastcall AddFileHooked(EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *this_ptr, void *_ECX,
+                                const EA::ResourceMan::Key *key, const wchar_t *path,
                                 const wchar_t *name) {
-
-    for (const auto asset : Assets::GetInstance().GetReplacersByPath(path)) {
+    for (const auto asset: Assets::GetInstance().GetReplacersByPath(path)) {
         asset->selfKey = {
             key->instance,
             key->type,
@@ -29,7 +29,8 @@ void * __fastcall AddFileHooked(EA::ResourceMan::DatabaseDirectoryFiles::Databas
     return EA::ResourceMan::DatabaseDirectoryFiles::AddFileHook.Original(this_ptr, key, path, name);
 }
 
-void * __fastcall GetResourceSystemResourceHooked(Revo::ResourceSystem::ResourceSystem *this_ptr, void *_ECX, const EA::ResourceMan::Key &key,
+void * __fastcall GetResourceSystemResourceHooked(Revo::ResourceSystem::ResourceSystem *this_ptr, void *_ECX,
+                                                  const EA::ResourceMan::Key &key,
                                                   void **outResource, void *b, void *database, void *factory,
                                                   const EA::ResourceMan::Key *key2, uint32_t f, uint32_t g, uint32_t h,
                                                   uint32_t i) {
@@ -50,10 +51,15 @@ void * __fastcall GetResourceSystemResourceHooked(Revo::ResourceSystem::Resource
                                                           g, h, i);
 }
 
+void __fastcall ResourceSystemInitHooked(Revo::ResourceSystem::ResourceSystem *this_ptr, void *_ECX) {
+    Assets::GetInstance().CreateDatabase(reinterpret_cast<EA::ResourceMan::Manager::Manager *>(this_ptr));
+    Revo::ResourceSystem::InitHook.Original(this_ptr);
+}
+
 void Assets::Install() {
     EA::ResourceMan::DatabaseDirectoryFiles::AddFileHook.Install(&AddFileHooked);
-
     Revo::ResourceSystem::GetResourceHook.Install(&GetResourceSystemResourceHooked);
+    Revo::ResourceSystem::InitHook.Install(&ResourceSystemInitHooked);
 }
 
 void Assets::RegisterReplacer(const std::string &path, const EA::ResourceMan::Key *key) {
@@ -64,14 +70,16 @@ void Assets::RegisterReplacer(const std::string &path, const EA::ResourceMan::Ke
 }
 
 #pragma optimize("", off)
-void Assets::CreateDatabase(EA::ResourceMan::Manager::Manager * manager) {
+void Assets::CreateDatabase(EA::ResourceMan::Manager::Manager *manager) {
+    if (Mods::GetInstance().mods.empty()) return;
     for (const auto &mod: Mods::GetInstance().mods) {
         if (!mod->assetsPath.empty()) {
             std::filesystem::path mod_path(mod->path);
             std::filesystem::path assets_path(mod->assetsPath);
 
-            auto *databaseStruct = static_cast<EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *>(Rvl_Malloc(
-                0x98, "ResourceHelper", 0, 0, nullptr, 0, 0x10));
+            auto *databaseStruct = static_cast<EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *>(
+                Rvl_Malloc(
+                    0x98, "ResourceHelper", 0, 0, nullptr, 0, 0x10));
             auto *database = EA::ResourceMan::DatabaseDirectoryFiles::ctor(
                 databaseStruct, (mod_path / assets_path).wstring().c_str());
 

@@ -5,6 +5,7 @@
 #include "Mods.h"
 #include <filesystem>
 #include <utility>
+#include <algorithm>
 
 #include "../modloader/ModLoader.h"
 #include "../util/Logger.h"
@@ -39,9 +40,26 @@ void Mods::Find() {
     }
 }
 
-
-void Mods::LoadHooks() {
+std::vector<Mod *> Mods::GetModsSorted() const {
+    std::vector<Mod*> sortedMods = mods;
+    std::ranges::sort(sortedMods, [](const Mod* a, const Mod* b) {
+        return a->priority < b->priority;
+    });
+    return sortedMods;
 }
+
+void Mods::RunPostHooks(const std::string& modulePath) const {
+    for (const auto& mod : GetModsSorted()) {
+        mod->RunPostHooks(modulePath);
+    }
+}
+
+void Mods::RunPreHooks(const std::string& modulePath) const {
+    for (const auto& mod : GetModsSorted()) {
+        mod->RunPreHooks(modulePath);
+    }
+}
+
 
 Mods::Mods(std::string rootPath) {
     this->rootPath = std::move(rootPath);

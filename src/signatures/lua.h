@@ -29,11 +29,13 @@ typedef struct luaL_Reg
 #define LUA_REFNIL      (-1)
 
 // Thread status; 0 is OK
-#define LUA_YIELD	1
-#define LUA_ERRRUN	2
+
+#define LUA_OK          0
+#define LUA_YIELD		1
+#define LUA_ERRRUN		2
 #define LUA_ERRSYNTAX	3
-#define LUA_ERRMEM	4
-#define LUA_ERRERR	5
+#define LUA_ERRMEM		4
+#define LUA_ERRERR		5
 // From src/lauxlib.h
 // Extra error code for 'luaL_load'
 #define LUA_ERRFILE     (LUA_ERRERR+1)

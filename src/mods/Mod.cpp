@@ -11,6 +11,7 @@
 
 #include "../assets/Asset.h"
 #include "../assets/Assets.h"
+#include "../hooks/LuaHook.h"
 #include "../signatures/Signatures.h"
 #include "../util/Logger.h"
 
@@ -44,6 +45,9 @@ Mod * Mod::fromXML(const std::string path) {
         MSML_LOG_ERROR("Mod %s is missing <Author>", path);
         return nullptr;
     }
+
+    if (!modNode.attribute("priority").empty())
+        mod->priority = modNode.attribute("priority").as_int();
 
     mod->name = name;
     mod->description = description;
@@ -89,9 +93,49 @@ Mod * Mod::fromXML(const std::string path) {
 
     MSML_LOG_INFO("%s registered %d replacer(s)", mod->name.c_str(), replacerCount);
 
+    uint32_t hookCount = 0;
+
+    if (pugi::xml_node hooksNode = modNode.child("Hooks"); hooksNode != nullptr) {
+        for (pugi::xml_node hook: hooksNode.children("Hook")) {
+            std::string key = hook.attribute("key").as_string();
+            std::string hookPath = hook.text().as_string();
+            std::string fullpath = std::filesystem::absolute(std::filesystem::path(path) / std::filesystem::path(hookPath)).string();
+
+            mod->postHooks.push_back({
+                key, fullpath
+            });
+            hookCount++;
+        }
+
+        for (pugi::xml_node hook: hooksNode.children("Prehook")) {
+            std::string key = hook.attribute("key").as_string();
+            std::string hookPath = hook.text().as_string();
+            std::string fullpath = std::filesystem::absolute(std::filesystem::path(path) / std::filesystem::path(hookPath)).string();
+
+            mod->preHooks.push_back({
+                key, fullpath
+            });
+            hookCount++;
+        }
+    }
+
+    MSML_LOG_INFO("%s registered %d hook(s)", mod->name.c_str(), hookCount);
+
     return mod;
 }
 
+void Mod::RunPostHooks(const std::string& modulePath) const {
+    for (const auto& hook: postHooks) {
+        if (hook.nativeFile == modulePath || hook.nativeFile == "*") {
+            LuaHook::GetInstance().Require(hook.hookFile);
+        }
+    }
+}
 
-void Mod::LoadHooks() {
+void Mod::RunPreHooks(const std::string& modulePath) const {
+    for (const auto& hook: preHooks) {
+        if (hook.nativeFile == modulePath || hook.nativeFile == "*") {
+            LuaHook::GetInstance().Require(hook.hookFile);
+        }
+    }
 }

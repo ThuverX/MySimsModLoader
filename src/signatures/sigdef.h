@@ -227,6 +227,19 @@ CREATE_NORMAL_CALLABLE_SIGNATURE(lua_settop, lua, void, "8B 4C 24 08 85 C9 8B 44
 CREATE_NORMAL_CALLABLE_SIGNATURE(lua_gettop, lua, int, "8b 4c 24 04 8b 41 08 2b 41 0c c1 f8 03 c3", 0, lua_State *L);
 CREATE_NORMAL_CALLABLE_SIGNATURE(lua_tolstring, lua, const char*, "56 8B 74 24 08 57 8B 7C 24 10 57 56 ?? ?? ?? ?? ?? 83 C4 08 83 78 04 04 ?? ?? 50 56 ?? ?? ?? ?? ?? 83 C4", 0, lua_State *L, int index, size_t *len);
 CREATE_NORMAL_CALLABLE_SIGNATURE(lua_newstate, lua, lua_State*, "53 55 8B 6C 24 0C 57 8B 7C 24 14 33 DB 53 68 4C 01 00 00 53 53 57 ?? ?? 83 C4 14 3B C3 ?? ?? 5F", 0, lua_Alloc f, void* ud);
+CREATE_NORMAL_CALLABLE_SIGNATURE(luaL_ref, lua, int, "53 8B 5C 24 0C 8D 83 0F 27 00 00 3D 0F 27 00 00 56 8B 74 24 0C ?? ?? 56 ?? ?? ?? ?? ?? 83 C4 04 8D", 0, lua_State *L, int t);
+CREATE_NORMAL_CALLABLE_SIGNATURE(luaL_loadfile, lua, int, "81 EC 0C 02 00 00 A1 C0 44 02 01 33 C4 89 84 24 08 02 00 00 55 8B AC 24 18 02 00 00 56 8B B4 24 18 02 00 00 57 56 ?? ?? ?? ?? ?? 8B", 0, lua_State *L, const char* filename);
+CREATE_NORMAL_CALLABLE_SIGNATURE(lua_remove, lua, void, "8b 44 24 08 56 8b 74 24 08 50 56 e8 ?? ?? ?? ?? 83 c0 08 83 c4 08 3b 46 08 73 18 eb 03 8d 49 00", 0, lua_State *L, int index);
+CREATE_NORMAL_CALLABLE_SIGNATURE(lua_insert, lua, void, "8B 44 24 08 56 8B 74 24 08 50 56 ?? ?? ?? ?? ?? 8B 4E 08 83 C4 08 3B C8 ?? ?? 8D 9B 00 00 00", 0, lua_State *L, int index);
+CREATE_NORMAL_CALLABLE_SIGNATURE(lua_pcall, lua, int, "8B 44 24 10 83 EC 08 85 C0 56 8B 74 24 10 ?? ?? 33 C9 ?? ?? 50 56 ?? ?? ?? ?? ?? 83 C4 08 2B", 0, lua_State *L, int nargs, int nresults, int errfunc);
+CREATE_NORMAL_CALLABLE_SIGNATURE(lua_rawgeti, lua, void, "8B 44 24 08 56 8B 74 24 08 50 56 ?? ?? ?? ?? ?? 8B 4C 24 18 8B 10 51 52 ?? ?? ?? ?? ?? 8B 4E 08 8B 10 89", 0, lua_State *L, int index, int n);
+CREATE_NORMAL_CALLABLE_SIGNATURE(luaL_checklstring, lua, const char *, "8B 44 24 0C 53 56 8B 74 24 0C 57 8B 7C 24 14 50 57 56 ?? ?? ?? ?? ?? 8B D8 83 C4 0C 85 DB ?? ?? 55", 0, lua_State *L, int narg, size_t *l);
+CREATE_NORMAL_CALLABLE_SIGNATURE(lua_pushstring, lua, void, "55 8B 6C 24 0C 85 ED ?? ?? 8B 44 24 08 8B 48 08 89 69 04 83 40 08 08 5D", 0, lua_State *L, const char *s);
+CREATE_NORMAL_CALLABLE_SIGNATURE(luaB_loadstring, lua, int, "51 56 8B 74 24 0C 57 8D 44 24 08 50 6A 01 56 ?? ?? ?? ?? ?? 6A 00 8B F8 57 6A 02 56", 0, lua_State *L);
+CREATE_NORMAL_CALLABLE_SIGNATURE(luaG_errormsg, void, int, "56 8B 74 24 08 8B 46 60 85 C0 ?? ?? 57 8B 7E 20 03 F8 83 7F 04 06", 0, lua_State *L);
+CREATE_NORMAL_CALLABLE_SIGNATURE(luaL_loadbuffer, void, int, "83 EC 08 8B 44 24 10 8B 54 24 18 8B 4C 24 14 52 89 44 24 04 8D 44 24 04 50 89 4C 24 0C 8B 4C 24 14", 0, lua_State * L, const char * buff, size_t sz,const char * name);
+
+
 
 #pragma endregion
 

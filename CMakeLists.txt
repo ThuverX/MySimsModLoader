@@ -37,6 +37,8 @@ add_library(MySimsModLoader SHARED src/Main.cpp
         src/util/FNV.h
         src/signatures/lua.h
         src/signatures/sigdef.h
+        src/hooks/LuaHook.cpp
+        src/hooks/LuaHook.h
 )
 
 add_custom_target(version

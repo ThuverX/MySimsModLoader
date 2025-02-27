@@ -18,8 +18,6 @@ public:
     void Initialize();
     std::string modulePath;
 private:
-    void InstallLuaHooks();
-
     ModLoader();
     Console console;
 };
