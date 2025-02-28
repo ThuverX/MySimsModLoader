@@ -9,6 +9,9 @@
 
 #include "windows.h"
 #include "sigdef.h"
+#include "../include/hash_sha256.h"
+#include "../modloader/ModLoader.h"
+#include "../util/File.h"
 
 Signatures & Signatures::GetInstance() {
     static Signatures signatures;
@@ -48,15 +51,19 @@ void Signatures::Append(std::string name, SigSearchBase* sig){
     signatures.emplace(name, sig);
 }
 
-// TODO: Checksum should not be created here
-// also include the current loader version
-uint64_t Signatures::GetCheckSum() {
-    uint64_t checksum = 0;
+std::array<uint8_t, 32U> Signatures::GetCheckSum() {
+    hash_sha256 checksum;
 
-    char buffer[MAX_PATH];
-    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    checksum.sha256_init();
 
-    return checksum;
+    char path[MAX_PATH];
+    GetModuleFileName(nullptr, path, MAX_PATH);
+
+    const auto exeBytes = File::ReadAsBytes(path);
+
+    checksum.sha256_update(exeBytes.data(), exeBytes.size());
+
+    return checksum.sha256_final();
 }
 
 void Signatures::SearchAll() {
@@ -96,12 +103,12 @@ bool Signatures::LoadDatabase() {
         return false;
     }
 
-    uint64_t checksum;
-    READ_BIN(checksum);
+    std::array<uint8_t, 32U> checksum{};
+    for (auto i = 0; i < 32U; i++) {
+        READ_BIN(checksum[i]);
+    }
 
-    uint64_t currentChecksum = GetCheckSum();
-
-    if (checksum != currentChecksum) {
+    if (std::array<uint8_t, 32U> currentChecksum = GetCheckSum(); checksum != currentChecksum) {
         MSML_LOG_ERROR("Checksum mismatch, searching for new signatures");
         return false;
     }
@@ -137,16 +144,18 @@ void Signatures::SaveDatabase() {
 
     std::ofstream outfile(SIGCACHE_DB_NAME, std::ios::out | std::ios::binary);
 
-    uint64_t checksum = GetCheckSum();
+    std::array<uint8_t, 32U> checksum = GetCheckSum();
     uint32_t count = signatures.size();
 
-    WRITE_BIN(checksum);
+    for (auto i = 0; i < 32U; i++) {
+        WRITE_BIN(checksum[i]);
+    }
     WRITE_BIN(count);
 
     for (const auto &sig: signatures) {
         std::string name = sig.first;
         uint32_t length = name.length();
-        uint32_t addr = reinterpret_cast<uint32_t>(sig.second->GetAddress());
+        auto addr = reinterpret_cast<uint32_t>(sig.second->GetAddress());
 
         WRITE_BIN(length);
         outfile.write(name.c_str(), length);

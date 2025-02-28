@@ -188,6 +188,7 @@ namespace EA {
             CREATE_MEMBER_CALLABLE_SIGNATURE(Open, DatabaseDirectoryFiles, void, "53 56 8b f1 80 7e 08 00 57 74 55", 0, IO::AccessFlags access_flags, IO::CD creation_disposition, bool, bool);
             CREATE_MEMBER_CALLABLE_SIGNATURE(AddFile, DatabaseDirectoryFiles, void*, "83 EC 68 8B 44 24 70 56 6A 02 50 8B F1 ?? ?? ?? ?? ?? 8B 8C 24 80 00 00 00 83 C4 08 52 50 51", 0, const Key*, const wchar_t*, const wchar_t*);
             CREATE_MEMBER_CALLABLE_SIGNATURE(Attach, DatabaseDirectoryFiles, void, "53 55 56 33 DB 38 5C 24 10 57 8B F1 ?? ?? ?? ?? ?? ?? 8B 46 5C 3B C3 8B 7C 24 18", 0, bool, void* pResourceMan, bool);
+            CREATE_MEMBER_CALLABLE_SIGNATURE(AddExtensionMapping, DatabaseDirectoryFiles, void, "83 EC 28 53 55 56 8B E9 57 8D 7D 68 68 34 8D E7 00 8B CF 89 7C 24 14 ?? ?? ?? ?? ?? 8B", 0, const wchar_t* extension, uint32_t type);
 
             CREATE_MEMBER_CALLABLE_SIGNATURE(UpdateRecordData, DatabaseDirectoryFiles, void,"83 ec 20 53 57 8b f9 33 db 38 5f 08 0f 84 a3 00 00 00 8b 47 10 50", 0, void* eastl_vector);
             CREATE_MEMBER_CALLABLE_SIGNATURE(UpdateRecordData2, DatabaseDirectoryFiles, void,"81 ec 44 08 00 00 a1 ?? ?? ?? ?? 33 c4 89 84 24 40 08 00 00 8b 84 24 4c 08 00 00 53 55 56 57", 0, const wchar_t* path, void* eastl_vector);

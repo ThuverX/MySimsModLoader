@@ -19,7 +19,7 @@ public:
     bool Search(const sigmatch::signature &sig, void*& address, uint32_t offset, bool first) const;
     void SearchAll();
     void Append(std::string name, SigSearchBase* sig);
-    uint64_t GetCheckSum();
+    std::array<uint8_t, 32U> GetCheckSum();
 
 private:
     Signatures();
