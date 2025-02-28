@@ -42,5 +42,5 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: build-output
+        name: windows-x86
         path: ${{ github.workspace }}/build/Release/dsound.dll
