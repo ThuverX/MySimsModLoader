@@ -7,6 +7,8 @@
 
 The MySims modloader is a new way to install and distribute mods. Instead of modifying game files, or even worse sharing installers. You can now simply download a mod and put it in your mods folder.
 
+For any questions visit the [MySims Clubhouse](https://discord.gg/2j9mU6zNJH) modding Discord channel.
+
 ## Supported versions
 
 |Version|Supported|
@@ -41,6 +43,7 @@ Making mods is currently limited to texture and lua based mods. For now take a l
 - ⚠️ WORK IN PROGRESS [Wiki](https://github.com/ThuverX/MySimsModLoader/wiki)
 - ⚠️ UNRELEASED [MySims Editor](https://github.com/ThuverX/MySimsEditor) to modify and create game files like worlds and models.
 - [Examples](examples).
+
 ## Building  
 1. **Clone the repository**:  
    ```sh
