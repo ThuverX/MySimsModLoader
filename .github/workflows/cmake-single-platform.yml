@@ -39,8 +39,15 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C ${{env.BUILD_TYPE}}
 
+
+    - name: Prepare Artifact
+      run: |
+        mkdir -p ${{ github.workspace }}/artifact/mods/basemod
+        cp -r ${{ github.workspace }}/basemod/* ${{ github.workspace }}/artifact/mods/basemod/
+        cp ${{ github.workspace }}/build/Release/dsound.dll ${{ github.workspace }}/artifact/
+
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: windows-x86
-        path: ${{ github.workspace }}/build/Release/dsound.dll
+        path: ${{ github.workspace }}/artifact/
