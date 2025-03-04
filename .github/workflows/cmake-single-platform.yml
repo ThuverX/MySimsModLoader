@@ -38,7 +38,7 @@ jobs:
     - name: Prepare Artifact
       run: |
         mkdir -p ${{ github.workspace }}/artifact/mods/basemod
-        cp -r ${{ github.workspace }}/mods/basemod/* ${{ github.workspace }}/artifact/mods/basemod/
+        cp -r ${{ github.workspace }}/basemod/* ${{ github.workspace }}/artifact/mods/basemod/
         cp ${{ github.workspace }}/build/Release/dsound.dll ${{ github.workspace }}/artifact/
 
     - name: Upload Artifacts
