@@ -15,6 +15,7 @@ public:
   bool Initialize();
   bool Enable();
 
+  void Uninitialize();
 };
 
 

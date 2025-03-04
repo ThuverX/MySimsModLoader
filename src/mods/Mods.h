@@ -15,8 +15,8 @@ public:
     void Find();
     std::vector<Mod*> GetModsSorted() const;
     std::vector<Mod*> mods;
-    void RunPostHooks(const std::string& modulePath) const;
-    void RunPreHooks(const std::string& modulePath) const;
+    void RunPostHooks() const;
+    void RunPreHooks() const;
 private:
     explicit Mods(std::string rootPath);
     std::string rootPath;

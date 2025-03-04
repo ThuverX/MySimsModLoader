@@ -77,9 +77,7 @@ void Assets::CreateDatabase(EA::ResourceMan::Manager::Manager *manager) {
             std::filesystem::path mod_path(mod->path);
             std::filesystem::path assets_path(mod->assetsPath);
 
-            auto *databaseStruct = static_cast<EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *>(
-                Rvl_Malloc(
-                    0x98, "ResourceHelper", 0, 0, nullptr, 0, 0x10));
+            auto *databaseStruct = static_cast<EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *>(malloc(0x98));
             auto *database = EA::ResourceMan::DatabaseDirectoryFiles::ctor(
                 databaseStruct, (mod_path / assets_path).wstring().c_str());
 

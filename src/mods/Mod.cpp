@@ -97,24 +97,18 @@ Mod * Mod::fromXML(const std::string path) {
 
     if (pugi::xml_node hooksNode = modNode.child("Hooks"); hooksNode != nullptr) {
         for (pugi::xml_node hook: hooksNode.children("Hook")) {
-            std::string key = hook.attribute("key").as_string();
             std::string hookPath = hook.text().as_string();
             std::string fullpath = std::filesystem::absolute(std::filesystem::path(path) / std::filesystem::path(hookPath)).string();
 
-            mod->postHooks.push_back({
-                key, fullpath
-            });
+            mod->postHooks.push_back(fullpath);
             hookCount++;
         }
 
         for (pugi::xml_node hook: hooksNode.children("Prehook")) {
-            std::string key = hook.attribute("key").as_string();
             std::string hookPath = hook.text().as_string();
             std::string fullpath = std::filesystem::absolute(std::filesystem::path(path) / std::filesystem::path(hookPath)).string();
 
-            mod->preHooks.push_back({
-                key, fullpath
-            });
+            mod->postHooks.push_back(fullpath);
             hookCount++;
         }
     }
@@ -124,18 +118,14 @@ Mod * Mod::fromXML(const std::string path) {
     return mod;
 }
 
-void Mod::RunPostHooks(const std::string& modulePath) const {
+void Mod::RunPostHooks() const {
     for (const auto& hook: postHooks) {
-        if (hook.nativeFile == modulePath || hook.nativeFile == "*") {
-            LuaHook::GetInstance().Require(hook.hookFile);
-        }
+        LuaHook::GetInstance().Require(hook);
     }
 }
 
-void Mod::RunPreHooks(const std::string& modulePath) const {
+void Mod::RunPreHooks() const {
     for (const auto& hook: preHooks) {
-        if (hook.nativeFile == modulePath || hook.nativeFile == "*") {
-            LuaHook::GetInstance().Require(hook.hookFile);
-        }
+        LuaHook::GetInstance().Require(hook);
     }
 }

@@ -17,7 +17,7 @@ class Signatures {
 public:
     static Signatures& GetInstance();
     bool Search(const sigmatch::signature &sig, void*& address, uint32_t offset, bool first) const;
-    void SearchAll();
+    bool SearchAll();
     void Append(std::string name, SigSearchBase* sig);
     std::array<uint8_t, 32U> GetCheckSum();
 

@@ -48,15 +48,15 @@ std::vector<Mod *> Mods::GetModsSorted() const {
     return sortedMods;
 }
 
-void Mods::RunPostHooks(const std::string& modulePath) const {
+void Mods::RunPostHooks() const {
     for (const auto& mod : GetModsSorted()) {
-        mod->RunPostHooks(modulePath);
+        mod->RunPostHooks();
     }
 }
 
-void Mods::RunPreHooks(const std::string& modulePath) const {
+void Mods::RunPreHooks() const {
     for (const auto& mod : GetModsSorted()) {
-        mod->RunPreHooks(modulePath);
+        mod->RunPreHooks();
     }
 }
 

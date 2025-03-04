@@ -8,12 +8,6 @@
 #include <string>
 #include <vector>
 
-
-struct ScriptHook {
-    std::string nativeFile;
-    std::string hookFile;
-};
-
 class Mod {
 public:
     std::string name;
@@ -24,11 +18,11 @@ public:
     int priority = 0;
 
     static Mod* fromXML(std::string path);
-    void RunPostHooks(const std::string& modulePath) const;
-    void RunPreHooks(const std::string& modulePath) const;
+    void RunPostHooks() const;
+    void RunPreHooks() const;
 
-    std::vector<ScriptHook> postHooks;
-    std::vector<ScriptHook> preHooks;
+    std::vector<std::string> postHooks;
+    std::vector<std::string> preHooks;
 };
 
 

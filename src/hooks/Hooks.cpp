@@ -37,3 +37,7 @@ bool Hooks::Enable() {
     }
     return true;
 }
+
+void Hooks::Uninitialize() {
+    MH_Uninitialize();
+}

@@ -66,12 +66,14 @@ std::array<uint8_t, 32U> Signatures::GetCheckSum() {
     return checksum.sha256_final();
 }
 
-void Signatures::SearchAll() {
+bool Signatures::SearchAll() {
     const auto start = std::chrono::high_resolution_clock::now();
 
     if (!LoadDatabase()) {
         for(const auto &val: signatures | std::views::values) {
-            val->Search();
+            if (!val->Search()) {
+                return false;
+            }
         }
     }
 
@@ -80,6 +82,8 @@ void Signatures::SearchAll() {
     MSML_LOG_INFO("Search time: %.3f milliseconds", elapsed_ms);
 
     SaveDatabase();
+
+    return true;
 }
 
 Signatures::Signatures() {

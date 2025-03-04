@@ -36,10 +36,7 @@ int lua_print(lua_State* L) {
 static int original_require_ref = LUA_REFNIL;
 
 int lua_require(lua_State* L) {
-    const char* module_name = luaL_checkstring(L, 1);
-
-    Mods::GetInstance().RunPreHooks(module_name);
-
+    Mods::GetInstance().RunPreHooks();
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, original_require_ref);
 
@@ -50,7 +47,7 @@ int lua_require(lua_State* L) {
         return 0;
     }
 
-    Mods::GetInstance().RunPostHooks(module_name);
+    Mods::GetInstance().RunPostHooks();
 
     return 1;
 }
@@ -78,13 +75,13 @@ void LuaHook::Require(const std::string& path) const {
     lua_State* L = GlobalState;
 
     if (const auto code = File::ReadAsString(path.c_str()); luaL_loadbuffer(L, code, strlen(code), "_chunk") != LUA_OK) {
-        MSML_LOG_ERROR("Lua Error: %s", lua_tostring(L, -1));
+        MSML_LOG_ERROR("Lua Error at %s: %s", path.c_str(), lua_tostring(L, -1));
         lua_pop(L, 1);
         return;
     }
 
     if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-        MSML_LOG_ERROR("Lua Error: %s", lua_tostring(L, -1));
+        MSML_LOG_ERROR("Lua Error at %s: %s", path.c_str(), lua_tostring(L, -1));
         lua_pop(L, 1);
     }
 }

@@ -17,6 +17,7 @@ public:
     static ModLoader& GetInstance();
     void Initialize();
     std::string modulePath;
+    void SoftCrash();
 private:
     ModLoader();
     Console console;

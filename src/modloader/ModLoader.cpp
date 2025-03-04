@@ -22,11 +22,30 @@ ModLoader & ModLoader::GetInstance() {
 void ModLoader::Initialize() {
     MSML_LOG_INFO("MSML Version: %s", MSML_VERSION);
     Hooks::GetInstance().Initialize();
-    Signatures::GetInstance().SearchAll();
+    if (!Signatures::GetInstance().SearchAll()) {
+        // If we failed to get any signatures, we quit
+#ifndef NDEBUG
+        MSML_LOG_ERROR("Failed to find addresses for some functions, did you write the signature correctly?");
+        Hooks::GetInstance().Uninitialize();
+
+        SoftCrash();
+#else
+        MSML_LOG_ERROR("Failed to find functions. Please report this on github and include your log file at");
+        MSML_LOG_ERROR("https://github.com/ThuverX/MySimsModLoader/issues\n");
+        MSML_LOG_INFO("NO MODS WILL BE LOADED");
+        Hooks::GetInstance().Uninitialize();
+        return;
+#endif
+    }
     Mods::GetInstance().Find();
     Assets::GetInstance().Install();
     LuaHook::GetInstance().Initialize();
     Hooks::GetInstance().Enable();
+}
+
+void ModLoader::SoftCrash() {
+    MessageBox(nullptr, "The application is going to crash, check the logs.", "ModLoader::SoftCrash", 1);
+    exit(0);
 }
 
 ModLoader::ModLoader() {
