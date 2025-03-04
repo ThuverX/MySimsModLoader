@@ -3,8 +3,7 @@ name: CMake on a single platform
 on:
   push:
     tags:
-      - "*"  # Runs when any tag is pushed
-    branches: [ "main" ]
+      - "**"
   pull_request:
     branches: [ "main" ]
 
