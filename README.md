@@ -42,8 +42,6 @@ Making mods is currently limited to texture and lua based mods. For now take a l
 - ⚠️ UNRELEASED [MySims Editor](https://github.com/ThuverX/MySimsEditor) to modify and create game files like worlds and models.
 - [Examples](examples).
 ## Building  
-
-### **Building the Modloader**  
 1. **Clone the repository**:  
    ```sh
    git clone --recurse-submodules https://github.com/ThuverX/MySimsModLoader.git
