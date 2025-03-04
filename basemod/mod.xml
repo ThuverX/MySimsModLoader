@@ -1,0 +1,10 @@
+<Mod priority="-1">
+    <Name>BaseMod</Name>
+    <Description>Basemod for MSML</Description>
+    <Author>ThuverX</Author>
+    <Assets path="assets/" />
+    <Hooks>
+        <Prehook>lua/hooks.lua</Prehook>
+        <Hook>lua/ea.lua</Hook>
+    </Hooks>
+</Mod>    
