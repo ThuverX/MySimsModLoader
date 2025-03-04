@@ -65,3 +65,12 @@ Making mods is currently limited to texture and lua based mods. For now take a l
 
 - This project could never have been done without the awesome work done for the [Spore ModAPI](https://github.com/emd4600/Spore-ModAPI).
 - Honorary mention to [MorcuTool](https://github.com/Olivercomet/MorcuTool) for getting me interested in making this modloader.
+
+## Contributors
+This project was made possible by:
+- [ThuverX](https://github.com/ThuverX)
+- [bottledlactose](https://github.com/bottledlactose)
+- [MikeyLORR](https://github.com/MikeyLORR)
+- [Lyralei1](https://github.com/Lyralei1)
+- [asteriddle](https://github.com/asteriddle)
+- [Click here for an updated list of contributors](https://github.com/ThuverX/MySimsModLoader/graphs/contributors)
