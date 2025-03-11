@@ -69,6 +69,63 @@ void Assets::RegisterReplacer(const std::string &path, const EA::ResourceMan::Ke
     replacers.emplace_back(asset);
 }
 
+void CreateDatabaseInternal(EA::ResourceMan::Manager::Manager *manager, const std::filesystem::path& path) {
+
+    auto *databaseStruct = static_cast<EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *>(malloc(0x98));
+    auto *database = EA::ResourceMan::DatabaseDirectoryFiles::ctor(
+        databaseStruct, path.wstring().c_str());
+
+    MSML_LOG_DEBUG("Creating database at %s", path.string().c_str());
+
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"model", 0x01661233);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"revomodel", 0xf9e50586);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"windowsmodel", 0xb359c791);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"rig", 0x8eaf13de);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"clip", 0x6b20c4f3);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"keynamemap", 0x0166038c);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"geometry", 0x015a1849);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"material", 0x01d0e75d);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"materialset", 0x02019972);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"oldspeedtree", 0x00b552ea);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"speedtree", 0x021d7e8c);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"dds", 0x00b2d882);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"compositetexture", 0x8e342417);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"simoutfit", 0x025ed6f4);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"levelxml", 0x585ee310);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"levelbin", 0x58969018);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"physics", 0xd5988020);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"luascript", 0x474999b4);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"lightsetxml", 0x50182640);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"lightsetbin", 0x50002128);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"xml", 0xdc37e964);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"footprintset", 0x2c81b60a);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"objectconstructionxml", 0xc876c85e);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"objectconstructionbin", 0xc08ec0ee);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"slotxml", 0x4045d294);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"slotbin", 0x487bf9e4);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"swm", 0xcf60795e);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"swarmbin", 0x9752e396);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"xmlbin", 0xe0d83029);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"cabxml", 0xa6856948);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"cabbin", 0xc644f440);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"big", 0x5bca8c06);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"bnk", 0xb6b5c271);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"lua", 0x474999b4);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"luo", 0x2b8e2411);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"lightboxxml", 0xb61215e9);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"lightboxbin", 0xd6215201);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"xmb", 0x1e1e6516);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"ttf", 0xfd72d418);
+    EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"ttc", 0x35ebb959);
+
+    EA::ResourceMan::Manager::RegisterDatabase(manager, true, database, 1000);
+    EA::ResourceMan::DatabaseDirectoryFiles::Init(database);
+    EA::ResourceMan::DatabaseDirectoryFiles::Open(database, IO::AccessFlags::Read, IO::CD::LoadAllFiles, false,
+                                                  false);
+
+    // Maybe list the keys out here? instead of doing the add file hook? This way we can also programmatically call upon files
+}
+
 #pragma optimize("", off)
 void Assets::CreateDatabase(EA::ResourceMan::Manager::Manager *manager) {
     if (Mods::GetInstance().mods.empty()) return;
@@ -77,59 +134,14 @@ void Assets::CreateDatabase(EA::ResourceMan::Manager::Manager *manager) {
             std::filesystem::path mod_path(mod->path);
             std::filesystem::path assets_path(mod->assetsPath);
 
-            auto *databaseStruct = static_cast<EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *>(malloc(0x98));
-            auto *database = EA::ResourceMan::DatabaseDirectoryFiles::ctor(
-                databaseStruct, (mod_path / assets_path).wstring().c_str());
+            CreateDatabaseInternal(manager, mod_path / assets_path);
 
-            MSML_LOG_DEBUG("Creating database at %s", (mod_path / assets_path).string().c_str());
+            for (const auto& entry : std::filesystem::directory_iterator(mod_path / assets_path)) {
+                if (std::filesystem::is_directory(entry.path())) {
+                    CreateDatabaseInternal(manager, entry.path());
+                }
+            }
 
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"model", 0x01661233);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"revomodel", 0xf9e50586);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"windowsmodel", 0xb359c791);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"rig", 0x8eaf13de);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"clip", 0x6b20c4f3);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"keynamemap", 0x0166038c);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"geometry", 0x015a1849);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"material", 0x01d0e75d);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"materialset", 0x02019972);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"oldspeedtree", 0x00b552ea);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"speedtree", 0x021d7e8c);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"dds", 0x00b2d882);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"compositetexture", 0x8e342417);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"simoutfit", 0x025ed6f4);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"levelxml", 0x585ee310);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"levelbin", 0x58969018);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"physics", 0xd5988020);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"luascript", 0x474999b4);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"lightsetxml", 0x50182640);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"lightsetbin", 0x50002128);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"xml", 0xdc37e964);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"footprintset", 0x2c81b60a);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"objectconstructionxml", 0xc876c85e);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"objectconstructionbin", 0xc08ec0ee);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"slotxml", 0x4045d294);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"slotbin", 0x487bf9e4);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"swm", 0xcf60795e);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"swarmbin", 0x9752e396);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"xmlbin", 0xe0d83029);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"cabxml", 0xa6856948);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"cabbin", 0xc644f440);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"big", 0x5bca8c06);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"bnk", 0xb6b5c271);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"lua", 0x474999b4);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"luo", 0x2b8e2411);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"lightboxxml", 0xb61215e9);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"lightboxbin", 0xd6215201);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"xmb", 0x1e1e6516);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"ttf", 0xfd72d418);
-            EA::ResourceMan::DatabaseDirectoryFiles::AddExtensionMapping(database, L"ttc", 0x35ebb959);
-
-            EA::ResourceMan::Manager::RegisterDatabase(manager, true, database, 1000);
-            EA::ResourceMan::DatabaseDirectoryFiles::Init(database);
-            EA::ResourceMan::DatabaseDirectoryFiles::Open(database, IO::AccessFlags::Read, IO::CD::LoadAllFiles, false,
-                                                          false);
-
-            // Maybe list the keys out here? instead of doing the add file hook? This way we can also programmatically call upon files
         }
     }
 }
