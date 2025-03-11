@@ -40,7 +40,7 @@ To uninstall simply remove that folder from the `mods`.
 ## Making mods
 
 Making mods is currently limited to texture and lua based mods. For now take a look at these places:
-- ⚠️ WORK IN PROGRESS [Wiki](https://github.com/ThuverX/MySimsModLoader/wiki)
+- ⚠️ WORK IN PROGRESS [Wiki](https://thuverx.github.io/mysims-research/Modding/index.html)
 - ⚠️ UNRELEASED [MySims Editor](https://github.com/ThuverX/MySimsEditor) to modify and create game files like worlds and models.
 - [Examples](examples).
 
