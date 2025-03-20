@@ -10,8 +10,13 @@
 #include <cstdarg>
 #include <string>
 
-#include "../modloader/ModLoader.h"
-
+// Currently, the logger is depending on the ModLoader class. This is causing trouble
+// with unit tests, since it would require the ModLoader to be included along with
+// dependencies such as sigmatch, which isn't ideal for unit tests...
+// There should be a better solution for this in the future.
+#ifndef UNIT_TESTING
+#   include "../modloader/ModLoader.h"
+#endif // UNIT_TESTING
 
 void Logger::Log(const LogLevel level, bool cout, const char *file, int line, const char *format, ...) {
     const std::time_t now = std::time(nullptr);
@@ -24,6 +29,7 @@ void Logger::Log(const LogLevel level, bool cout, const char *file, int line, co
     char timeBuffer[20];
     std::strftime(timeBuffer, sizeof(timeBuffer), "%Y-%m-%d %H:%M:%S", &timeInfo);
 
+#ifndef UNIT_TESTING
     char dateBuffer[11];
     std::strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d", &timeInfo);
     const std::string logFileName = ModLoader::GetInstance().modulePath + std::string("log_") + dateBuffer + ".txt";
@@ -33,6 +39,7 @@ void Logger::Log(const LogLevel level, bool cout, const char *file, int line, co
         std::cerr << "Failed to open log file: " << logFileName << std::endl;
         return;
     }
+#endif // UNIT_TESTING
 
     char logMessage[1024];
     va_list args;
@@ -42,9 +49,13 @@ void Logger::Log(const LogLevel level, bool cout, const char *file, int line, co
 
     const std::string logEntry = "[" + std::string(timeBuffer) + "] [" + LogLevelToString(level) + "] (" + file + ":" + std::to_string(line) + ") " + logMessage + "\n";
 
+#ifndef UNIT_TESTING
     if (cout)
         std::cout << logEntry;
     logFile << logEntry;
+#else
+    std::cout << logEntry;
+#endif // UNIT_TESTING
 }
 
 const char * Logger::LogLevelToString(LogLevel level) {
