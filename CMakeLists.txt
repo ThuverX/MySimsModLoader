@@ -56,6 +56,7 @@ if(CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
 
 else ()
     list(APPEND SOURCES
+            src/platform/w32/dsound.def
             src/platform/w32/dsound.h)
 endif ()
 

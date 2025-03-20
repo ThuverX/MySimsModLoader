@@ -5,115 +5,36 @@
 
 #pragma pack(1)
 
-FARPROC p[12] = {nullptr};
+// taken from https://gitlab.com/znixian/payday2-superblt/-/blob/master/platforms/w32/loader/wsock.cpp?ref_type=heads
+
+#pragma region ALLFUNC(FUNC)
+
+#define ALLFUNC(FUNC) \
+	FUNC(0,DirectSoundCaptureCreate8,12) \
+	FUNC(1,DirectSoundCreate8,11) \
+	FUNC(2,DirectSoundFullDuplexCreate,10) \
+	FUNC(3,GetDeviceID,9) \
+	FUNC(4,DirectSoundCaptureEnumerateW,8) \
+	FUNC(5,DirectSoundCaptureEnumerateA,7) \
+	FUNC(6,DirectSoundCaptureCreate,6) \
+	FUNC(7,DirectSoundEnumerateW,3) \
+	FUNC(8,DirectSoundEnumerateA,2) \
+	FUNC(9,DirectSoundCreate,1) \
+
+#define ALLFUNC_COUNT 10
+
+#pragma endregion
+
+FARPROC p[ALLFUNC_COUNT] = {nullptr};
 
 void exports(HMODULE hL){
-    p[0] = GetProcAddress(hL, "DirectSoundCreate");
-    p[1] = GetProcAddress(hL, "DirectSoundEnumerateA");
-    p[2] = GetProcAddress(hL, "DirectSoundEnumerateW");
-    p[3] = GetProcAddress(hL, "DllCanUnloadNow");
-    p[4] = GetProcAddress(hL, "DllGetClassObject");
-    p[5] = GetProcAddress(hL, "DirectSoundCaptureCreate");
-    p[6] = GetProcAddress(hL, "DirectSoundCaptureEnumerateA");
-    p[7] = GetProcAddress(hL, "DirectSoundCaptureEnumerateW");
-    p[8] = GetProcAddress(hL, "GetDeviceID");
-    p[9] = GetProcAddress(hL, "DirectSoundFullDuplexCreate");
-    p[11] = GetProcAddress(hL, "DirectSoundCaptureCreate8");
-    p[10] = GetProcAddress(hL, "DirectSoundCreate8");
+#define REGISTER(num, name, ordinal) p[num] = GetProcAddress(hL, #name);
+	ALLFUNC(REGISTER);
+#undef REGISTER
 }
 
-extern "C" __declspec(dllexport) __declspec(naked) void __stdcall __E__0__()
-{
-	__asm
-	{
-		jmp p[0*4];
-	}
-}
+#define DEF_STUB(num, name, ordinal) \
+extern "C" __declspec(naked) void __stdcall _DSOUND_EXPORT_##name(){__asm {jmp p[num * 4]}};
 
-extern "C" __declspec(dllexport) __declspec(naked) void __stdcall __E__1__()
-{
-	__asm
-	{
-		jmp p[1*4];
-	}
-}
-
-extern "C" __declspec(dllexport) __declspec(naked) void __stdcall __E__2__()
-{
-	__asm
-	{
-		jmp p[2*4];
-	}
-}
-
-extern "C" __declspec(dllexport) __declspec(naked) void __stdcall __E__3__()
-{
-	__asm
-	{
-		jmp p[3*4];
-	}
-}
-
-extern "C" __declspec(dllexport) __declspec(naked) void __stdcall __E__4__()
-{
-	__asm
-	{
-		jmp p[4*4];
-	}
-}
-
-extern "C" __declspec(dllexport) __declspec(naked) void __stdcall __E__5__()
-{
-	__asm
-	{
-		jmp p[5*4];
-	}
-}
-
-extern "C" __declspec(dllexport) __declspec(naked) void __stdcall __E__6__()
-{
-	__asm
-	{
-		jmp p[6*4];
-	}
-}
-
-extern "C" __declspec(dllexport) __declspec(naked) void __stdcall __E__7__()
-{
-	__asm
-	{
-		jmp p[7*4];
-	}
-}
-
-extern "C" __declspec(dllexport) __declspec(naked) void __stdcall __E__8__()
-{
-	__asm
-	{
-		jmp p[8*4];
-	}
-}
-
-extern "C" __declspec(dllexport) __declspec(naked) void __stdcall __E__9__()
-{
-	__asm
-	{
-		jmp p[9*4];
-	}
-}
-
-extern "C" __declspec(dllexport) __declspec(naked) void __stdcall __E__10__()
-{
-	__asm
-	{
-		jmp p[10*4];
-	}
-}
-
-extern "C" __declspec(dllexport) __declspec(naked) void __stdcall __E__11__()
-{
-	__asm
-	{
-		jmp p[11*4];
-	}
-}
+ALLFUNC(DEF_STUB)
+#undef DEF_STUB
