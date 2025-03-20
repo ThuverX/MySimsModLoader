@@ -13,9 +13,28 @@
 #include "../assets/Assets.h"
 #include "../hooks/LuaHook.h"
 #include "../signatures/Signatures.h"
+#include "../tweakers/SwarmTweaker/SwarmTweaker.h"
 #include "../util/Logger.h"
 
-Mod * Mod::fromXML(const std::string path) {
+void Mod::TweakersFromXML(const pugi::xml_node modNode, Mod* mod) {
+    pugi::xml_node tweakersNode = modNode.child("Tweakers");
+    if (!tweakersNode) return;
+
+    for (pugi::xml_node tweakerNode: tweakersNode.children()) {
+        const auto name = tweakerNode.name();
+
+        if (strcmp(name, "SwarmTweaker") == 0) {
+            const auto swarmTweaker = new SwarmTweaker;
+            swarmTweaker->path = tweakerNode.attribute("path").as_string();
+
+            mod->tweakers.emplace_back(swarmTweaker);
+
+            MSML_LOG_INFO("%s registered a SwarmTweaker", mod->name.c_str());
+        }
+    }
+}
+
+Mod * Mod::fromXML(const std::string &path) {
     const auto mod = new Mod;
 
     pugi::xml_document doc;
@@ -115,6 +134,8 @@ Mod * Mod::fromXML(const std::string path) {
 
     MSML_LOG_INFO("%s registered %d hook(s)", mod->name.c_str(), hookCount);
 
+    TweakersFromXML(modNode, mod);
+
     return mod;
 }
 
@@ -127,5 +148,11 @@ void Mod::RunPostHooks() const {
 void Mod::RunPreHooks() const {
     for (const auto& hook: preHooks) {
         LuaHook::GetInstance().Require(hook);
+    }
+}
+
+void Mod::ApplyTweaks(const EA::ResourceMan::Key& key) const {
+    for (const auto & tweaker : tweakers) {
+        tweaker->Apply(key);
     }
 }

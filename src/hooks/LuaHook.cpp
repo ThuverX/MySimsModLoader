@@ -69,6 +69,8 @@ void __fastcall LuaScriptingSystemStartupHooked(EA::ScriptOs::LuaScriptingSystem
     lua_setglobal(L, "CodeRequire");
 
     LuaHook::GetInstance().GlobalState = L;
+
+    MSML_LOG_INFO("Lua hooked successfully!");
 }
 
 void LuaHook::Require(const std::string& path) const {
@@ -86,6 +88,6 @@ void LuaHook::Require(const std::string& path) const {
     }
 }
 
-void LuaHook::Initialize() {
+void LuaHook::Install() {
     EA::ScriptOs::LuaScriptingSystem::StartupHook.Install(&LuaScriptingSystemStartupHooked);
 }

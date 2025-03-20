@@ -8,12 +8,13 @@
 #include <vector>
 
 #include "Mod.h"
+#include "../tweakers/Tweaker.h"
 
 class Mods {
 public:
     static Mods& GetInstance();
     void Find();
-    std::vector<Mod*> GetModsSorted() const;
+    [[nodiscard]] std::vector<Mod*> GetModsSorted() const;
     std::vector<Mod*> mods;
     void RunPostHooks() const;
     void RunPreHooks() const;

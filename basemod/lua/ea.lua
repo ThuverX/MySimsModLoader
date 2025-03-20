@@ -12,7 +12,38 @@ if EA then
         [251] = "NONE"
     }
 
-    function EA:LogLevel(class, level, ... )
-        print("[" .. levels[level] .. "]", unpack(arg))
+    function EA:ShouldOutput(class, level)
+        return true
+    end
+
+    function LogLevel(class, level, ... )
+        if level ~= 25 then
+            print("[" .. class .. " " .. levels[level] .. "]", unpack(arg))
+        end
+    end
+
+    function EA:Log(class, ... )
+        LogLevel(class, self._defaultLogLevel, unpack(arg))
+    end
+
+    function EA:Trace( class, ... )
+        LogLevel(class, self._defaultLogLevel, unpack(arg))
+    end
+
+    function EA:LogI( class, ... )
+        LogLevel(class, EA.kLevelInfo, unpack(arg))
+    end
+
+    function EA:LogD( class, ... )
+        LogLevel(class, EA.kLevelDebug, unpack(arg))
+    end
+
+
+    function EA:LogW( class, ... )
+        LogLevel(class, EA.kLevelWarn, unpack(arg))
+    end
+
+    function EA:LogE( class,... )
+        LogLevel(class, EA.kLevelError, unpack(arg))
     end
 end

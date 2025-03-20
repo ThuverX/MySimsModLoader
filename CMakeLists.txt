@@ -11,8 +11,8 @@ add_subdirectory(libs/minhook)
 add_subdirectory(libs/sigmatch)
 add_subdirectory(libs/pugixml)
 
-add_library(MySimsModLoader SHARED src/Main.cpp
-        src/dsound.h
+set(SOURCES
+        src/Main.cpp
         src/modloader/ModLoader.cpp
         src/modloader/ModLoader.h
         src/util/Logger.cpp
@@ -40,7 +40,26 @@ add_library(MySimsModLoader SHARED src/Main.cpp
         src/hooks/LuaHook.cpp
         src/hooks/LuaHook.h
         src/include/hash_sha256.h
+        src/hashes/Hashes.cpp
+        src/hashes/Hashes.h
+        src/tweakers/SwarmTweaker/SwarmTweaker.cpp
+        src/tweakers/SwarmTweaker/SwarmTweaker.h
+        src/tweakers/Tweaker.cpp
+        src/tweakers/Tweaker.h
+        src/Common.h
 )
+
+if(CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
+    list(APPEND SOURCES
+            src/platform/w64/wsock.def
+            src/platform/w64/wsock.h)
+
+else ()
+    list(APPEND SOURCES
+            src/platform/w32/dsound.h)
+endif ()
+
+add_library(MySimsModLoader SHARED ${SOURCES})
 
 add_custom_target(version
         ${CMAKE_COMMAND} -D SRC=${CMAKE_SOURCE_DIR}/src/Version.h.in
@@ -58,3 +77,7 @@ target_link_libraries(MySimsModLoader PRIVATE minhook)
 target_link_libraries(MySimsModLoader PRIVATE pugixml-static)
 
 set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "dsound")
+
+if(CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
+    set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "WSOCK32")
+endif()

@@ -7,15 +7,16 @@
 #include <iostream>
 #include <utility>
 
-#include "../modloader/ModLoader.h"
+#include "../hashes/Hashes.h"
 #include "../mods/Mods.h"
+#include "../Common.h"
 
 Assets &Assets::GetInstance() {
     static Assets instance;
     return instance;
 }
 
-void * __fastcall AddFileHooked(EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *this_ptr, void *_ECX,
+void * __fastcall AddFileHooked(EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *this_ptr CATCH_ECX,
                                 const EA::ResourceMan::Key *key, const wchar_t *path,
                                 const wchar_t *name) {
     for (const auto asset: Assets::GetInstance().GetReplacersByPath(path)) {
@@ -26,10 +27,12 @@ void * __fastcall AddFileHooked(EA::ResourceMan::DatabaseDirectoryFiles::Databas
         };
     }
 
+    // MSML_LOG_DEBUG_HIDDEN("Loading %s", Hashes::ToHumanReadable(*key).c_str());
+
     return EA::ResourceMan::DatabaseDirectoryFiles::AddFileHook.Original(this_ptr, key, path, name);
 }
 
-void * __fastcall GetResourceSystemResourceHooked(Revo::ResourceSystem::ResourceSystem *this_ptr, void *_ECX,
+void * __fastcall GetResourceSystemResourceHooked(Revo::ResourceSystem::ResourceSystem *this_ptr CATCH_ECX,
                                                   const EA::ResourceMan::Key &key,
                                                   void **outResource, void *b, void *database, void *factory,
                                                   const EA::ResourceMan::Key *key2, uint32_t f, uint32_t g, uint32_t h,
@@ -47,11 +50,34 @@ void * __fastcall GetResourceSystemResourceHooked(Revo::ResourceSystem::Resource
     // TODO: if a file is not found, respond with a debug version of the file. So the game doesn't crash
     // mostly needed for models, materials and textures
 
-    return Revo::ResourceSystem::GetResourceHook.Original(this_ptr, modKey, outResource, b, database, factory, key2, f,
+    const auto ret = Revo::ResourceSystem::GetResourceHook.Original(this_ptr, modKey, outResource, b, database, factory, key2, f,
                                                           g, h, i);
+    // if (ret != nullptr) {
+    //     MSML_LOG_DEBUG_HIDDEN("Got: %s", Hashes::ToHumanReadable(modKey).c_str());
+    // }
+
+    return ret;
 }
 
-void __fastcall ResourceSystemInitHooked(Revo::ResourceSystem::ResourceSystem *this_ptr, void *_ECX) {
+// uint32_t __fastcall PFRecordReadRead(EA::ResourceMan::PFRecordRead::PFRecordRead* this_ptr, void* _ECX, void* data, uint32_t size) {
+//     auto ret = EA::ResourceMan::PFRecordRead::ReadHook.Original(this_ptr, data, size);
+//     auto* basePtr = reinterpret_cast<EA::ResourceMan::PFRecordBase::PFRecordBase *>(reinterpret_cast<uint32_t>(this_ptr) - 48);
+//
+//     MSML_LOG_DEBUG_HIDDEN("Reading %s", Hashes::ToHumanReadable(basePtr->key).c_str());
+//
+//     // TODO: How do we change this data?...
+//     //
+//     // if (basePtr->key.instance == SwarmTweaker::RootSwarmKey.instance &&
+//     //         basePtr->key.group == SwarmTweaker::RootSwarmKey.group &&
+//     //         basePtr->key.type == SwarmTweaker::RootSwarmKey.type) {
+//     //     const auto strData = std::string(static_cast<char*>(data), size);
+//     //     MSML_LOG_DEBUG("%s", strData.c_str());
+//     // }
+//
+//     return ret;
+// }
+
+void __fastcall ResourceSystemInitHooked(Revo::ResourceSystem::ResourceSystem *this_ptr CATCH_ECX) {
     Assets::GetInstance().CreateDatabase(reinterpret_cast<EA::ResourceMan::Manager::Manager *>(this_ptr));
     Revo::ResourceSystem::InitHook.Original(this_ptr);
 }
@@ -60,6 +86,9 @@ void Assets::Install() {
     EA::ResourceMan::DatabaseDirectoryFiles::AddFileHook.Install(&AddFileHooked);
     Revo::ResourceSystem::GetResourceHook.Install(&GetResourceSystemResourceHooked);
     Revo::ResourceSystem::InitHook.Install(&ResourceSystemInitHooked);
+
+    // EA::ResourceMan::PFRecordRead::ReadHook.Install(&PFRecordReadRead);
+    // Revo::SwarmResourceFactory::CreateResourceHook.Install(&SwarmResourceFactoryCreateResource);
 }
 
 void Assets::RegisterReplacer(const std::string &path, const EA::ResourceMan::Key *key) {
@@ -69,9 +98,15 @@ void Assets::RegisterReplacer(const std::string &path, const EA::ResourceMan::Ke
     replacers.emplace_back(asset);
 }
 
+#ifdef _WIN64
+constexpr size_t DATABASE_DIRECTORY_FILES_SIZE = 0xe8;
+#else
+constexpr size_t DATABASE_DIRECTORY_FILES_SIZE = 0x98;
+#endif
+
 void CreateDatabaseInternal(EA::ResourceMan::Manager::Manager *manager, const std::filesystem::path& path) {
 
-    auto *databaseStruct = static_cast<EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *>(malloc(0x98));
+    auto *databaseStruct = static_cast<EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *>(malloc(DATABASE_DIRECTORY_FILES_SIZE));
     auto *database = EA::ResourceMan::DatabaseDirectoryFiles::ctor(
         databaseStruct, path.wstring().c_str());
 
@@ -120,7 +155,7 @@ void CreateDatabaseInternal(EA::ResourceMan::Manager::Manager *manager, const st
 
     EA::ResourceMan::Manager::RegisterDatabase(manager, true, database, 1000);
     EA::ResourceMan::DatabaseDirectoryFiles::Init(database);
-    EA::ResourceMan::DatabaseDirectoryFiles::Open(database, IO::AccessFlags::Read, IO::CD::LoadAllFiles, false,
+    EA::ResourceMan::DatabaseDirectoryFiles::Open(database, EA::IO::AccessFlags::Read, EA::IO::CD::LoadAllFiles, false,
                                                   false);
 
     // Maybe list the keys out here? instead of doing the add file hook? This way we can also programmatically call upon files

@@ -2,8 +2,10 @@
 cmake
 old
 run
-cmake-build-debug-visual-studio
-cmake-build-release-visual-studio
+cmake-build-debug64-msvc
+cmake-build-release64-msvc
+cmake-build-debug32-msvc
+cmake-build-release32-msvc
 src/Version.h
 .idea
 build/

@@ -5,8 +5,11 @@
 #ifndef MOD_H
 #define MOD_H
 
+#include <pugixml.hpp>
 #include <string>
 #include <vector>
+
+#include "../tweakers/Tweaker.h"
 
 class Mod {
 public:
@@ -17,12 +20,18 @@ public:
     std::string assetsPath;
     int priority = 0;
 
-    static Mod* fromXML(std::string path);
+    std::vector<Tweaker*> tweakers;
+
+    static Mod* fromXML(const std::string &path);
     void RunPostHooks() const;
     void RunPreHooks() const;
 
+    void ApplyTweaks(const EA::ResourceMan::Key &key) const;
+
     std::vector<std::string> postHooks;
     std::vector<std::string> preHooks;
+private:
+    static void TweakersFromXML(pugi::xml_node modNode, Mod *mod);
 };
 
 

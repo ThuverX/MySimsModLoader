@@ -17,3 +17,12 @@ DDFFileType Asset::GetFileType(const std::string& extension) {
     }
     return UNKNOWN;
 }
+
+std::string Asset::GetTypeName(const uint32_t value) {
+    for (const auto& [name, enumValue] : stringToEnum) {
+        if (static_cast<uint32_t>(enumValue) == value) {
+            return name;
+        }
+    }
+    return "unknown";
+}

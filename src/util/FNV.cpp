@@ -15,7 +15,7 @@ uint64_t FNV::FromString64(const char *str) {
 
     for (int i = 0; str[i] != '\0'; i++) {
         hash *= FNV_PRIME_64;
-        hash ^= str[i];
+        hash ^= std::tolower(str[i]);
     }
     return hash;
 }
@@ -25,7 +25,7 @@ uint32_t FNV::FromString32(const char *str) {
 
     for (int i = 0; str[i] != '\0'; i++) {
         hash *= FNV_PRIME_32;
-        hash ^= str[i];
+        hash ^= std::tolower(str[i]);
     }
 
     return hash;

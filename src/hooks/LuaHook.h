@@ -12,7 +12,7 @@ class LuaHook {
 public:
     static LuaHook &GetInstance();
     void Require(const std::string& path) const;
-    void Initialize();
+    void Install();
     lua_State* GlobalState;
 };
 

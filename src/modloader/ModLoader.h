@@ -23,6 +23,4 @@ private:
     Console console;
 };
 
-
-
 #endif //MODLOADER_H

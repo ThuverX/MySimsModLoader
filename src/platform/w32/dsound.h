@@ -7,7 +7,7 @@
 
 FARPROC p[12] = {nullptr};
 
-void dsound(HMODULE hL){
+void exports(HMODULE hL){
     p[0] = GetProcAddress(hL, "DirectSoundCreate");
     p[1] = GetProcAddress(hL, "DirectSoundEnumerateA");
     p[2] = GetProcAddress(hL, "DirectSoundEnumerateW");

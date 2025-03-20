@@ -43,6 +43,9 @@ private:
     Logger::Log(Logger::LogLevel::DEBUG, false, __FILE__, __LINE__, format, ##__VA_ARGS__)
 #endif
 
+#define MSML_LOG_DEBUG_HIDDEN(format, ...) \
+    Logger::Log(Logger::LogLevel::DEBUG, false, __FILE__, __LINE__, format, ##__VA_ARGS__)
+
 #define MSML_LOG_LUA(format, ...) \
     MSML_LOGLEVEL(LUA, format, ##__VA_ARGS__)
 

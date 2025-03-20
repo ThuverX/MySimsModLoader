@@ -107,6 +107,7 @@ public:
     std::filesystem::path path;
 
     static DDFFileType GetFileType(const std::string &extension);
+    static std::string GetTypeName(uint32_t value);
 };
 
 

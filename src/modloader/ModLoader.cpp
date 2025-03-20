@@ -10,6 +10,7 @@
 #include "../mods/Mods.h"
 
 #include "../Version.h"
+#include "../hashes/Hashes.h"
 #include "../hooks/LuaHook.h"
 #include "../signatures/sigdef.h"
 
@@ -37,9 +38,10 @@ void ModLoader::Initialize() {
         return;
 #endif
     }
+    Hashes::GetInstance().Load("./hashes.bin");
     Mods::GetInstance().Find();
     Assets::GetInstance().Install();
-    LuaHook::GetInstance().Initialize();
+    LuaHook::GetInstance().Install();
     Hooks::GetInstance().Enable();
 }
 

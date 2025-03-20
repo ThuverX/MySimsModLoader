@@ -128,7 +128,7 @@ bool Signatures::LoadDatabase() {
 
         auto name_str = std::string(name, length);
 
-        uint32_t addr;
+        uintptr_t addr;
         READ_BIN(addr);
 
         if (signatures.contains(name_str)) {
@@ -149,7 +149,7 @@ void Signatures::SaveDatabase() {
     std::ofstream outfile(SIGCACHE_DB_NAME, std::ios::out | std::ios::binary);
 
     std::array<uint8_t, 32U> checksum = GetCheckSum();
-    uint32_t count = signatures.size();
+    size_t count = signatures.size();
 
     for (auto i = 0; i < 32U; i++) {
         WRITE_BIN(checksum[i]);
@@ -158,8 +158,8 @@ void Signatures::SaveDatabase() {
 
     for (const auto &sig: signatures) {
         std::string name = sig.first;
-        uint32_t length = name.length();
-        auto addr = reinterpret_cast<uint32_t>(sig.second->GetAddress());
+        size_t length = name.length();
+        auto addr = reinterpret_cast<uintptr_t>(sig.second->GetAddress());
 
         WRITE_BIN(length);
         outfile.write(name.c_str(), length);

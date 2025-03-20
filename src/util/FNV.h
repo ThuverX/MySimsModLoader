@@ -5,6 +5,7 @@
 #ifndef FNV_H
 #define FNV_H
 #include <cstdint>
+#include <string>
 
 
 class FNV {
