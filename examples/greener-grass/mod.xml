@@ -5,9 +5,4 @@
     <Hooks>
         <Hook>lua/playerhook.lua</Hook>
     </Hooks>
-    <Assets path="assets/">
-        <Replacer key="0x00000000!0x00000000EE93FAC8" type="dds">assets/grass.dds</Replacer>
-        <Replacer key="0x00000000!0x0000000061805F86" type="dds">assets/grass.dds</Replacer>
-        <Replacer key="0x00000000!0x000000000B25E40B" type="dds">assets/flowers.dds</Replacer>
-    </Assets>
 </Mod>

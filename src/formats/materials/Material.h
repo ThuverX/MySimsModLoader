@@ -4,14 +4,13 @@
 #include <vector>
 #include <cstdint>
 
-#include "../ResourceKey.h"
 #include "MaterialParameter.h"
-
-// TODO: Add shader IDs
+#include "../../EA/io/IStream.h"
+#include "../../EA/ResourceMan/ResourceKey.h"
 
 struct Material {
     std::vector<MaterialParameter> parameters;
-    ResourceKey self;
+    EA::ResourceMan::Key self;
     uint32_t totalSize;
     uint32_t headerSize;
     uint32_t mtrlSize;
@@ -19,12 +18,10 @@ struct Material {
 
     uint32_t numParams;
 
-    uint32_t materialHash;
-    uint32_t shaderHash;
+    uint32_t materialId;
+    uint32_t shaderId;
 
-    // TODO: add an easy way to fetch the shader name
-
-    static void Read(Material &instance, void *data, size_t size);
+    static void Read(Material &instance, EA::IO::IStream* stream);
 };
 
 #endif // MATERIAL_H

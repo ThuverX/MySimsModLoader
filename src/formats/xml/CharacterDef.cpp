@@ -1,7 +1,7 @@
 #include "CharacterDef.h"
 
 #include "pugixml.hpp"
-#include "../../util/Logger.h"
+#include "../../core/system/Logger.h"
 
 bool CharacterDef::Read(CharacterDef &instance, void *data, size_t size) {
 
