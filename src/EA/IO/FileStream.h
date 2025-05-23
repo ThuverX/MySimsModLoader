@@ -42,7 +42,7 @@ namespace EA::IO {
 
         bool Flush() override;
 
-        int Write(const void *pData, size_t nSize) override;
+        size_t Write(const void *pData, size_t nSize) override;
     };
 }
 

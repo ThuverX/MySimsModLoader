@@ -8,8 +8,19 @@
 
 
 // Allows for easily adding new clothing to the game, wip
+
+struct OutfitEntry {
+    std::string context;
+    std::string type;
+    std::string design_mode;
+    std::string gender;
+    std::string category;
+    std::string model;
+};
+
 class ClothingTweaker final : public Tweaker {
 public:
+    std::vector<OutfitEntry*> outfitsToAdd;
     bool OnLoad(msml::core::resource::CustomRecord &asset) override;
     bool OnRegister(msml::core::assets::Asset &asset) override;
 };

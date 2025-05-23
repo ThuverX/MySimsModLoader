@@ -5,6 +5,7 @@
 #ifndef ISTREAM_H
 #define ISTREAM_H
 #include <cstdint>
+#include <vector>
 
 #include "Constants.h"
 
@@ -123,7 +124,16 @@ namespace EA::IO {
         /// Upon error, the stream pointer is at the position it was upon the error occurrence.
         /// @param pData
         /// @param nSize
-        virtual int Write(const void *pData, size_t nSize) = 0;
+        virtual size_t Write(const void *pData, size_t nSize) = 0;
+
+        // Only use when reading the full data at once is necessary, otherwise use Read
+        std::vector<uint8_t> AsBuffer() {
+            std::vector<uint8_t> buffer;
+            SetPosition(0);
+            buffer.resize(GetSize());
+            Read(buffer.data(), buffer.size());
+            return buffer;
+        }
     };
 }
 
@@ -133,16 +143,48 @@ namespace EA::IO {
 #define WRITE(stream_name, variable) \
     stream_name->Write(&variable, sizeof(variable))
 
+#define WRITE_VALUE(stream_name, type, value)      \
+    do {                                           \
+        auto _tmp = static_cast<type>(value);      \
+        stream_name->Write(&_tmp, sizeof(_tmp));   \
+    } while (0)
+
+#define WRITE_STRING(stream_name, str)                         \
+    do {                                                       \
+        stream_name->Write((str), sizeof(char) * strlen(str)); \
+    } while (0)
+
 // #define READ_CSTRING(stream_name, variable) \
+
+#define WRITE_LENGTH(stream_name, len)                      \
+    do {                                                    \
+        size_t __write_len = (len);                         \
+        uint8_t *__zero_buf = new uint8_t[__write_len]();   \
+        stream_name->Write(__zero_buf, __write_len);        \
+        delete[] __zero_buf;                                \
+    } while (0)
 
 
 #define SKIP(stream_name, len) \
-    stream_name->SetPosition(len)
+    stream_name->SetPosition(len, ::EA::IO::PositionType::Current)
 
 #define SEEK(stream_name, pos, type) \
     stream_name->SetPosition(pos, type)
 
 #define OFFSET(stream_name) \
-    stream_name->GetPosition()
+    stream_name->GetPosition(::EA::IO::PositionType::Begin)
+
+#define CREATE_HOLE(stream_name, name, type)            \
+    using name##__type = type;                          \
+    size_t name##__offset = stream_name->GetPosition(); \
+    SKIP(stream_name, sizeof(type))
+
+#define FILL_HOLE(stream_name, name, value)                                 \
+    do {                                                                    \
+        size_t before__##name = OFFSET(stream_name);                        \
+        SEEK(stream_name, name##__offset, ::EA::IO::PositionType::Begin);   \
+        WRITE_VALUE(stream_name, name##__type, value);                      \
+        SEEK(stream_name, before__##name, ::EA::IO::PositionType::Begin);   \
+    } while (0)
 
 #endif //ISTREAM_H

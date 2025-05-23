@@ -2,7 +2,6 @@
 #define MATERIAL_H
 
 #include <vector>
-#include <cstdint>
 
 #include "MaterialParameter.h"
 #include "../../EA/io/IStream.h"
@@ -22,6 +21,7 @@ struct Material {
     uint32_t shaderId;
 
     static void Read(Material &instance, EA::IO::IStream* stream);
+    void Write(EA::IO::IStream* stream);
 };
 
 #endif // MATERIAL_H

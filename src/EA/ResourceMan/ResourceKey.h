@@ -18,6 +18,7 @@ namespace EA::ResourceMan {
         }
 
         static void Read(Key &instance, IO::IStream* stream);
+        void Write(IO::IStream* stream) const;
     };
 }
 

@@ -103,13 +103,23 @@ namespace msml::core::assets {
         {"fx", FX}
     };
 
+    enum AssetType : uint32_t {
+        PATH,
+        BUFFER,
+        REDIRECT
+    };
+
     class Asset {
     public:
         EA::ResourceMan::Key key;
         std::filesystem::path path;
+        EA::ResourceMan::Key key_redirect = {};
+        std::vector<uint8_t> buffer = {};
+        AssetType type = PATH;
 
-        Asset(const EA::ResourceMan::Key key, std::filesystem::path path): key(key), path(std::move(path)) {
-        }
+        explicit Asset(const EA::ResourceMan::Key key, const AssetType type = PATH): key(key), type(type) {}
+
+        EA::IO::IStream* GetStream() const;
 
         static DDFFileType GetFileType(const std::string &extension);
 

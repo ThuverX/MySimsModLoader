@@ -79,6 +79,8 @@ set(SOURCES
         src/include/refpack.h
         src/core/hooks/ArgscriptHook.cpp
         src/core/hooks/ArgscriptHook.h
+        src/formats/materials/MaterialSet.cpp
+        src/formats/materials/MaterialSet.h
 )
 
 if (CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
@@ -149,9 +151,26 @@ if (BUILD_TESTS)
             src/formats/xml/ObjectDef.cpp
             src/formats/materials/Material.h
             src/formats/materials/Material.cpp
+            src/formats/materials/MaterialParameter.h
+            src/formats/materials/MaterialParameter.cpp
+            src/formats/materials/MaterialSet.h
+            src/formats/materials/MaterialSet.cpp
+            # EA
+            src/EA/IO/MemoryStream.h
+            src/EA/IO/MemoryStream.cpp
+            src/EA/IO/FileStream.h
+            src/EA/IO/FileStream.cpp
+            src/EA/ResourceMan/ResourceKey.h
+            src/EA/ResourceMan/ResourceKey.cpp
             # Utilities
             src/core/system/Logger.h
-            src/core/system/Logger.cpp)
+            src/core/system/Logger.cpp
+            tests/MaterialSetTest.cpp)
+
+    target_include_directories(Tests PRIVATE
+            libs/eastl/include
+            libs/eastl/test/packages/EABase/include/Common
+    )
 
     # Set a define to indicate that we are running unit tests
     target_compile_definitions(Tests PRIVATE -DUNIT_TESTING)
@@ -159,7 +178,14 @@ if (BUILD_TESTS)
     target_include_directories(Tests PRIVATE libs/pugixml/src)
     target_include_directories(Tests PRIVATE src)
 
-    target_link_libraries(Tests PRIVATE GTest::gtest_main pugixml-static)
+    target_compile_definitions(Tests PRIVATE
+            TEST_ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/assets/"
+    )
+
+    target_link_libraries(Tests PRIVATE
+            GTest::gmock
+            GTest::gtest_main
+            pugixml-static)
 
     include(GoogleTest)
     gtest_discover_tests(Tests)

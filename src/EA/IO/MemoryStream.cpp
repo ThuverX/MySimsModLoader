@@ -5,6 +5,8 @@
 #include "MemoryStream.h"
 
 namespace EA::IO {
+    MemoryStream::MemoryStream() = default;
+
     MemoryStream::MemoryStream(const void *data, const size_t size) {
         buffer.resize(size);
         memcpy(buffer.data(), data, size);
@@ -15,7 +17,7 @@ namespace EA::IO {
     }
 
     AccessFlags MemoryStream::GetAccessFlags() const {
-        return AccessFlags::Read;
+        return AccessFlags::ReadWrite;
     }
 
     FileError MemoryStream::GetState() const {
@@ -92,7 +94,15 @@ namespace EA::IO {
         return true;
     }
 
-    int MemoryStream::Write(const void *pData, size_t nSize) {
-        return 0;
+    size_t MemoryStream::Write(const void *pData, size_t nSize) {
+        if (pData == nullptr) return 0;
+
+        if (buffer.size() < position + nSize)
+            buffer.resize(position + nSize);
+
+        memcpy(&buffer[position], pData, nSize);
+        position += nSize;
+
+        return nSize;
     }
 }

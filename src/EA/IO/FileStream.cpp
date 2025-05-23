@@ -108,7 +108,7 @@ namespace EA::IO {
         return FlushFileBuffers(hFile) != 0;
     }
 
-    int FileStream::Write(const void *pData, size_t nSize) {
+    size_t FileStream::Write(const void *pData, size_t nSize) {
         return 0;
     }
 }

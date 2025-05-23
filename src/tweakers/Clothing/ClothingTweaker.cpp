@@ -4,10 +4,150 @@
 
 #include "ClothingTweaker.h"
 
+#include "pugixml.hpp"
+#include "../../core/assets/Assets.h"
+#include "../../core/hash/FNV.h"
+#include "../../core/system/Logger.h"
+#include "../../EA/IO/MemoryStream.h"
+
+struct xml_string_writer: pugi::xml_writer
+{
+    std::string result;
+
+    void write(const void* data, size_t size) override {
+        result.append(static_cast<const char*>(data), size);
+    }
+};
+
+EA::ResourceMan::Key MasterInventoryKey = {
+    .instance = msml::hash::fnv::FromString64("CAS.inventory"),
+    .type = msml::core::assets::DDFFileType::XML,
+    .group = 0,
+};
+
 bool ClothingTweaker::OnLoad(msml::core::resource::CustomRecord &asset) {
+    if (asset.key == MasterInventoryKey) {
+        MSML_LOG_INFO("Patching Master Inventory");
+
+        const auto stream = asset.GetStream();
+        stream->AddRef();
+        const auto n_size = stream->GetSize();
+        std::string xml_string(n_size, '\0');
+        stream->Read(xml_string.data(), n_size);
+        stream->Release();
+
+        pugi::xml_document doc;
+
+        if (const pugi::xml_parse_result result = doc.load_string(xml_string.c_str()); !result)
+            return false;
+
+        const pugi::xml_node inventoryNode = doc.child("Inventory");
+        if (!inventoryNode)
+            return false;
+
+        for (const auto & outfit_to_add : outfitsToAdd) {
+            auto contextNode = inventoryNode.find_child_by_attribute("name", outfit_to_add->context.c_str());
+            if (!contextNode) continue;
+            auto typeNode = contextNode.child(outfit_to_add->type.c_str());
+            if (!typeNode) continue;
+
+            auto modelNode = typeNode.append_child("Model");
+            modelNode.append_attribute("design_mode") = outfit_to_add->design_mode.c_str();
+            modelNode.append_attribute("gender") = outfit_to_add->gender.c_str();
+            modelNode.append_attribute("category") = outfit_to_add->category.c_str();
+            modelNode.text() = outfit_to_add->model.c_str();
+        }
+
+        const auto str_writer = new xml_string_writer();
+
+        doc.save(*str_writer);
+
+        const auto out_stream = new EA::IO::MemoryStream(str_writer->result.data(), str_writer->result.size());
+
+        asset.SetStream(out_stream);
+
+        return true;
+    }
+
     return false;
 }
 
+void CreateMaterial(const std::string &name, std::string texture, const int skin_id) {
+    const std::string file_name_with_skin = name + "_s" + std::to_string(skin_id);
+
+    const EA::ResourceMan::Key material_key = {
+        .instance = msml::hash::fnv::FromString32(file_name_with_skin.c_str()),
+        .type = msml::core::assets::DDFFileType::MATERIAL,
+        .group = 0,
+    };
+    const auto material_asset = new msml::core::assets::Asset(material_key, msml::core::assets::BUFFER);
+    // TODO: build the material
+    // TODO: Append its key to the material set for the model.
+    msml::core::Assets::GetInstance().RegisterAsset(material_asset);
+}
+
 bool ClothingTweaker::OnRegister(msml::core::assets::Asset &asset) {
+    if (asset.path.string().ends_with(".outfit.xml")) {
+        MSML_LOG_INFO("Registering clothing outfit: %s", asset.path.string().c_str());
+        pugi::xml_document doc;
+
+        if (const pugi::xml_parse_result result = doc.load_file(asset.path.c_str()); !result)
+            return false;
+
+        const pugi::xml_node outfitNode = doc.child("Outfit");
+        if (!outfitNode)
+            return false;
+
+        std::string name = outfitNode.attribute("name").as_string();
+        std::string context = outfitNode.attribute("context").as_string();
+        std::string model = outfitNode.attribute("model").as_string();
+        std::string category = outfitNode.attribute("category").as_string();
+        std::string type = outfitNode.attribute("type").as_string();
+        std::string gender = outfitNode.attribute("gender").as_string();
+        std::string texture = outfitNode.attribute("texture").as_string();
+        std::string mask = outfitNode.attribute("mask").as_string();
+
+        std::string design_mode = "_" + name;
+
+        std::string file_name = model + design_mode;
+        std::string mask_name = file_name + "_mask";
+
+        // if this is 32 bit, create the textures dynamically
+        {
+
+        }
+
+        // if this is 64 bit, use the mask
+        CreateMaterial(file_name, texture, 0);
+
+        {
+            const EA::ResourceMan::Key mask_key = {
+                .instance = msml::hash::fnv::FromString32(mask_name.c_str()),
+                .type = msml::core::assets::DDFFileType::DDS,
+                .group = 0,
+            };
+
+            auto mask_asset = new msml::core::assets::Asset(mask_key, msml::core::assets::REDIRECT);
+            mask_asset->key_redirect = {
+                .instance = msml::hash::fnv::FromString32(mask.c_str()),
+                .type = msml::core::assets::DDFFileType::DDS,
+                .group = 0,
+            };
+
+            msml::core::Assets::GetInstance().RegisterAsset(mask_asset);
+        }
+
+        outfitsToAdd.push_back(new OutfitEntry{
+            .context = context,
+            .type = type,
+            .design_mode = design_mode,
+            .gender = gender,
+            .category = category,
+            .model = model
+        });
+
+        return true;
+    }
+
     return false;
 }

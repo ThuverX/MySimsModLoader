@@ -15,7 +15,8 @@ namespace EA::IO {
         std::vector<uint8_t> buffer;
 
     public:
-        explicit MemoryStream(const void* data, size_t size);
+        MemoryStream();
+        MemoryStream(const void* data, size_t size);
 
         [[nodiscard]] uint32_t GetType() const override;
 
@@ -39,7 +40,7 @@ namespace EA::IO {
 
         bool Flush() override;
 
-        int Write(const void *pData, size_t nSize) override;
+        size_t Write(const void *pData, size_t nSize) override;
     };
 }
 

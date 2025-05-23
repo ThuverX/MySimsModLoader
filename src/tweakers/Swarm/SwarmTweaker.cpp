@@ -28,7 +28,7 @@ bool SwarmTweaker::OnLoad(msml::core::resource::CustomRecord &asset) {
 
         if (count == 0) return false;
 
-        MSML_LOG_INFO("Patching Master Swarm with %d files", count);
+        MSML_LOG_INFO("Patching Master Swarm with %d file(s)", count);
 
         const size_t size = asset.GetStream()->GetSize();
         const size_t pos = asset.GetStream()->GetPosition(EA::IO::PositionType::Begin);

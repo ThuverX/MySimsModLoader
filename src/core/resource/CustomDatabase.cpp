@@ -126,9 +126,9 @@ namespace msml::core::resource {
 
         if (assets.contains(key)) {
             const auto asset = assets[key];
-            const auto record = new CustomRecord(key, new EA::IO::FileStream(asset->path), this);
+            const auto record = new CustomRecord(key, asset->GetStream(), this);
 
-            MSML_LOG_INFO("Resolving asset %s", IdResolver::ToFilename(asset->key).c_str());
+            MSML_LOG_DEBUG_HIDDEN("Resolving asset %s", IdResolver::ToFilename(asset->key).c_str());
 
             if (record_info != nullptr) {
                 record_info->flags = 0;
@@ -256,7 +256,7 @@ namespace msml::core::resource {
     }
 
     void CustomDatabase::AddAsset(assets::Asset *pAsset) {
-        MSML_LOG_INFO("Registering asset as %s", IdResolver::ToFilename(pAsset->key).c_str());
+        MSML_LOG_INFO("Registering asset %s as %s", pAsset->path.filename().c_str(), IdResolver::ToFilename(pAsset->key).c_str());
         assets[pAsset->key] = pAsset;
     }
 

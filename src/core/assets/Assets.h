@@ -24,6 +24,7 @@ namespace msml::core {
         static void Install();
         void CreateDatabase();
         void RegisterAsset(const std::filesystem::path &path) const;
+        void RegisterAsset(assets::Asset* asset) const;
         void CreateDatabaseEntries(const std::filesystem::path &path) const;
         resource::CustomDatabase* database = nullptr;
         std::unordered_map<EA::ResourceMan::Key, std::filesystem::path> ddf_paths;

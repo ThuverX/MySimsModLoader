@@ -148,12 +148,30 @@ typedef void (*VTable)();
 namespace Revo {
     namespace ResourceSystem {
         struct ResourceSystem {
+            VTable *vTable;
         };
 
         CREATE_MEMBER_CALLABLE_SIGNATURE(Init, ResourceSystem, void,
                                          "81 EC 20 02 00 00 A1 C0 44 02 01 33 C4 89 84 24 1C 02 00 00 56 8B F1 ?? ?? ?? ?? ?? 84 C0 ?? ?? 32",
                                          "40 55 57 48 8D AC 24 D8 FD FF FF 48 81 EC 28 03 00 00 48 8B 05 ?? ?? ?? ??",
                                          0);
+    }
+
+    namespace App {
+        struct App {
+            void* tinyXmlImplementation; // TinyXmlImplementation::vftable
+            void* tiXmlElement; // TiXmlElement::vftable
+        };
+
+        CREATE_MEMBER_CALLABLE_SIGNATURE(ReadXMLFromPath, App, App*,
+                                         "",
+                                         "40 55 53 56 57 41 54 41 55 41 56 41 57 48 8D AC 24 A8 F9 FF FF 48 81 EC 58 07 00 00 48 8B 05 ?? ?? ?? ??",
+                                         0, const char*, void*, const char*, bool, double*, const char*);
+
+        CREATE_NORMAL_CALLABLE_SIGNATURE(ReadXMLFromStream, App, App*,
+                                         "",
+                                         "48 89 5C 24 10 48 89 6C 24 20 4C 89 44 24 18 56 57 41 54 41 55 41 57 48 83 EC 70",
+                                         0, const char**, EA::IO::IStream*, void*, const char*, double*);
     }
 
     namespace ObjectFolder {

@@ -108,6 +108,27 @@ namespace msml::core {
         return didOpen;
     }
 
+    void* __fastcall ReadXMLFromPathHooked(Revo::App::App* this_ptr CATCH_ECX, const char* filename, void* document, const char* rootType, bool isLocalFile, double* e, const char* folder) {
+        const auto ret = Revo::App::ReadXMLFromPathHook.Original(this_ptr, filename, document, rootType, isLocalFile, e, folder);
+
+        const auto key = assets::Asset::GetKey(filename);
+        auto filepath = std::filesystem::current_path() / "GameData";
+        if (folder != nullptr) filepath /= folder;
+        filepath /= filename;
+
+        const auto record = new resource::CustomRecord(key, new EA::IO::FileStream(filepath), Assets::GetInstance().database);
+
+        for (const auto &tweaker: Tweaker::getRegistry()) {
+            if (tweaker->OnLoad(*record)) {
+                break;
+            }
+        }
+
+        Revo::App::ReadXMLFromStream(&filename, record->stream, document, rootType, e);
+
+        return ret;
+    }
+
     void Assets::Install() {
         EA::ResourceMan::DatabaseDirectoryFiles::OpenRecordHook.Install(&DatabaseDirectoryFilesOpenRecordHooked);
         EA::ResourceMan::DatabaseDirectoryFiles::AddFileHook.Install(&AddFileHooked);
@@ -115,6 +136,8 @@ namespace msml::core {
         EA::ResourceMan::DatabasePackedFile::OpenHook.Install(&DatabasePackedFileOpenHooked);
 
         Revo::ResourceSystem::InitHook.Install(&ResourceSystemInitHooked);
+
+        Revo::App::ReadXMLFromPathHook.Install(&ReadXMLFromPathHooked);
     }
 
     void Assets::CreateDatabaseEntries(const std::filesystem::path &path) const {
@@ -136,7 +159,25 @@ namespace msml::core {
 
         resource::IdResolver::GetInstance().Add(filename);
 
-        const auto asset = new assets::Asset(key, path);
+        const auto asset = new assets::Asset(key);
+        asset->path = path;
+
+        for (const auto &tweaker: Tweaker::getRegistry()) {
+            if (tweaker->OnRegister(*asset)) {
+                break;
+            }
+        }
+
+        if (database != nullptr)
+            database->AddAsset(asset);
+    }
+
+    void Assets::RegisterAsset(assets::Asset* asset) const {
+        if (asset->key.type == assets::DDFFileType::LUA) return;
+
+        const auto filename = asset->path.stem().string();
+
+        resource::IdResolver::GetInstance().Add(filename);
 
         for (const auto &tweaker: Tweaker::getRegistry()) {
             if (tweaker->OnRegister(*asset)) {

@@ -36,3 +36,54 @@ void Material::Read(Material &instance, EA::IO::IStream* stream) {
         instance.parameters.push_back(parameter);
     }
 }
+
+void Material::Write(EA::IO::IStream *stream) {
+    WRITE_VALUE(stream, uint32_t, 1);
+    WRITE_VALUE(stream, uint32_t, 1);
+    WRITE_VALUE(stream, uint32_t, 0);
+    WRITE_VALUE(stream, uint32_t, 0);
+    WRITE_VALUE(stream, uint32_t, 1);
+
+    self.Write(stream);
+
+    WRITE_VALUE(stream, uint32_t, OFFSET(stream) + 8);
+    CREATE_HOLE(stream, totalSize, uint32_t);
+    const size_t totalOffset = OFFSET(stream);
+
+    WRITE_STRING(stream, "MATD");
+    WRITE_VALUE(stream, uint32_t, 1);
+
+    WRITE(stream, materialId);
+    WRITE(stream, shaderId);
+
+    CREATE_HOLE(stream, mtrlSize, uint32_t);
+    const size_t mtrlOffset = OFFSET(stream);
+
+    WRITE_STRING(stream, "MTRL");
+    WRITE_VALUE(stream, uint32_t, 0);
+
+    CREATE_HOLE(stream, dataSize, uint32_t);
+
+    numParams = parameters.size();
+    WRITE_VALUE(stream, uint32_t, numParams);
+
+    uint32_t rolling_offset = OFFSET(stream) + 16 * numParams - mtrlOffset;
+
+    for (auto & parameter : parameters) {
+        parameter.offset = rolling_offset;
+        rolling_offset += parameter.GetBodySize();
+        parameter.WriteHeader(stream);
+    }
+
+    const size_t dataOffset = OFFSET(stream);
+
+    for (auto & parameter : parameters) {
+        parameter.WriteBody(stream);
+    }
+
+    const size_t endOffset = OFFSET(stream);
+
+    FILL_HOLE(stream, dataSize, endOffset - dataOffset);
+    FILL_HOLE(stream, totalSize, endOffset - totalOffset);
+    FILL_HOLE(stream, mtrlSize, endOffset - mtrlOffset);
+}

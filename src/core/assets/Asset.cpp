@@ -5,9 +5,25 @@
 #include "Asset.h"
 #include <regex>
 
+#include "Assets.h"
+#include "../../EA/IO/MemoryStream.h"
 #include "../hash/FNV.h"
 
 namespace msml::core::assets {
+    EA::IO::IStream * Asset::GetStream() const {
+        if (type == PATH) return new EA::IO::FileStream(path);
+        if (type == REDIRECT) {
+            EA::ResourceMan::IRecord* record = {};
+
+            if (Assets::GetInstance().database->OpenRecord2(key, &record, EA::IO::AccessFlags::Read, EA::IO::CD::LoadAllFiles, 0, nullptr))
+                return record->GetStream();
+            return nullptr;
+        }
+        if (type == BUFFER) return new EA::IO::MemoryStream(buffer.data(), buffer.size());
+
+        return nullptr;
+    }
+
     DDFFileType Asset::GetFileType(const std::string &extension) {
         std::string ext = extension;
 
