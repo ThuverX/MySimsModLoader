@@ -68,15 +68,6 @@ TEST(MaterialSet, Read) {
     ASSERT_EQ(materialSet.mtst.indices[4], 805306373);
 }
 
-#define WRITE_VECTOR_TO_FILE(vec, filename)                          \
-do {                                                             \
-std::ofstream out(filename, std::ios::binary);               \
-if (out)                                                     \
-out.write(reinterpret_cast<const char*>(vec.data()),     \
-static_cast<std::streamsize>(vec.size()));     \
-} while (0)
-
-
 TEST(MaterialSet, Write) {
     MaterialSet materialSet;
     const auto readStream = new EA::IO::FileStream(TEST_ASSETS_DIR "0xdd91919d!0x00000000db272b16.MaterialSet");
@@ -93,9 +84,6 @@ TEST(MaterialSet, Write) {
     readStream->Release();
     writeStream->Close();
     writeStream->Release();
-
-    WRITE_VECTOR_TO_FILE(inBuffer, TEST_ASSETS_DIR "in.bin");
-    WRITE_VECTOR_TO_FILE(outBuffer, TEST_ASSETS_DIR "out.bin");
 
     ASSERT_EQ(inBuffer.size(), outBuffer.size());
     EXPECT_THAT(inBuffer, ::testing::ElementsAreArray(outBuffer));
