@@ -81,6 +81,10 @@ set(SOURCES
         src/core/hooks/ArgscriptHook.h
         src/formats/materials/MaterialSet.cpp
         src/formats/materials/MaterialSet.h
+        src/formats/builders/MaterialBuilder.cpp
+        src/formats/builders/MaterialBuilder.h
+        src/formats/builders/MaterialSetBuilder.cpp
+        src/formats/builders/MaterialSetBuilder.h
 )
 
 if (CMAKE_GENERATOR_PLATFORM STREQUAL "x64")

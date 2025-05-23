@@ -256,7 +256,7 @@ namespace msml::core::resource {
     }
 
     void CustomDatabase::AddAsset(assets::Asset *pAsset) {
-        MSML_LOG_INFO("Registering asset %s as %s", pAsset->path.filename().c_str(), IdResolver::ToFilename(pAsset->key).c_str());
+        MSML_LOG_INFO("Registering asset %s as %s", pAsset->path.filename().string().c_str(), IdResolver::ToFilename(pAsset->key).c_str());
         assets[pAsset->key] = pAsset;
     }
 

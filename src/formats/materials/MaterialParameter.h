@@ -23,7 +23,7 @@ struct MaterialParameter {
     static void Read(MaterialParameter &instance, size_t base_offset, EA::IO::IStream* stream);
     void WriteHeader(EA::IO::IStream* stream) const;
     void WriteBody(EA::IO::IStream* stream) const;
-    uint32_t GetBodySize() const;
+    [[nodiscard]] uint32_t GetBodySize() const;
 };
 
 #endif // MATERIALPARAMETER_H

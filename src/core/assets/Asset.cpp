@@ -15,7 +15,7 @@ namespace msml::core::assets {
         if (type == REDIRECT) {
             EA::ResourceMan::IRecord* record = {};
 
-            if (Assets::GetInstance().database->OpenRecord2(key, &record, EA::IO::AccessFlags::Read, EA::IO::CD::LoadAllFiles, 0, nullptr))
+            if (Assets::GetInstance().database->OpenRecord2(key_redirect, &record, EA::IO::AccessFlags::Read, EA::IO::CD::LoadAllFiles, 0, nullptr))
                 return record->GetStream();
             return nullptr;
         }
