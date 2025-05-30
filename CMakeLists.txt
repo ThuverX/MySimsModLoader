@@ -132,8 +132,11 @@ target_link_libraries(MySimsModLoader PRIVATE pugixml-static)
 set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "dsound")
 
 if (CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
+    target_compile_definitions(MySimsModLoader PRIVATE VERSION_COZY_BUNDLE)
     set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "WSOCK32")
-endif ()
+else ()
+    target_compile_definitions(MySimsModLoader PRIVATE VERSION_TACO_BELL)
+endif()
 
 if (BUILD_TESTS)
     # For Windows: Prevent overriding the parent project's compiler/linker settings

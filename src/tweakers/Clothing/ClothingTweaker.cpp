@@ -171,6 +171,7 @@ bool ClothingTweaker::OnRegister(msml::core::assets::Asset &asset) {
             return false;
 
         std::string name = outfitNode.attribute("name").as_string();
+        // maybe we can make this a list, because you might want npc's to also wear the outfit
         std::string context = outfitNode.attribute("context").as_string();
         std::string model = outfitNode.attribute("model").as_string();
         std::string category = outfitNode.attribute("category").as_string();
@@ -186,12 +187,14 @@ bool ClothingTweaker::OnRegister(msml::core::assets::Asset &asset) {
 
         uint32_t model_instance = msml::hash::fnv::FromString32(model.c_str());
 
-        // if this is 32 bit, create the textures dynamically
+#ifdef VERSION_TACO_BELL
         {
-
+            // requires a lot of work, won't be doing this right now
         }
+#endif
 
-        // if this is 64 bit, use the mask
+#ifdef VERSION_COZY_BUNDLE
+
         CreateMaterial(model_instance, file_name, texture, 0);
 
         {
@@ -210,6 +213,7 @@ bool ClothingTweaker::OnRegister(msml::core::assets::Asset &asset) {
 
             msml::core::Assets::GetInstance().RegisterAsset(mask_asset);
         }
+#endif
 
         outfitsToAdd.push_back(new OutfitEntry{
             .context = context,
