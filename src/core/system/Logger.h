@@ -41,7 +41,7 @@ namespace msml::core::system {
     MSML_LOGLEVEL(DEBUG, format, ##__VA_ARGS__)
 #else
 #define MSML_LOG_DEBUG(format, ...) \
-    Logger::Log(Logger::LogLevel::DEBUG, false, __FILE__, __LINE__, format, ##__VA_ARGS__)
+    ::msml::core::system::Logger::Log(Logger::LogLevel::DEBUG, false, __FILE__, __LINE__, format, ##__VA_ARGS__)
 #endif
 
 #define MSML_LOG_DEBUG_HIDDEN(format, ...) \

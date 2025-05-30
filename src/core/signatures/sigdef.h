@@ -16,7 +16,6 @@
 #include "../hooks/Hooks.h"
 #include "../system/Logger.h"
 #include "EASTL/hash_map.h"
-#include "../system/Logger.h"
 
 using namespace sigmatch_literals;
 
