@@ -154,7 +154,17 @@ namespace EA::IO {
         stream_name->Write((str), sizeof(char) * strlen(str)); \
     } while (0)
 
-// #define READ_CSTRING(stream_name, variable) \
+#define READ_CSTRING(stream_name, str)                            \
+    do {                                                          \
+        std::vector<char> _tmp_str;                               \
+        char _ch;                                                 \
+        do {                                                      \
+            stream_name->Read(&_ch, sizeof(char));                \
+            _tmp_str.push_back(_ch);                              \
+        } while (_ch != '\0');                                    \
+        str = new char[_tmp_str.size()];                          \
+        memcpy(str, _tmp_str.data(), _tmp_str.size());            \
+    } while (0)
 
 #define WRITE_LENGTH(stream_name, len)                      \
     do {                                                    \

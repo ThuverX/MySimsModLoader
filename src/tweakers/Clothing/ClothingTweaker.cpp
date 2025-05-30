@@ -78,11 +78,18 @@ bool ClothingTweaker::OnLoad(msml::core::resource::CustomRecord &asset) {
             auto typeNode = contextNode.child(outfit_to_add->type.c_str());
             if (!typeNode) continue;
 
+            auto lastSetNode = typeNode.find_node([outfit_to_add] (const pugi::xml_node node) -> bool {
+                return strcmp(node.text().get(), outfit_to_add->model.c_str()) == 0;
+            });
+
             auto modelNode = typeNode.append_child("Model");
             modelNode.append_attribute("design_mode") = outfit_to_add->design_mode.c_str();
             modelNode.append_attribute("gender") = outfit_to_add->gender.c_str();
             modelNode.append_attribute("category") = outfit_to_add->category.c_str();
             modelNode.text() = outfit_to_add->model.c_str();
+
+            if (lastSetNode != nullptr)
+                typeNode.insert_move_after(modelNode, lastSetNode);
         }
 
         const auto str_writer = new xml_string_writer();
@@ -206,6 +213,26 @@ bool ClothingTweaker::OnRegister(msml::core::assets::Asset &asset) {
 
         outfitsToAdd.push_back(new OutfitEntry{
             .context = context,
+            .type = type,
+            .design_mode = design_mode,
+            .gender = gender,
+            .category = category,
+            .model = model
+        });
+
+        // Make sure to also add to kMaster
+        outfitsToAdd.push_back(new OutfitEntry{
+            .context = "kMaster",
+            .type = type,
+            .design_mode = design_mode,
+            .gender = gender,
+            .category = category,
+            .model = model
+        });
+
+        // maybe have a flag for this, if it can only be unlocked later
+        outfitsToAdd.push_back(new OutfitEntry{
+            .context = "kInitial",
             .type = type,
             .design_mode = design_mode,
             .gender = gender,

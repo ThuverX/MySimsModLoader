@@ -9,7 +9,6 @@
 #include <unordered_map>
 
 // Allows for easily adding new clothing to the game
-
 struct OutfitEntry {
     std::string context;
     std::string type;

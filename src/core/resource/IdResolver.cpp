@@ -32,48 +32,31 @@ namespace msml::core::resource {
         return std::format("{:08x}", hash);
     }
 
-    // TODO: i hate this, we should have a class for this. OH WAIT WE DO
-    // replace
-#define READ_BIN(var) infile.read((char*)&var, sizeof(var));
-#define WRITE_BIN(var) outfile.write((char*)&var, sizeof(var))
-
-#define READ_CSTRING(str) { \
-std::vector<char> buffer; \
-char ch; \
-while (infile.read(&ch, 1) && ch != '\0') { \
-buffer.push_back(ch); \
-} \
-buffer.push_back('\0'); /* Ensure null termination */ \
-str = new char[buffer.size()]; \
-memcpy(str, buffer.data(), buffer.size()); \
-}
-
-#define WRITE_CSTRING(str) { \
-outfile.write(str, strlen(str) + 1); /* Write including null terminator */ \
-}
-
     void IdResolver::Load(const std::string &path) {
-        std::ifstream infile(path, std::ios::in | std::ios::binary);
-        if (!infile.good()) {
-            MSML_LOG_ERROR("Failed to open %s", path.c_str());
-            return;
-        }
+        const auto stream = new EA::IO::FileStream(path);
+        stream->AddRef();
+
         hashes32.clear();
         hashes64.clear();
         uint64_t count;
-        READ_BIN(count);
+        READ(stream, count);
 
         for (int i = 0; i < count; i++) {
             char *text;
-            READ_CSTRING(text);
+            READ_CSTRING(stream, text);
             uint32_t fnv32;
-            READ_BIN(fnv32);
+            READ(stream, fnv32);
             uint64_t fnv64;
-            READ_BIN(fnv64);
+            READ(stream, fnv64);
 
             hashes32.insert(std::pair<uint32_t, std::string>(fnv32, text));
             hashes64.insert(std::pair<uint64_t, std::string>(fnv64, text));
+
+            delete[] text;
         }
+
+        stream->Close();
+        stream->Release();
 
         MSML_LOG_INFO("Loaded %d Hashes from %s", hashes32.size(), path.c_str());
     }

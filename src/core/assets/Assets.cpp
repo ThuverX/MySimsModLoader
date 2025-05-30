@@ -108,15 +108,33 @@ namespace msml::core {
         return didOpen;
     }
 
-    void* __fastcall ReadXMLFromPathHooked(Revo::App::App* this_ptr CATCH_ECX, const char* filename, void* document, const char* rootType, bool isLocalFile, double* e, const char* folder) {
-        const auto ret = Revo::App::ReadXMLFromPathHook.Original(this_ptr, filename, document, rootType, isLocalFile, e, folder);
+    wchar_t* CharToWChar(const char* input) {
+        if (!input) return nullptr;
+
+        size_t len = std::mbstowcs(nullptr, input, 0);
+        if (len == static_cast<size_t>(-1)) return nullptr;
+
+        auto* wstr = new wchar_t[len + 1];
+        std::mbstowcs(wstr, input, len + 1);
+        return wstr;
+    }
+
+    void* __fastcall ReadXMLFromPathHooked(Revo::App::App* this_ptr CATCH_ECX, const char* filename, void* document, const char* rootType, bool isGameFile, double* e, const char* folder) {
+        if (!isGameFile)
+            return Revo::App::ReadXMLFromPathHook.Original(this_ptr, filename, document, rootType, isGameFile, e, folder);
 
         const auto key = assets::Asset::GetKey(filename);
-        auto filepath = std::filesystem::current_path() / "GameData";
-        if (folder != nullptr) filepath /= folder;
-        filepath /= filename;
 
-        const auto record = new resource::CustomRecord(key, new EA::IO::FileStream(filepath), Assets::GetInstance().database);
+        const auto wide_filename = CharToWChar(filename);
+        const auto wide_folder = CharToWChar(folder);
+
+        wchar_t real_path[MAX_PATH];
+        Revo::App::GetCorrectLoadFolder(real_path, isGameFile, wide_folder, wide_filename);
+
+        delete[] wide_filename;
+        delete[] wide_folder;
+
+        const auto record = new resource::CustomRecord(key, new EA::IO::FileStream(real_path), Assets::GetInstance().database);
 
         for (const auto &tweaker: Tweaker::getRegistry()) {
             if (tweaker->OnLoad(*record)) {
@@ -124,7 +142,10 @@ namespace msml::core {
             }
         }
 
-        Revo::App::ReadXMLFromStream(&filename, record->stream, document, rootType, e);
+        const auto ret = Revo::App::ReadXMLFromStream(&filename, record->stream, document, rootType, e);
+
+        this_ptr->tinyXmlImplementation = ret->tinyXmlImplementation;
+        this_ptr->tiXmlElement = ret->tiXmlElement;
 
         return ret;
     }

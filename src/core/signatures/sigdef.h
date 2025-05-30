@@ -159,17 +159,23 @@ namespace Revo {
 
     namespace App {
         struct App {
-            void* tinyXmlImplementation; // TinyXmlImplementation::vftable
-            void* tiXmlElement; // TiXmlElement::vftable
+            void *tinyXmlImplementation; // TinyXmlImplementation::vftable
+            void *tiXmlElement;
         };
 
+        CREATE_NORMAL_CALLABLE_SIGNATURE(GetCorrectLoadFolder, App, size_t,
+                                         "81 EC 24 04 00 00 A1 C0 44 02 01 33 C4 89 84 24 20 04 00 00 A1 84 7E F0 00 53 8B 9C 24 38 04 00 00",
+                                         "40 53 55 56 57 48 81 EC 98 06 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4", 0,
+                                         wchar_t*,
+                                         bool, const wchar_t*, const wchar_t*)
+
         CREATE_MEMBER_CALLABLE_SIGNATURE(ReadXMLFromPath, App, App*,
-                                         "",
+                                         "81 EC 90 06 00 00 A1 C0 44 02 01 33 C4 89 84 24 8C 06 00 00 8B 84 24 9C 06 00 00",
                                          "40 55 53 56 57 41 54 41 55 41 56 41 57 48 8D AC 24 A8 F9 FF FF 48 81 EC 58 07 00 00 48 8B 05 ?? ?? ?? ??",
                                          0, const char*, void*, const char*, bool, double*, const char*);
 
         CREATE_NORMAL_CALLABLE_SIGNATURE(ReadXMLFromStream, App, App*,
-                                         "",
+                                         "83 EC 14 53 55 56 57 E8 ?? ?? ?? ?? 80 7C 24 3C 00 8B 4C 24 2C",
                                          "48 89 5C 24 10 48 89 6C 24 20 4C 89 44 24 18 56 57 41 54 41 55 41 57 48 83 EC 70",
                                          0, const char**, EA::IO::IStream*, void*, const char*, double*);
     }
