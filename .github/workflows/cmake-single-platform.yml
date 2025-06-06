@@ -6,6 +6,11 @@ on:
       - "**"
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to build"
+        required: true
 
 env:
   BUILD_TYPE: Release
