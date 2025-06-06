@@ -1,0 +1,13 @@
+<Material shader="lambert">
+    <Parameter name="0xDAA9532D" type="color" r="0" g="0" b="0" a="0"></Parameter>
+    <Parameter name="0x3BD441A0" type="color" r="0" g="0" b="0" a="0"></Parameter>
+    <Parameter name="transparent" type="color" r="0" g="0" b="0" a="0"></Parameter>
+    <Parameter name="0x5D22FD3" type="color" r="1" g="1" b="1" a="1"></Parameter>
+    <Parameter name="shadowReceiver" type="int">0</Parameter>
+    <Parameter name="0x29BCDD1F" type="color" r="1" g="1" b="1" a="1"></Parameter>
+    <Parameter name="0x73C9923E" type="color" r="1" g="1" b="1" a="1"></Parameter>
+    <Parameter name="0x4A5DAA3" type="color" r="0" g="0" b="0" a="0"></Parameter>
+    <Parameter name="useLights" type="int">1</Parameter>
+    <Parameter name="DiffuseColor" type="color" r="1" g="1" b="1" a="1"></Parameter>
+    <Parameter name="diffuseMap" type="map">fallback.dds</Parameter>
+</Material>

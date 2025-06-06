@@ -1,5 +1,4 @@
 if EA then
-
     local levels = {
         [1] = "ALL",
         [2] = "MIN",
@@ -12,7 +11,7 @@ if EA then
         [251] = "NONE"
     }
 
-    function EA:ShouldOutput(class, level)
+    function EA:ShouldOutput(class,level)
         return true
     end
 

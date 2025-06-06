@@ -4,6 +4,7 @@
     <Author>ThuverX</Author>
     <Hooks>
         <Prehook>lua/hooks.lua</Prehook>
+        <Prehook>lua/pre_system.lua</Prehook>
         <Hook>lua/ea.lua</Hook>
     </Hooks>
 </Mod>    
