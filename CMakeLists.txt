@@ -159,15 +159,9 @@ if (BUILD_TESTS)
 
     add_executable(Tests
             # Tests
-            tests/CharacterDefTest.cpp
             tests/MaterialTest.cpp
-            tests/ObjectDefTest.cpp
             tests/MaterialSetTest.cpp
             # Format
-            src/formats/xml/CharacterDef.h
-            src/formats/xml/CharacterDef.cpp
-            src/formats/xml/ObjectDef.h
-            src/formats/xml/ObjectDef.cpp
             src/formats/materials/Material.h
             src/formats/materials/Material.cpp
             src/formats/materials/MaterialParameter.h
