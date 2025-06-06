@@ -10,3 +10,6 @@
 [submodule "libs/googletest"]
 	path = libs/googletest
 	url = https://github.com/google/googletest.git
+[submodule "libs/directxtex"]
+	path = libs/directxtex
+	url = https://github.com/microsoft/DirectXTex.git

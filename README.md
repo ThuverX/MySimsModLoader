@@ -23,7 +23,7 @@ For any questions visit the [MySims Clubhouse](https://discord.gg/2j9mU6zNJH) mo
 ### Cozy Bundle
 
 1. Go to the latest [Release](https://github.com/ThuverX/MySimsModLoader/releases)
-2. Download the file `windows-cozy-bundle` 
+2. Download the file `mysims-cozybundle-windows-x64` 
 3. Unzip it into your game folder, next to `MySims.exe`
     - In the end you should have `mods`, `WSOCK32.dll` and `MySims.exe` in the same folder.
 4. Done! Launch the game like normal.
@@ -31,7 +31,7 @@ For any questions visit the [MySims Clubhouse](https://discord.gg/2j9mU6zNJH) mo
 ### Taco Bell Edition
 
 1. Go to the latest [Release](https://github.com/ThuverX/MySimsModLoader/releases)
-2. Download the file `windows-tacobell`
+2. Download the file `mysims-windows-x86`
 3. Unzip it into your game folder, next to `MySims.exe` (`MySims/bin`)
     - In the end you should have `mods`, `dsound.dll` and `MySims.exe` in the same folder.
 4. Done! Launch the game like normal.
@@ -74,7 +74,7 @@ Making mods is currently limited to texture and lua based mods. For now take a l
 
 - This project could never have been done without the awesome work done for the [Spore ModAPI](https://github.com/emd4600/Spore-ModAPI).
   - Not only are a lot of formats very similar.
-  - But this project also includes EASTL taken from the [Spore ModAPI](https://github.com/emd4600/Spore-ModAPI) repository.
+  - This project also includes EASTL taken from the [Spore ModAPI](https://github.com/emd4600/Spore-ModAPI) repository.
 - Honorary mention to [MorcuTool](https://github.com/Olivercomet/MorcuTool) for getting me interested in making this modloader.
 
 ## Contributors
