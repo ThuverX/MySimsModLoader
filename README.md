@@ -11,23 +11,34 @@ For any questions visit the [MySims Clubhouse](https://discord.gg/2j9mU6zNJH) mo
 
 ## Supported versions
 
-|Version|Supported|
-|-|-|
-|MySims Release / Origin (EA App)|✔️|
+|Version| Supported |
+|-|--|
+|MySims Release / Origin (EA App)|❌️|
 |MySims Taco Bell Edition|✔️|
-|MySims EA App / Steam|When it releases|
-|MySims Kingdom EA App / Steam|When it releases|
+|MySims EA App / Steam|✔️|
+|MySims Kingdom EA App / Steam|✔️|
 
 ## Installation
 
+### Cozy Bundle
+
 1. Go to the latest [Release](https://github.com/ThuverX/MySimsModLoader/releases)
-2. Download the file `windows-x86`
-3. Unzip it into your game folder, next to `MySims.exe` (`MySims/bin/`)
+2. Download the file `mysims-cozybundle-windows-x64` 
+3. Unzip it into your game folder, next to `MySims.exe`
+    - In the end you should have `mods`, `WSOCK32.dll` and `MySims.exe` in the same folder.
+4. Done! Launch the game like normal.
+
+### Taco Bell Edition
+
+1. Go to the latest [Release](https://github.com/ThuverX/MySimsModLoader/releases)
+2. Download the file `mysims-windows-x86`
+3. Unzip it into your game folder, next to `MySims.exe` (`MySims/bin`)
     - In the end you should have `mods`, `dsound.dll` and `MySims.exe` in the same folder.
 4. Done! Launch the game like normal.
 
+
 ## Uninstallation
-1. Remove `dsound.dll`
+1. Remove `dsound.dll` or `WSOCK32.dll`
 2. Optionally remove the `mods` folder
 
 ## Installing mods
@@ -41,8 +52,6 @@ To uninstall simply remove that folder from the `mods`.
 
 Making mods is currently limited to texture and lua based mods. For now take a look at these places:
 - ⚠️ WORK IN PROGRESS [Wiki](https://thuverx.github.io/mysims-research/Modding/index.html)
-- ⚠️ UNRELEASED [MySims Editor](https://github.com/ThuverX/MySimsEditor) to modify and create game files like worlds and models.
-- [Examples](examples).
 
 ## Building  
 1. **Clone the repository**:  
@@ -52,9 +61,9 @@ Making mods is currently limited to texture and lua based mods. For now take a l
    ```  
 2. **Generate the build files using CMake**:
    ```sh
-   cmake -B build -G "Visual Studio 17 2022" -A Win32
-   ```  
-   > ⚠️ **Make sure to specify `-A Win32`** to build in **x86 mode**!  
+   cmake -B build -G "Visual Studio 17 2022" -A Win32 # For TacoBell ⚠️ Make sure to specify `-A Win32` to build in x86 mode!  
+   cmake -B build -G "Visual Studio 17 2022" # For Cozy Bundle
+   ```
 
 3. **Build the project**:  
    ```sh
@@ -64,6 +73,8 @@ Making mods is currently limited to texture and lua based mods. For now take a l
 ## Acknowledgements
 
 - This project could never have been done without the awesome work done for the [Spore ModAPI](https://github.com/emd4600/Spore-ModAPI).
+  - Not only are a lot of formats very similar.
+  - This project also includes EASTL taken from the [Spore ModAPI](https://github.com/emd4600/Spore-ModAPI) repository.
 - Honorary mention to [MorcuTool](https://github.com/Olivercomet/MorcuTool) for getting me interested in making this modloader.
 
 ## Contributors

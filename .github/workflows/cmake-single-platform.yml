@@ -1,4 +1,4 @@
-name: CMake on a single platform
+name: CMake build all
 
 on:
   push:
@@ -11,7 +11,7 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  build:
+  build-x86:
     runs-on: windows-latest
 
     steps:
@@ -22,7 +22,12 @@ jobs:
 
     - name: Get Tag Name
       shell: bash
-      run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      run: |
+        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        else
+          echo "TAG_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
+        fi
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -G "Visual Studio 17 2022" -A Win32 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
@@ -43,5 +48,44 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: windows-x86-${{ env.TAG_NAME }}
+        name: mysims-windows-x86-${{ env.TAG_NAME }}
         path: ${{ github.workspace }}/artifact/
+  build-x64:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Get Tag Name
+        shell: bash
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          else
+            echo "TAG_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
+          fi
+
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/build -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+      - name: Test
+        working-directory: ${{github.workspace}}/build
+        run: ctest -C ${{env.BUILD_TYPE}}
+
+      - name: Prepare Artifact
+        run: |
+          mkdir -p ${{ github.workspace }}/artifact/mods/basemod
+          cp -r ${{ github.workspace }}/basemod/* ${{ github.workspace }}/artifact/mods/basemod/
+          cp ${{ github.workspace }}/build/Release/WSOCK32.dll ${{ github.workspace }}/artifact/
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mysims-cozybundle-windows-x64-${{ env.TAG_NAME }}
+          path: ${{ github.workspace }}/artifact/
