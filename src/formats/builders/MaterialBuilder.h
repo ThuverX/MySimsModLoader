@@ -6,6 +6,7 @@
 #define MATERIALBUILDER_H
 #include "../materials/Material.h"
 
+#include <unordered_map>
 #include <string>
 
 enum class ShaderType: uint32_t {
@@ -79,6 +80,81 @@ enum class ShaderType: uint32_t {
     WaterShiny = 0xE3B338AF,
     WaterShinyBumpy = 0xFF8234C4
 };
+
+static const std::unordered_map<std::string, ShaderType> stringToEnum = {
+    {"casFace", ShaderType::casFace},
+    {"casFaceShiny", ShaderType::casFaceShiny},
+    {"casFaceShinyModulatedAccents", ShaderType::casFaceShinyModulatedAccents},
+    {"casFaceShinyModulatedAccentsSkinned", ShaderType::casFaceShinyModulatedAccentsSkinned},
+    {"casFaceShinyOpaqueAccents", ShaderType::casFaceShinyOpaqueAccents},
+    {"casFaceShinyOpaqueAccentsSkinned", ShaderType::casFaceShinyOpaqueAccentsSkinned},
+    {"casFaceShinyReversedAccents", ShaderType::casFaceShinyReversedAccents},
+    {"casFaceShinyReversedAccentsSkinned", ShaderType::casFaceShinyReversedAccentsSkinned},
+    {"casFaceShinySkinned", ShaderType::casFaceShinySkinned},
+    {"casFaceSkinned", ShaderType::casFaceSkinned},
+    {"casHat", ShaderType::casHat},
+    {"casHatSkinned", ShaderType::casHatSkinned},
+    {"customMask", ShaderType::customMask},
+    {"customMaskSkinned", ShaderType::customMaskSkinned},
+    {"Face", ShaderType::Face},
+    {"FaceSkinned", ShaderType::FaceSkinned},
+    {"idColor", ShaderType::idColor},
+    {"idColorSkinned", ShaderType::idColorSkinned},
+    {"lambert", ShaderType::lambert},
+    {"lambertEnvMap", ShaderType::lambertEnvMap},
+    {"lambertEnvMapSkinned", ShaderType::lambertEnvMapSkinned},
+    {"lambertLightMap", ShaderType::lambertLightMap},
+    {"lambertLightMapSkinned", ShaderType::lambertLightMapSkinned},
+    {"lambertSkinned", ShaderType::lambertSkinned},
+    {"lambertTransparent", ShaderType::lambertTransparent},
+    {"lambertTransparentEnvMap", ShaderType::lambertTransparentEnvMap},
+    {"lambertTransparentEnvMapSkinned", ShaderType::lambertTransparentEnvMapSkinned},
+    {"lambertTransparentSkinned", ShaderType::lambertTransparentSkinned},
+    {"lambertTritone", ShaderType::lambertTritone},
+    {"lineset", ShaderType::lineset},
+    {"phong", ShaderType::phong},
+    {"phongSkinned", ShaderType::phongSkinned},
+    {"plumbob", ShaderType::plumbob},
+    {"shadererror", ShaderType::shadererror},
+    {"shadowMappingIDMapFill", ShaderType::shadowMappingIDMapFill},
+    {"shadowMappingIDMapLookup_3x3Kernel", ShaderType::shadowMappingIDMapLookup_3x3Kernel},
+    {"shadowMappingIDMapLookup_4x4Kernel_Pass1", ShaderType::shadowMappingIDMapLookup_4x4Kernel_Pass1},
+    {"shadowMappingIDMapLookup_4x4Kernel_Pass2", ShaderType::shadowMappingIDMapLookup_4x4Kernel_Pass2},
+    {"shadowProjector", ShaderType::shadowProjector},
+    {"shadow_low", ShaderType::shadow_low},
+    {"shadow_low_I8", ShaderType::shadow_low_I8},
+    {"shadow_low_I8_invAlpha", ShaderType::shadow_low_I8_invAlpha},
+    {"shadow_low_invAlpha", ShaderType::shadow_low_invAlpha},
+    {"shadow_med", ShaderType::shadow_med},
+    {"ShinyGlossMap", ShaderType::ShinyGlossMap},
+    {"ShinyGlossMapSkinned", ShaderType::ShinyGlossMapSkinned},
+    {"ShinyGlossMapTransparent", ShaderType::ShinyGlossMapTransparent},
+    {"ShinyGlossMapTransparentSkinned", ShaderType::ShinyGlossMapTransparentSkinned},
+    {"Sim", ShaderType::Sim},
+    {"SimPreBakedTextures_Tex1Mod_Tex2Mod", ShaderType::SimPreBakedTextures_Tex1Mod_Tex2Mod},
+    {"SimPreBakedTextures_Tex1Mod_Tex2ModSkinned", ShaderType::SimPreBakedTextures_Tex1Mod_Tex2ModSkinned},
+    {"SimPreBakedTextures_Tex1Mod_Tex2Op", ShaderType::SimPreBakedTextures_Tex1Mod_Tex2Op},
+    {"SimPreBakedTextures_Tex1Mod_Tex2OpSkinned", ShaderType::SimPreBakedTextures_Tex1Mod_Tex2OpSkinned},
+    {"SimPreBakedTextures_Tex1Op_Tex2Mod", ShaderType::SimPreBakedTextures_Tex1Op_Tex2Mod},
+    {"SimPreBakedTextures_Tex1Op_Tex2ModSkinned", ShaderType::SimPreBakedTextures_Tex1Op_Tex2ModSkinned},
+    {"SimPreBakedTextures_Tex1Op_Tex2Op", ShaderType::SimPreBakedTextures_Tex1Op_Tex2Op},
+    {"SimPreBakedTextures_Tex1Op_Tex2OpSkinned", ShaderType::SimPreBakedTextures_Tex1Op_Tex2OpSkinned},
+    {"SimSkinned", ShaderType::SimSkinned},
+    {"swarmAdditive", ShaderType::swarmAdditive},
+    {"swarmDecal", ShaderType::swarmDecal},
+    {"swarmDecalIgnoreDepth", ShaderType::swarmDecalIgnoreDepth},
+    {"swarmDepthDecal", ShaderType::swarmDepthDecal},
+    {"swarmModulate", ShaderType::swarmModulate},
+    {"terrainLightMapTinted", ShaderType::terrainLightMapTinted},
+    {"text", ShaderType::text},
+    {"video", ShaderType::video},
+    {"Water", ShaderType::Water},
+    {"WaterShiny", ShaderType::WaterShiny},
+    {"WaterShinyBumpy", ShaderType::WaterShinyBumpy}
+};
+
+ShaderType GetShaderType(const std::string &type);
+std::string GetShaderName(uint32_t value);
 
 class MaterialBuilder {
     Material mat{};

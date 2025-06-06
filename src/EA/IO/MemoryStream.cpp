@@ -13,7 +13,7 @@ namespace EA::IO {
     }
 
     uint32_t MemoryStream::GetType() const {
-        return 0xe41cb215;
+        return Type;
     }
 
     AccessFlags MemoryStream::GetAccessFlags() const {

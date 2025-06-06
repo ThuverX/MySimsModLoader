@@ -7,7 +7,7 @@
 #include "../hooks/Config.h"
 #include "../signatures/sigdef.h"
 
-void __fastcall ArgScriptOutputHookedWin64(EA::ArgScript::ArgScript *this_ptr CATCH_ECX, void *, const char *fmt, ...) {
+void __fastcall ArgScriptOutputHookedWin64(EA::ArgScript::ArgScript *this_ptr CATCH_EDX, void *, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
@@ -19,7 +19,7 @@ void __fastcall ArgScriptOutputHookedWin64(EA::ArgScript::ArgScript *this_ptr CA
     va_end(args);
 }
 
-void __fastcall ArgScriptErrorOutputHookedWin64(EA::ArgScript::ArgScript *this_ptr CATCH_ECX, const char *fmt, ...) {
+void __fastcall ArgScriptErrorOutputHookedWin64(EA::ArgScript::ArgScript *this_ptr CATCH_EDX, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
 

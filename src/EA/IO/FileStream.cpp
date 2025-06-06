@@ -18,7 +18,7 @@ namespace EA::IO {
     }
 
     uint32_t FileStream::GetType() const {
-        return 0xb7faadfe;
+        return Type;
     }
 
     AccessFlags FileStream::GetAccessFlags() const {
@@ -110,5 +110,9 @@ namespace EA::IO {
 
     size_t FileStream::Write(const void *pData, size_t nSize) {
         return 0;
+    }
+
+    std::filesystem::path FileStream::GetPath() {
+        return path;
     }
 }

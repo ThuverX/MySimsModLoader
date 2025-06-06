@@ -6,9 +6,9 @@
 #define COMMON_H
 
 #ifdef _WIN64
-#define CATCH_ECX
+#define CATCH_EDX
 #else
-#define CATCH_ECX ,void *_ECX
+#define CATCH_EDX , void *_EDX
 #endif
 
 #endif //COMMON_H

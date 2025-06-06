@@ -9,6 +9,7 @@ option(BUILD_TESTS "Build tests" ON)
 # Disable sigmatch tests to speed up compilation
 set(SIGMATCH_BUILD_TESTS OFF CACHE BOOL "Disable sigmatch tests" FORCE)
 
+add_subdirectory(libs/directxtex)
 add_subdirectory(libs/minhook)
 add_subdirectory(libs/sigmatch)
 add_subdirectory(libs/pugixml)
@@ -85,6 +86,14 @@ set(SOURCES
         src/formats/builders/MaterialBuilder.h
         src/formats/builders/MaterialSetBuilder.cpp
         src/formats/builders/MaterialSetBuilder.h
+        src/tweakers/Material/MaterialTweaker.cpp
+        src/tweakers/Material/MaterialTweaker.h
+        src/tweakers/Tweakers.cpp
+        src/EA/ResourceMan/IResource.h
+        src/core/util/StreamUtil.cpp
+        src/core/util/StreamUtil.h
+        src/tweakers/Clothing/SkintoneVariantGenerator.cpp
+        src/tweakers/Clothing/SkintoneVariantGenerator.h
 )
 
 if (CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
@@ -125,7 +134,9 @@ target_include_directories(MySimsModLoader PRIVATE
 target_include_directories(MySimsModLoader PRIVATE libs/pugixml/src)
 target_include_directories(MySimsModLoader PRIVATE libs/minhook/include)
 target_include_directories(MySimsModLoader PRIVATE libs/sigmatch/include)
+target_include_directories(MySimsModLoader PRIVATE libs/directxtex)
 
+target_link_libraries(MySimsModLoader PRIVATE DirectXTex)
 target_link_libraries(MySimsModLoader PRIVATE minhook)
 target_link_libraries(MySimsModLoader PRIVATE pugixml-static)
 
@@ -151,6 +162,7 @@ if (BUILD_TESTS)
             tests/CharacterDefTest.cpp
             tests/MaterialTest.cpp
             tests/ObjectDefTest.cpp
+            tests/MaterialSetTest.cpp
             # Format
             src/formats/xml/CharacterDef.h
             src/formats/xml/CharacterDef.cpp
@@ -172,7 +184,8 @@ if (BUILD_TESTS)
             # Utilities
             src/core/system/Logger.h
             src/core/system/Logger.cpp
-            tests/MaterialSetTest.cpp)
+            src/core/util/StreamUtil.cpp
+            src/core/util/StreamUtil.h)
 
     target_include_directories(Tests PRIVATE
             libs/eastl/include

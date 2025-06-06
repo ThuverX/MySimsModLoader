@@ -4,6 +4,23 @@
 
 #include "MaterialBuilder.h"
 
+ShaderType GetShaderType(const std::string &type) {
+    if (const auto it = stringToEnum.find(type); it != stringToEnum.end()) {
+        return it->second;
+    }
+    return ShaderType::lambert;
+}
+
+std::string GetShaderName(const uint32_t value) {
+    for (const auto &[name, enumValue]: stringToEnum) {
+        if (static_cast<uint32_t>(enumValue) == value) {
+            return name;
+        }
+    }
+
+    return "unknown";
+}
+
 MaterialBuilder & MaterialBuilder::withShader(ShaderType type) {
     mat.shaderId = static_cast<uint32_t>(type);
 

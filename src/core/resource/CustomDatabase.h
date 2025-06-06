@@ -5,7 +5,6 @@
 #ifndef CUSTOMDATABASE_H
 #define CUSTOMDATABASE_H
 
-#include <cstdint>
 #include <unordered_map>
 
 #include "../../EA/ResourceMan/IDatabase.h"
@@ -15,10 +14,11 @@
 
 namespace msml::core::resource {
     class CustomDatabase : public EA::ResourceMan::IDatabase {
-        std::unordered_map<EA::ResourceMan::Key, assets::Asset *> assets;
         EA::ResourceMan::Manager::Manager *manager = nullptr;
 
     public:
+        std::unordered_map<EA::ResourceMan::Key, assets::Asset *> assets;
+
         ~CustomDatabase() override = default;
 
         IDatabase *AsInterface(uint32_t id) override;

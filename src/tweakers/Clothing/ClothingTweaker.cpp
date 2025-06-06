@@ -5,10 +5,15 @@
 #include "ClothingTweaker.h"
 
 #include "pugixml.hpp"
+#include "SkintoneVariantGenerator.h"
+#include "../Tweakers.h"
 #include "../../core/assets/Assets.h"
 #include "../../core/hash/FNV.h"
+#include "../../core/modloader/Mod.h"
+#include "../../core/modloader/Mods.h"
 #include "../../core/resource/IdResolver.h"
 #include "../../core/system/Logger.h"
+#include "../../core/util/StreamUtil.h"
 #include "../../EA/IO/MemoryStream.h"
 #include "../../formats/builders/MaterialBuilder.h"
 #include "../../formats/materials/MaterialSet.h"
@@ -29,39 +34,10 @@ EA::ResourceMan::Key MasterInventoryKey = {
 };
 
 bool ClothingTweaker::OnLoad(msml::core::resource::CustomRecord &asset) {
-    if (materialsToAdd.contains(asset.key)) {
-        const uint32_t materialCount = materialsToAdd[asset.key].size();
-        MSML_LOG_INFO("Patching %s with %d materials", msml::core::resource::IdResolver::ToFilename(asset.key).c_str(), materialCount);
-
-        MaterialSet matSet;
-        const auto stream = asset.GetStream();
-        stream->AddRef();
-
-        MaterialSet::Read(matSet, stream);
-
-        stream->Release();
-
-        for (const auto & value : materialsToAdd[asset.key]) {
-            matSet.materials.push_back(value);
-        }
-
-        const auto out_stream = new EA::IO::MemoryStream();
-        matSet.Write(out_stream);
-
-        asset.SetStream(out_stream);
-
-        return true;
-    }
-
     if (asset.key == MasterInventoryKey) {
         MSML_LOG_INFO("Patching Master Inventory");
 
-        const auto stream = asset.GetStream();
-        stream->AddRef();
-        const auto n_size = stream->GetSize();
-        std::string xml_string(n_size, '\0');
-        stream->Read(xml_string.data(), n_size);
-        stream->Release();
+        const std::string xml_string = msml::core::util::StreamUtil::ReadString(asset.GetStream());
 
         pugi::xml_document doc;
 
@@ -106,7 +82,9 @@ bool ClothingTweaker::OnLoad(msml::core::resource::CustomRecord &asset) {
     return false;
 }
 
-void ClothingTweaker::CreateMaterial(const uint32_t group, const std::string &name, const std::string &texture, const int skin_id) {
+// TODO: does not yet work on x86, look into 004bb920, Revo::CharacterVisualComponent::BodyMaterialSetResourceAcquireCallback
+
+void ClothingTweaker::CreateMaterial(const uint32_t group, const std::string& type, const std::string &name, const std::string &texture, const int skin_id) {
     const std::string file_name_with_skin = name + "_s" + std::to_string(skin_id);
 
     const EA::ResourceMan::Key material_key = {
@@ -139,22 +117,17 @@ void ClothingTweaker::CreateMaterial(const uint32_t group, const std::string &na
         }).build();
 
     material.Write(material_stream);
-    material_asset->buffer = material_stream->AsBuffer();
+    material_asset->buffer = msml::core::util::StreamUtil::ReadBytes(material_stream);
     material_stream->Close();
     material_stream->Release();
 
     const EA::ResourceMan::Key setKey {
         .instance = group,
         .type = msml::core::assets::DDFFileType::MATERIALSET,
-        .group = 0
+        .group = msml::hash::fnv::FromString32(type.c_str()),
     };
 
-    if (!materialsToAdd.contains(setKey)) {
-        materialsToAdd[setKey] = {};
-    }
-
-    materialsToAdd[setKey].push_back(material_key);
-
+    material_tweaker.AddMaterial(setKey, material_key);
     msml::core::Assets::GetInstance().RegisterAsset(material_asset);
 }
 
@@ -170,15 +143,18 @@ bool ClothingTweaker::OnRegister(msml::core::assets::Asset &asset) {
         if (!outfitNode)
             return false;
 
-        std::string name = outfitNode.attribute("name").as_string();
-        // maybe we can make this a list, because you might want npc's to also wear the outfit
-        std::string context = outfitNode.attribute("context").as_string();
-        std::string model = outfitNode.attribute("model").as_string();
+        std::string name = outfitNode.child("Name").text().as_string();
+        std::string model = outfitNode.child("Model").text().as_string();
         std::string category = outfitNode.attribute("category").as_string();
         std::string type = outfitNode.attribute("type").as_string();
         std::string gender = outfitNode.attribute("gender").as_string();
         std::string texture = outfitNode.attribute("texture").as_string();
         std::string mask = outfitNode.attribute("mask").as_string();
+        std::vector<std::string> contexts;
+
+        for (const auto & node : outfitNode.child("Contexts").children("Context")) {
+            contexts.emplace_back(node.text().as_string());
+        }
 
         std::string design_mode = "_" + name;
 
@@ -188,14 +164,23 @@ bool ClothingTweaker::OnRegister(msml::core::assets::Asset &asset) {
         uint32_t model_instance = msml::hash::fnv::FromString32(model.c_str());
 
 #ifdef VERSION_TACO_BELL
-        {
-            // requires a lot of work, won't be doing this right now
-        }
+        MSML_LOG_ERROR("Clothing tweaking is not yet supported for your game version");
+        return false;
+        // EA::ResourceMan::IRecord* texture_record;
+        // msml::core::Assets::GetAsset(texture + ".dds", &texture_record);
+        // EA::ResourceMan::IRecord* mask_record;
+        // msml::core::Assets::GetAsset(mask + ".dds", &mask_record);
+        //
+        // if (SkintoneVariantGenerator::Generate(file_name, texture_record, mask_record)){
+        //     CreateMaterial(model_instance, type, file_name, file_name + "_s0", 0);
+        //     CreateMaterial(model_instance, type, file_name, file_name + "_s1", 1);
+        //     CreateMaterial(model_instance, type, file_name, file_name + "_s2", 2);
+        // }
 #endif
 
 #ifdef VERSION_COZY_BUNDLE
 
-        CreateMaterial(model_instance, file_name, texture, 0);
+        CreateMaterial(model_instance, type, file_name, texture, 0);
 
         {
             const EA::ResourceMan::Key mask_key = {
@@ -215,34 +200,18 @@ bool ClothingTweaker::OnRegister(msml::core::assets::Asset &asset) {
         }
 #endif
 
-        outfitsToAdd.push_back(new OutfitEntry{
-            .context = context,
-            .type = type,
-            .design_mode = design_mode,
-            .gender = gender,
-            .category = category,
-            .model = model
-        });
+        MSML_LOG_INFO("Created materials for %s", file_name.c_str());
 
-        // Make sure to also add to kMaster
-        outfitsToAdd.push_back(new OutfitEntry{
-            .context = "kMaster",
-            .type = type,
-            .design_mode = design_mode,
-            .gender = gender,
-            .category = category,
-            .model = model
-        });
-
-        // maybe have a flag for this, if it can only be unlocked later
-        outfitsToAdd.push_back(new OutfitEntry{
-            .context = "kInitial",
-            .type = type,
-            .design_mode = design_mode,
-            .gender = gender,
-            .category = category,
-            .model = model
-        });
+        for (const std::string & context : contexts) {
+            outfitsToAdd.push_back(new OutfitEntry{
+                .context = context,
+                .type = type,
+                .design_mode = design_mode,
+                .gender = gender,
+                .category = category,
+                .model = model
+            });
+        }
 
         return true;
     }

@@ -15,6 +15,8 @@ namespace EA::IO {
         std::vector<uint8_t> buffer;
 
     public:
+        static constexpr uint32_t Type = 0xe41cb215;
+
         MemoryStream();
         MemoryStream(const void* data, size_t size);
 

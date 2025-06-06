@@ -7,6 +7,7 @@
 #include <fstream>
 
 #include "../libs/googletest/googlemock/include/gmock/gmock-matchers.h"
+#include "core/util/StreamUtil.h"
 #include "EA/IO/MemoryStream.h"
 
 TEST(Material, Read) {
@@ -123,8 +124,8 @@ TEST(Material, Write) {
     Material::Read(material, readStream);
     material.Write(writeStream);
 
-    const auto inBuffer = readStream->AsBuffer();
-    const auto outBuffer = writeStream->AsBuffer();
+    const auto inBuffer =  msml::core::util::StreamUtil::ReadBytes(readStream);
+    const auto outBuffer =  msml::core::util::StreamUtil::ReadBytes(writeStream);
 
     readStream->Close();
     readStream->Release();

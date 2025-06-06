@@ -11,6 +11,7 @@
 
 #include "Signatures.h"
 #include "../../EA/IO/Constants.h"
+#include "../../EA/ResourceMan/IResource.h"
 #include "../../EA/ResourceMan/RecordInfo.h"
 #include "../../EA/ResourceMan/ResourceKey.h"
 #include "../hooks/Hooks.h"
@@ -146,6 +147,15 @@ public:
 typedef void (*VTable)();
 
 namespace Revo {
+    struct Revo {
+    };
+
+#ifdef VERSION_COZY_BUNDLE
+    CREATE_NORMAL_CALLABLE_SIGNATURE(load_body, Revo, void*, "",
+                                     "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 48 89 7C 24 20 41 56 48 83 EC 40 48 8B E9 4D 8B F1 48 8D 0D ?? ?? ?? ?? 49 8B F8 48 8B F2 E8 ?? ?? ?? ??",
+                                     0, void* a, char* dynamic_skin_name, void* c, EA::ResourceMan::IResource* material_resource,
+                                     EA::ResourceMan::IResource* texture_resource, EA::ResourceMan::IResource* mask_resource);
+#endif
     namespace ResourceSystem {
         struct ResourceSystem {
             VTable *vTable;
@@ -159,6 +169,9 @@ namespace Revo {
 
     namespace App {
         struct App {
+        };
+
+        struct TinyXmlInstance {
             void *tinyXmlImplementation; // TinyXmlImplementation::vftable
             void *tiXmlElement;
         };
@@ -169,15 +182,16 @@ namespace Revo {
                                          wchar_t*,
                                          bool, const wchar_t*, const wchar_t*)
 
-        CREATE_MEMBER_CALLABLE_SIGNATURE(ReadXMLFromPath, App, App*,
+        CREATE_NORMAL_CALLABLE_SIGNATURE(ReadXMLFromPath, App, TinyXmlInstance*,
                                          "81 EC 90 06 00 00 A1 C0 44 02 01 33 C4 89 84 24 8C 06 00 00 8B 84 24 9C 06 00 00",
                                          "40 55 53 56 57 41 54 41 55 41 56 41 57 48 8D AC 24 A8 F9 FF FF 48 81 EC 58 07 00 00 48 8B 05 ?? ?? ?? ??",
-                                         0, const char*, void*, const char*, bool, double*, const char*);
+                                         0, TinyXmlInstance*, const char*, void*, const char*, bool, double*,
+                                         const char*);
 
-        CREATE_NORMAL_CALLABLE_SIGNATURE(ReadXMLFromStream, App, App*,
+        CREATE_NORMAL_CALLABLE_SIGNATURE(ReadXMLFromStream, App, TinyXmlInstance*,
                                          "83 EC 14 53 55 56 57 E8 ?? ?? ?? ?? 80 7C 24 3C 00 8B 4C 24 2C",
                                          "48 89 5C 24 10 48 89 6C 24 20 4C 89 44 24 18 56 57 41 54 41 55 41 57 48 83 EC 70",
-                                         0, const char**, EA::IO::IStream*, void*, const char*, double*);
+                                         0, const char*&, EA::IO::IStream*, void*, const char*, double*);
     }
 
     namespace ObjectFolder {
@@ -195,17 +209,32 @@ namespace Revo {
             uint32_t values[91];
         };
 
-        // CREATE_MEMBER_CALLABLE_SIGNATURE(LoadAllObjectDefs, ObjectFolder, void, "",
+        // CREATE_MEMBER_CALLABLE_SIGNATURE(LoadAllObjectDefs, ObjectFolder, void, "FILL ME",
         //                                  "48 89 5C 24 08 48 89 74 24 10 48 89 7C 24 18 55 41 54 41 55 41 56 41 57 48 8D AC 24 20 FF FF FF 48 81 EC E0 01 00 00 48 8B 05 ?? ?? ?? ??",
         //                                  0);
         //
-        // CREATE_NORMAL_CALLABLE_SIGNATURE(AddCharacterDef, ObjectFolder, CharacterDef*, "",
+        // CREATE_NORMAL_CALLABLE_SIGNATURE(AddCharacterDef, ObjectFolder, CharacterDef*, "FILL ME",
         //                                  "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 60 0F B6 DA 48 8B F1 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? B9 04 00 00 00 E8 ?? ?? ?? ?? 33 FF 48 89 BC 24 80 00 00 00 48 89 7C 24 30 48 89 7C 24 28 88 5C 24 20 4C 8B 0D 0E 96 81 00 4C 8D 84 24 80 00 00 00 48 8B D6",
         //                                  0, const char* path, bool);
         //
-        // CREATE_NORMAL_CALLABLE_SIGNATURE(AddObjectDef, ObjectFolder, ObjectDef*, "",
+        // CREATE_NORMAL_CALLABLE_SIGNATURE(AddObjectDef, ObjectFolder, ObjectDef*, "FILL ME",
         //                                  "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 60 0F B6 DA 48 8B F1 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? B9 04 00 00 00 E8 ?? ?? ?? ?? 33 FF 48 89 BC 24 80 00 00 00 48 89 7C 24 30 48 89 7C 24 28 88 5C 24 20 4C 8B 0D 7E 67 80 00 4C 8D 84 24 80 00 00 00 48 8B D6",
         //                                  0, const char* path, bool);
+    }
+
+    namespace ResourceProxy {
+        struct ResourceProxy {
+        };
+
+        enum AcquireType : uint32_t {
+            DEFAULT = 0,
+            USE_CACHE = 1,
+            NO_CACHE = 2
+        };
+
+        // CREATE_MEMBER_CALLABLE_SIGNATURE(Acquire, ResourceProxy, void*,
+        //                                  "53 55 56 8B F1 57 8B 7C 24 14 8B 07 89 46 08 8B 4F 04 89 4E 0C", "", 0,
+        //                                  const EA::ResourceMan::Key&, AcquireType acquire_type, uint32_t acquire_priority);
     }
 }
 
@@ -231,6 +260,8 @@ namespace EA {
 
     namespace ResourceMan {
         class IRecord;
+        class IDatabase;
+        class IResource;
 
         namespace PFIndexModifiable {
             struct PFIndexModifiable {
@@ -273,6 +304,18 @@ namespace EA {
             struct Manager {
             };
 
+            CREATE_NORMAL_CALLABLE_SIGNATURE(GetManager, Manager, Manager*,
+                                             "a1 ?? ?? ?? ?? c3 cc cc cc cc cc cc cc cc cc cc 8b 4c 24 04 a1 c4 5b 09 01 89 0d c4 5b 09 01",
+                                             "48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 83 C4 28 C3 CC CC CC CC 48 89 5C 24 10 48 89 6C 24 18 56 57 41 56",
+                                             0);
+            CREATE_MEMBER_CALLABLE_SIGNATURE(GetResource, Manager, void*,
+                                             "83 EC 10 53 56 32 DB 38 5C 24 1C 57 8B F1 ?? ?? 8B 7C 24 38 85 FF",
+                                             "48 89 5C 24 10 48 89 6C 24 18 56 57 41 56 48 83 EC 60 49 8B F9 49 8B F0 48 8B EA",
+                                             0,
+                                             const Key& key, IResource** resource_out, void*, IDatabase* database,
+                                             void* factory,
+                                             const Key*, uint32_t, uint32_t, uint32_t, uint32_t);
+
             CREATE_MEMBER_CALLABLE_SIGNATURE(SetTypename, Manager, bool,
                                              "83 EC 08 56 8B F1 57 8D BE 38 01 00 00 68 2C 95 E7 00 8B CF E8 ?? ?? ?? ?? 8D 44 24 14 50 8D 4C 24 0C 81 C6 E8 00 00 00 51 8B CE E8 ?? ?? ?? ?? 8B 56 08 8B 4E 04 8B 44 24 08 3B 04 91",
                                              "48 89 5C 24 18 55 56 57 48 81 EC 80 00 00 00 49 8B F0 8B FA 48 8B E9", 0,
@@ -281,7 +324,7 @@ namespace EA {
             CREATE_MEMBER_CALLABLE_SIGNATURE(RegisterDatabase, Manager, void,
                                              "83 EC 10 53 55 56 57 8B F9 8D 4F 48 68 2C 95 E7 00 89 4C 24 18",
                                              "48 89 5C 24 10 48 89 6C 24 18 56 57 41 54 41 56 41 57 48 83 EC 40 41 8B E9 49 8B F0 0F B6 FA",
-                                             0, bool add, void* pDatabase, uint32_t priority);
+                                             0, bool add, IDatabase* pDatabase, uint32_t priority);
         }
 
         namespace DatabaseDirectoryFiles {

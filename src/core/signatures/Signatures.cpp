@@ -11,6 +11,7 @@
 #include "../../EA/IO/FileStream.h"
 #include "../../include/hash_sha256.h"
 #include "../system/Logger.h"
+#include "../util/StreamUtil.h"
 
 namespace msml::core {
     Signatures & Signatures::GetInstance() {
@@ -60,14 +61,10 @@ namespace msml::core {
         GetModuleFileName(nullptr, path, MAX_PATH);
 
         const auto stream = new EA::IO::FileStream(path);
-        stream->AddRef();
-        const auto size = stream->GetSize();
-        const auto buffer = new uint8_t[size];
-        stream->Read(buffer, size);
+        const auto buffer = util::StreamUtil::ReadBytes(stream);
         stream->Close();
-        stream->Release();
 
-        checksum.sha256_update(buffer, size);
+        checksum.sha256_update(buffer.data(), buffer.size());
 
         return checksum.sha256_final();
     }

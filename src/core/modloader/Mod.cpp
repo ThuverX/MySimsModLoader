@@ -66,7 +66,7 @@ namespace msml::core::modloader {
                 std::string hookPath = hook.text().as_string();
                 std::string fullpath = std::filesystem::absolute(std::filesystem::path(path) / std::filesystem::path(hookPath)).string();
 
-                mod->postHooks.push_back(fullpath);
+                mod->preHooks.push_back(fullpath);
                 hookCount++;
             }
         }

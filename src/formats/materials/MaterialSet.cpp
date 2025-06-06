@@ -23,6 +23,7 @@ void WriteMTST(MTST &mtst, EA::IO::IStream *stream) {
     WRITE_VALUE(stream, uint32_t, 1);
     WRITE(stream, mtst.name);
     WRITE(stream, mtst.index);
+    mtst.count = mtst.indices.size();
     WRITE(stream, mtst.count);
     for (auto & index : mtst.indices) {
         WRITE(stream, index);

@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "../libs/googletest/googlemock/include/gmock/gmock-matchers.h"
+#include "core/util/StreamUtil.h"
 #include "EA/IO/MemoryStream.h"
 #include "formats/materials/MaterialSet.h"
 
@@ -77,8 +78,8 @@ TEST(MaterialSet, Write) {
     MaterialSet::Read(materialSet, readStream);
     materialSet.Write(writeStream);
 
-    const auto inBuffer = readStream->AsBuffer();
-    const auto outBuffer = writeStream->AsBuffer();
+    const auto inBuffer =  msml::core::util::StreamUtil::ReadBytes(readStream);
+    const auto outBuffer =  msml::core::util::StreamUtil::ReadBytes(writeStream);
 
     readStream->Close();
     readStream->Release();

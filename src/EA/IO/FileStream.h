@@ -18,6 +18,7 @@ namespace EA::IO {
         HANDLE hFile = INVALID_HANDLE_VALUE;
 
     public:
+        static constexpr uint32_t Type = 0xb7faadfe;
         explicit FileStream(const std::filesystem::path &path);
 
         [[nodiscard]] uint32_t GetType() const override;
@@ -43,6 +44,8 @@ namespace EA::IO {
         bool Flush() override;
 
         size_t Write(const void *pData, size_t nSize) override;
+
+        std::filesystem::path GetPath();
     };
 }
 

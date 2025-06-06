@@ -23,6 +23,22 @@ public:
         static std::vector<Tweaker*> registry;
         return registry;
     }
+
+    static void RegistryOnLoad(msml::core::resource::CustomRecord* asset) {
+        for (const auto &tweaker: getRegistry()) {
+            if (tweaker->OnLoad(*asset)) {
+                break;
+            }
+        }
+    }
+
+    static void RegistryOnRegister(msml::core::assets::Asset* asset) {
+        for (const auto &tweaker: getRegistry()) {
+            if (tweaker->OnRegister(*asset)) {
+                break;
+            }
+        }
+    }
 };
 
 #endif //TWEAKER_H

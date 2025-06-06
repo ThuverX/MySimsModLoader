@@ -13,6 +13,7 @@ namespace msml::core::assets {
     EA::IO::IStream * Asset::GetStream() const {
         if (type == PATH) return new EA::IO::FileStream(path);
         if (type == REDIRECT) {
+            if (key == key_redirect) return nullptr; // failsafe
             EA::ResourceMan::IRecord* record = {};
 
             if (Assets::GetInstance().database->OpenRecord2(key_redirect, &record, EA::IO::AccessFlags::Read, EA::IO::CD::LoadAllFiles, 0, nullptr))
@@ -58,6 +59,15 @@ namespace msml::core::assets {
         if (const auto sep = filename.find('!'); sep != std::string::npos) {
             const auto left = filename.substr(0, sep);
             const auto right = filename.substr(sep + 1);
+
+            // Fix for weird file names on tb
+            if (left.find('_') != std::string::npos || right.find('_') != std::string::npos) {
+                return {
+                    .instance = 0,
+                    .type = UNKNOWN,
+                    .group = 0
+                };
+            }
 
             const auto group = static_cast<uint32_t>(std::stoul(left, nullptr, 16));
             const auto instance = std::stoull(right, nullptr, 16);

@@ -14,6 +14,8 @@
 #include "../../include/refpack.h"
 #include "../../tweakers/Tweaker.h"
 #include "../assets/Assets.h"
+#include "../hash/FNV.h"
+#include "../modloader/ModLoader.h"
 
 
 namespace msml::core::resource {
@@ -43,7 +45,7 @@ namespace msml::core::resource {
                                      EA::IO::AccessFlags accessFlags, EA::IO::CD cd, int,
                                      EA::ResourceMan::RecordInfo *record_info) {
         bool result = false;
-
+        // TODO: this is a bit inefficient, so we should early exist based on custom, ddf or dbpf
         if (Assets::GetInstance().ddf_paths.contains(key)) {
             const auto path = Assets::GetInstance().ddf_paths[key];
             const auto record = new CustomRecord(key, new EA::IO::FileStream(path), this);
@@ -58,11 +60,7 @@ namespace msml::core::resource {
             if (pDstRecord != nullptr) {
                 *pDstRecord = record;
 
-                for (const auto &tweaker: Tweaker::getRegistry()) {
-                    if (tweaker->OnLoad(*record)) {
-                        break;
-                    }
-                }
+                Tweaker::RegistryOnLoad(record);
             }
 
             result = true;
@@ -114,11 +112,7 @@ namespace msml::core::resource {
 
                 *pDstRecord = record;
 
-                for (const auto &tweaker: Tweaker::getRegistry()) {
-                    if (tweaker->OnLoad(*record)) {
-                        break;
-                    }
-                }
+                Tweaker::RegistryOnLoad(record);
             }
 
             result = true;
@@ -127,8 +121,6 @@ namespace msml::core::resource {
         if (assets.contains(key)) {
             const auto asset = assets[key];
             const auto record = new CustomRecord(key, asset->GetStream(), this);
-
-            MSML_LOG_DEBUG_HIDDEN("Resolving asset %s", IdResolver::ToFilename(asset->key).c_str());
 
             if (record_info != nullptr) {
                 record_info->flags = 0;
@@ -139,14 +131,39 @@ namespace msml::core::resource {
 
             if (pDstRecord != nullptr) {
                 *pDstRecord = record;
-                for (const auto &tweaker: Tweaker::getRegistry()) {
-                    if (tweaker->OnLoad(*record)) {
-                        break;
-                    }
-                }
+
+                Tweaker::RegistryOnLoad(record);
             }
 
             return true;
+        }
+
+        if (result == false) {
+            uint64_t instance = hash::fnv::FromString64("fallback");
+            if (key.type == assets::DDS) instance = hash::fnv::FromString32("fallback");
+
+            const EA::ResourceMan::Key fallbackKey = {
+                .instance = instance,
+                .type = key.type,
+                .group = 0
+            };
+
+            if (assets.contains(fallbackKey) && key != fallbackKey) {
+                // MSML_LOG_WARNING("Using fallback for %s -> %s", IdResolver::ToHumanReadable(key).c_str(), IdResolver::ToHumanReadable(fallbackKey).c_str());
+                const auto asset = assets[fallbackKey];
+                const auto record = new CustomRecord(key, asset->GetStream(), this);
+
+                if (record_info != nullptr) {
+                    record_info->flags = 0;
+                    record_info->chunkOffset = 0;
+                    record_info->compressedSize = record->stream->GetSize();
+                    record_info->memorySize = record->stream->GetSize();
+                }
+
+                if (pDstRecord != nullptr) {
+                    *pDstRecord = record;
+                }
+            }
         }
 
         return result;
@@ -256,7 +273,13 @@ namespace msml::core::resource {
     }
 
     void CustomDatabase::AddAsset(assets::Asset *pAsset) {
-        MSML_LOG_INFO("Registering asset %s as %s", pAsset->path.filename().string().c_str(), IdResolver::ToFilename(pAsset->key).c_str());
+        if (pAsset->type == assets::BUFFER) {
+            MSML_LOG_INFO("Registering %s: <buffer>", IdResolver::ToFilename(pAsset->key).c_str());
+        } else if (pAsset->type == assets::PATH) {
+            MSML_LOG_INFO("Registering %s: \"%s\"", IdResolver::ToFilename(pAsset->key).c_str(), pAsset->path.filename().string().c_str());
+        } else if (pAsset->type == assets::REDIRECT) {
+            MSML_LOG_INFO("Registering %s: -> %s", IdResolver::ToFilename(pAsset->key).c_str(), IdResolver::ToFilename(pAsset->key_redirect).c_str());
+        }
         assets[pAsset->key] = pAsset;
     }
 

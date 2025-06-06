@@ -125,15 +125,6 @@ namespace EA::IO {
         /// @param pData
         /// @param nSize
         virtual size_t Write(const void *pData, size_t nSize) = 0;
-
-        // Only use when reading the full data at once is necessary, otherwise use Read
-        std::vector<uint8_t> AsBuffer() {
-            std::vector<uint8_t> buffer;
-            SetPosition(0);
-            buffer.resize(GetSize());
-            Read(buffer.data(), buffer.size());
-            return buffer;
-        }
     };
 }
 

@@ -10,6 +10,7 @@
 
 #include "../../EA/ResourceMan/ResourceKey.h"
 #include "../resource/CustomDatabase.h"
+#include "../resource/CustomRecord.h"
 
 namespace msml::core {
     struct DBPFRecordInfo {
@@ -25,6 +26,8 @@ namespace msml::core {
         void CreateDatabase();
         void RegisterAsset(const std::filesystem::path &path) const;
         void RegisterAsset(assets::Asset* asset) const;
+        static bool GetAsset(const EA::ResourceMan::Key& key, EA::ResourceMan::IRecord ** record);
+        static bool GetAsset(const std::string& name, EA::ResourceMan::IRecord ** record);
         void CreateDatabaseEntries(const std::filesystem::path &path) const;
         resource::CustomDatabase* database = nullptr;
         std::unordered_map<EA::ResourceMan::Key, std::filesystem::path> ddf_paths;

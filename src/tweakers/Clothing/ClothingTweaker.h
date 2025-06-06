@@ -21,13 +21,12 @@ struct OutfitEntry {
 class ClothingTweaker final : public Tweaker {
 public:
     std::vector<OutfitEntry*> outfitsToAdd;
-    std::unordered_map<EA::ResourceMan::Key, std::vector<EA::ResourceMan::Key>> materialsToAdd;
 
     bool OnLoad(msml::core::resource::CustomRecord &asset) override;
     bool OnRegister(msml::core::assets::Asset &asset) override;
 
 private:
-    void CreateMaterial(uint32_t group, const std::string &name, const std::string &texture, const int skin_id);
+    static void CreateMaterial(uint32_t group, const std::string& type, const std::string &name, const std::string &texture, const int skin_id);
 };
 
 #endif //CLOTHINGTWEAKER_H

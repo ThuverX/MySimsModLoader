@@ -5,11 +5,13 @@
 #ifndef TWEAKERS_H
 #define TWEAKERS_H
 #include "Clothing/ClothingTweaker.h"
+#include "Material/MaterialTweaker.h"
 #include "Swarm/SwarmTweaker.h"
 
 // looks unused, just registers this tweaker for use.
 
-static SwarmTweaker swarmTweaker;
-static ClothingTweaker clothingTweaker;
+extern MaterialTweaker material_tweaker;
+extern SwarmTweaker swarm_tweaker;
+extern ClothingTweaker clothing_tweaker;
 
 #endif //TWEAKERS_H

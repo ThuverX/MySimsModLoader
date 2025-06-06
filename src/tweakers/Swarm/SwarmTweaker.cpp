@@ -6,6 +6,7 @@
 
 #include "../../core/hash/FNV.h"
 #include "../../core/system/Logger.h"
+#include "../../core/util/StreamUtil.h"
 #include "../../EA/IO/FileStream.h"
 #include "../../EA/IO/MemoryStream.h"
 
@@ -23,30 +24,18 @@ EA::ResourceMan::Key MasterSwarmKey64 = {
 
 bool SwarmTweaker::OnLoad(msml::core::resource::CustomRecord &asset) {
     if (asset.GetKey() == MasterSwarmKey32 || asset.GetKey() == MasterSwarmKey64) {
-
         const size_t count = swarmsToAdd.size();
 
         if (count == 0) return false;
 
         MSML_LOG_INFO("Patching Master Swarm with %d file(s)", count);
 
-        const size_t size = asset.GetStream()->GetSize();
-        const size_t pos = asset.GetStream()->GetPosition(EA::IO::PositionType::Begin);
-
-        std::string data(size, '\0');
-
-        asset.GetStream()->Read(data.data(), size);
-        asset.GetStream()->SetPosition(pos, EA::IO::PositionType::Begin);
+        std::string data = msml::core::util::StreamUtil::ReadString(asset.GetStream());
 
         for (const auto & swarm_to_add : swarmsToAdd) {
 
             const auto stream = new EA::IO::FileStream(swarm_to_add->path);
-            stream->AddRef();
-            const auto n_size = stream->GetSize();
-            std::string string_to_add(n_size, '\0');
-            stream->Read(string_to_add.data(), n_size);
-            stream->Close();
-            stream->Release();
+            std::string string_to_add = msml::core::util::StreamUtil::ReadString(stream);
 
             data += "\n" + string_to_add;
         }
