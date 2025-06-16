@@ -16,6 +16,7 @@
 #include "../../core/util/StreamUtil.h"
 #include "../../EA/IO/MemoryStream.h"
 #include "../../formats/builders/MaterialBuilder.h"
+#include "../../formats/builders/MaterialSetBuilder.h"
 #include "../../formats/materials/MaterialSet.h"
 
 struct xml_string_writer: pugi::xml_writer
@@ -84,7 +85,7 @@ bool ClothingTweaker::OnLoad(msml::core::resource::CustomRecord &asset) {
 
 // TODO: does not yet work on x86, look into 004bb920, Revo::CharacterVisualComponent::BodyMaterialSetResourceAcquireCallback
 
-void ClothingTweaker::CreateMaterial(const uint32_t group, const std::string& type, const std::string &name, const std::string &texture, const int skin_id) {
+void ClothingTweaker::CreateBodyMaterial(const uint32_t group, const std::string& type, const std::string &name, const std::string &texture, const int skin_id) {
     const std::string file_name_with_skin = name + "_s" + std::to_string(skin_id);
 
     const EA::ResourceMan::Key material_key = {
@@ -131,76 +132,174 @@ void ClothingTweaker::CreateMaterial(const uint32_t group, const std::string& ty
     msml::core::Assets::GetInstance().RegisterAsset(material_asset);
 }
 
+/*
+    idea for facial expression names
+    _blink
+    _annoyed
+    _blush
+    _serious
+    _sad
+    _glad
+    _hurt
+    _neutral
+    _confused
+ */
+
+void ClothingTweaker::CreateEyesMaterials(const std::string& name, const std::string &base_texture) {
+    const EA::ResourceMan::Key material_set_key = {
+        .instance = msml::hash::fnv::FromString32(name.c_str()),
+        .type = msml::core::assets::DDFFileType::MATERIALSET,
+        .group = msml::hash::fnv::FromString32("Eyes")
+    };
+
+    auto material_set = MaterialSetBuilder()
+        .withKey(material_set_key)
+        .withMTSTName(msml::hash::fnv::FromString32(name.c_str()))
+        .withMTSTDefaultIndex();
+
+    for (int i = 0; i <= 8; i++) {
+        std::string key_name = name + std::to_string(i);
+        std::string texture_name = base_texture + std::to_string(i);
+
+        const EA::ResourceMan::Key material_key = {
+            .instance = msml::hash::fnv::FromString32(key_name.c_str()),
+            .type = msml::core::assets::DDFFileType::MATERIAL,
+            .group = msml::hash::fnv::FromString32(name.c_str())
+        };
+
+        const auto material_asset = new msml::core::assets::Asset(material_key, msml::core::assets::BUFFER);
+        const auto material_stream = new EA::IO::MemoryStream();
+        material_stream->AddRef();
+
+        const EA::ResourceMan::Key texture_key = {
+            .instance = msml::hash::fnv::FromString32(texture_name.c_str()),
+            .type = msml::core::assets::DDFFileType::DDS,
+            .group = 0,
+        };
+
+        auto material = MaterialBuilder()
+            .withShader(ShaderType::lambert)
+            .withKey(material_key)
+            .withColorParameter(0xDAA9532D, 0, 0, 0, 0)
+            .withColorParameter(0x3BD441A0,0,0,0,0)
+            .withColorParameter(0x5D22FD3,1,1,1,1)
+            .withValueParameter(0xF46B90AE, 0)
+            .withColorParameter(0x29BCDD1F,1,1,1,1)
+            .withKeyParameter(0xC3FAAC4F, texture_key)
+            .withColorParameter(0x73C9923E, 1,1,1,1)
+            .withColorParameter(0x4A5DAA3,0,0,0,0)
+            .withValueParameter(0x76F88689, 1)
+            .withColorParameter(0x7FEE2D1A,1,1,1,1)
+            .withKeyParameter(0x6CC0FD85, texture_key).build();
+
+        material_set.withMaterial(material);
+
+        material.Write(material_stream);
+        material_asset->buffer = msml::core::util::StreamUtil::ReadBytes(material_stream);
+        material_stream->Close();
+        material_stream->Release();
+
+        msml::core::Assets::GetInstance().RegisterAsset(material_asset);
+    }
+
+    const auto material_set_asset = new msml::core::assets::Asset(material_set_key, msml::core::assets::BUFFER);
+    const auto material_set_stream = new EA::IO::MemoryStream();
+    material_set_stream->AddRef();
+
+    material_set.build().Write(material_set_stream);
+    material_set_asset->buffer = msml::core::util::StreamUtil::ReadBytes(material_set_stream);
+    material_set_stream->Close();
+    material_set_stream->Release();
+
+    msml::core::Assets::GetInstance().RegisterAsset(material_set_asset);
+}
+
 bool ClothingTweaker::OnRegister(msml::core::assets::Asset &asset) {
-    if (asset.path.string().ends_with(".outfit.xml")) {
-        MSML_LOG_INFO("Registering clothing outfit: %s", asset.path.string().c_str());
+    if (asset.path.string().ends_with(".clothing.xml")) {
+        MSML_LOG_INFO("Registering clothing: %s", asset.path.string().c_str());
         pugi::xml_document doc;
 
         if (const pugi::xml_parse_result result = doc.load_file(asset.path.c_str()); !result)
             return false;
 
-        const pugi::xml_node outfitNode = doc.child("Outfit");
+        const pugi::xml_node outfitNode = doc.child("Clothing");
         if (!outfitNode)
             return false;
 
-        std::string name = outfitNode.child("Name").text().as_string();
-        std::string model = outfitNode.child("Model").text().as_string();
+        std::string name = outfitNode.attribute("name").as_string();
         std::string category = outfitNode.attribute("category").as_string();
-        std::string type = outfitNode.attribute("type").as_string();
         std::string gender = outfitNode.attribute("gender").as_string();
-        std::string texture = outfitNode.attribute("texture").as_string();
-        std::string mask = outfitNode.attribute("mask").as_string();
-        std::vector<std::string> contexts;
+        std::string type = outfitNode.attribute("type").as_string();
+        std::string model;
+        std::string design_mode;
 
+        std::vector<std::string> contexts;
         for (const auto & node : outfitNode.child("Contexts").children("Context")) {
             contexts.emplace_back(node.text().as_string());
         }
 
-        std::string design_mode = "_" + name;
+        if (type == "Body") {
+            model = outfitNode.child("Model").text().as_string();
 
-        std::string file_name = model + design_mode;
-        std::string mask_name = file_name + "_mask";
+            const auto texture_node = outfitNode.child("Texture");
+            std::string texture = texture_node.text().as_string();
+            std::string mask = texture_node.attribute("mask").as_string();
 
-        uint32_t model_instance = msml::hash::fnv::FromString32(model.c_str());
+            design_mode = "_" + name;
+
+            std::string file_name = model + design_mode;
+            std::string mask_name = file_name + "_mask";
+
+            uint32_t model_instance = msml::hash::fnv::FromString32(model.c_str());
 
 #ifdef VERSION_TACO_BELL
-        MSML_LOG_ERROR("Clothing tweaking is not yet supported for your game version");
-        return false;
-        // EA::ResourceMan::IRecord* texture_record;
-        // msml::core::Assets::GetAsset(texture + ".dds", &texture_record);
-        // EA::ResourceMan::IRecord* mask_record;
-        // msml::core::Assets::GetAsset(mask + ".dds", &mask_record);
-        //
-        // if (SkintoneVariantGenerator::Generate(file_name, texture_record, mask_record)){
-        //     CreateMaterial(model_instance, type, file_name, file_name + "_s0", 0);
-        //     CreateMaterial(model_instance, type, file_name, file_name + "_s1", 1);
-        //     CreateMaterial(model_instance, type, file_name, file_name + "_s2", 2);
-        // }
+            MSML_LOG_ERROR("Clothing tweaking is not yet supported for your game version");
+            return false;
+            // EA::ResourceMan::IRecord* texture_record;
+            // msml::core::Assets::GetAsset(texture + ".dds", &texture_record);
+            // EA::ResourceMan::IRecord* mask_record;
+            // msml::core::Assets::GetAsset(mask + ".dds", &mask_record);
+            //
+            // if (SkintoneVariantGenerator::Generate(file_name, texture_record, mask_record)){
+            //     CreateMaterial(model_instance, type, file_name, file_name + "_s0", 0);
+            //     CreateMaterial(model_instance, type, file_name, file_name + "_s1", 1);
+            //     CreateMaterial(model_instance, type, file_name, file_name + "_s2", 2);
+            // }
 #endif
 
 #ifdef VERSION_COZY_BUNDLE
 
-        CreateMaterial(model_instance, type, file_name, texture, 0);
+            CreateBodyMaterial(model_instance, type, file_name, texture, 0);
 
-        {
-            const EA::ResourceMan::Key mask_key = {
-                .instance = msml::hash::fnv::FromString32(mask_name.c_str()),
-                .type = msml::core::assets::DDFFileType::DDS,
-                .group = 0,
-            };
+            {
+                const EA::ResourceMan::Key mask_key = {
+                    .instance = msml::hash::fnv::FromString32(mask_name.c_str()),
+                    .type = msml::core::assets::DDFFileType::DDS,
+                    .group = 0,
+                };
 
-            auto mask_asset = new msml::core::assets::Asset(mask_key, msml::core::assets::REDIRECT);
-            mask_asset->key_redirect = {
-                .instance = msml::hash::fnv::FromString32(mask.c_str()),
-                .type = msml::core::assets::DDFFileType::DDS,
-                .group = 0,
-            };
+                auto mask_asset = new msml::core::assets::Asset(mask_key, msml::core::assets::REDIRECT);
+                mask_asset->key_redirect = {
+                    .instance = msml::hash::fnv::FromString32(mask.c_str()),
+                    .type = msml::core::assets::DDFFileType::DDS,
+                    .group = 0,
+                };
 
-            msml::core::Assets::GetInstance().RegisterAsset(mask_asset);
-        }
+                msml::core::Assets::GetInstance().RegisterAsset(mask_asset);
+            }
 #endif
+        }
+        else if (type == "Eyes" || type == "Mouth") {
+            model = name;
 
-        MSML_LOG_INFO("Created materials for %s", file_name.c_str());
+            std::string texture = outfitNode.child("Texture").text().as_string();
+
+            design_mode = "NA";
+
+            CreateEyesMaterials(name, texture);
+        }
+
+        MSML_LOG_INFO("Created materials for %s", name.c_str());
 
         for (const std::string & context : contexts) {
             outfitsToAdd.push_back(new OutfitEntry{

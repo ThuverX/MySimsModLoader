@@ -13,3 +13,9 @@
 [submodule "libs/directxtex"]
 	path = libs/directxtex
 	url = https://github.com/microsoft/DirectXTex.git
+[submodule "libs/imgui"]
+	path = libs/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "libs/imgui_hex_editor"]
+	path = libs/imgui_hex_editor
+	url = https://github.com/Teselka/imgui_hex_editor.git

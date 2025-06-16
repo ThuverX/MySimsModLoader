@@ -74,6 +74,7 @@ namespace msml::core::resource {
         bool Attach(bool, EA::ResourceMan::Manager::Manager *pResourceMan, bool) override;
 
         void AddAsset(assets::Asset *pAsset);
+        void GetKeys(std::vector<EA::ResourceMan::Key> &keys);
     };
 }
 

@@ -9,6 +9,9 @@
 #include "Mods.h"
 #include "../../Version.h"
 #include "../assets/Assets.h"
+#ifndef NDEBUG
+#include "../debug/DebugUI.h"
+#endif
 #include "../hooks/Hooks.h"
 
 #include "../hooks/LuaHook.h"
@@ -26,10 +29,13 @@ namespace msml::core {
     void ModLoader::Initialize() {
         system::Logger::module = modulePath;
 
+        // TODO: Add setting for this
         bool consoleEnabled = false;
+        bool debugEnabled = false;
 
 #ifndef NDEBUG
         consoleEnabled = true;
+        debugEnabled = true;
 #endif
 
         if (IsDebuggerPresent())
@@ -60,6 +66,11 @@ namespace msml::core {
         resource::IdResolver::GetInstance().Load("./hashes.bin");
         modloader::Mods::GetInstance().Find();
         Assets::Install();
+#ifndef NDEBUG
+        if (debugEnabled) {
+            DebugUI::Install();
+        }
+#endif
         Assets::GetInstance().CreateDatabase();
         hooks::ArgscriptHook::Install();
         hooks::LuaHook::Install();

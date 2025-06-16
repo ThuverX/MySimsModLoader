@@ -26,7 +26,8 @@ public:
     bool OnRegister(msml::core::assets::Asset &asset) override;
 
 private:
-    static void CreateMaterial(uint32_t group, const std::string& type, const std::string &name, const std::string &texture, const int skin_id);
+    static void CreateEyesMaterials(const std::string& name, const std::string &base_texture);
+    static void CreateBodyMaterial(uint32_t group, const std::string& type, const std::string &name, const std::string &texture, const int skin_id);
 };
 
 #endif //CLOTHINGTWEAKER_H

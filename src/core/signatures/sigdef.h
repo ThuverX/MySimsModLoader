@@ -153,8 +153,10 @@ namespace Revo {
 #ifdef VERSION_COZY_BUNDLE
     CREATE_NORMAL_CALLABLE_SIGNATURE(load_body, Revo, void*, "",
                                      "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 48 89 7C 24 20 41 56 48 83 EC 40 48 8B E9 4D 8B F1 48 8D 0D ?? ?? ?? ?? 49 8B F8 48 8B F2 E8 ?? ?? ?? ??",
-                                     0, void* a, char* dynamic_skin_name, void* c, EA::ResourceMan::IResource* material_resource,
-                                     EA::ResourceMan::IResource* texture_resource, EA::ResourceMan::IResource* mask_resource);
+                                     0, void* a, char* dynamic_skin_name, void* c,
+                                     EA::ResourceMan::IResource* material_resource,
+                                     EA::ResourceMan::IResource* texture_resource,
+                                     EA::ResourceMan::IResource* mask_resource);
 #endif
     namespace ResourceSystem {
         struct ResourceSystem {
@@ -360,6 +362,30 @@ namespace EA {
                                          0);
     }
 }
+
+CREATE_NORMAL_CALLABLE_SIGNATURE(SetCursorLock, UI, void, "", "40 53 48 83 EC 20 0F B6 D9 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 88 1D FA 69 6C 00 48 83 C4 20 5B", 0, bool state)
+
+#pragma region TheForge
+
+struct Queue;
+struct QueuePresentDesc;
+struct GraphicDevice;
+
+namespace TSS::Graphics {
+
+    CREATE_NORMAL_CALLABLE_SIGNATURE(GetDevice, Graphics, GraphicDevice*, "",
+                      "48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? B8 1C 02 00 00 48 83 C4 28 C3",
+                      0);
+}
+
+
+CREATE_NORMAL_CALLABLE_SIGNATURE(d3d12_queuePresent, TheForge, void, "",
+                                             "40 53 48 83 EC 20 48 8B 1A 48 85 DB 0F 84 B3 00 00 00 8B 53 10 44 8B C2",
+                                             0, Queue* pQueue, const QueuePresentDesc* pDesc);
+CREATE_NORMAL_CALLABLE_SIGNATURE(WriteLog, TheForge, void, "",
+                                             "4C 89 4C 24 20 48 83 EC 38 48 8D 44 24 60 48 89 44 24 20",
+                                             0, uint32_t level, const char* filename, int line_number, const char* message, ...);
+#pragma endregion TheForge
 
 #pragma region lua functions
 

@@ -9,12 +9,12 @@
 namespace msml::core::system {
     class Logger {
     public:
-        enum class LogLevel {
+        enum class LogLevel: uint32_t {
             INFO,
             WARNING,
             ERR,
             LUA,
-            DEBUG
+            DEBUG,
         };
         static void Log(LogLevel level, bool do_cout, const char *file, int line, const char* format, ...);
         static std::filesystem::path module;

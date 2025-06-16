@@ -9,6 +9,18 @@ option(BUILD_TESTS "Build tests" ON)
 # Disable sigmatch tests to speed up compilation
 set(SIGMATCH_BUILD_TESTS OFF CACHE BOOL "Disable sigmatch tests" FORCE)
 
+set(WIN_SDK_VER "10.0.26100.0")
+set(WIN_SDK_PATH "C:/Program Files (x86)/Windows Kits/10")
+
+include_directories(
+        "${WIN_SDK_PATH}/Include/${WIN_SDK_VER}/um"
+        "${WIN_SDK_PATH}/Include/${WIN_SDK_VER}/shared"
+        "${WIN_SDK_PATH}/Include/${WIN_SDK_VER}/winrt"
+        "${WIN_SDK_PATH}/Include/${WIN_SDK_VER}/ucrt"
+)
+
+
+add_subdirectory(libs/imgui)
 add_subdirectory(libs/directxtex)
 add_subdirectory(libs/minhook)
 add_subdirectory(libs/sigmatch)
@@ -94,6 +106,13 @@ set(SOURCES
         src/core/util/StreamUtil.h
         src/tweakers/Clothing/SkintoneVariantGenerator.cpp
         src/tweakers/Clothing/SkintoneVariantGenerator.h
+        src/core/debug/DebugUI.cpp
+        src/core/debug/DebugUI.h
+        src/core/debug/ImGuiHook.cpp
+        src/core/debug/ImGuiHook.h
+
+        libs/imgui_hex_editor/imgui_hex.h
+        libs/imgui_hex_editor/imgui_hex.cpp
 )
 
 if (CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
@@ -135,10 +154,17 @@ target_include_directories(MySimsModLoader PRIVATE libs/pugixml/src)
 target_include_directories(MySimsModLoader PRIVATE libs/minhook/include)
 target_include_directories(MySimsModLoader PRIVATE libs/sigmatch/include)
 target_include_directories(MySimsModLoader PRIVATE libs/directxtex)
+target_include_directories(MySimsModLoader PRIVATE libs/theforge/Common_3)
+target_include_directories(MySimsModLoader PRIVATE libs/imgui_hex_editor)
 
-target_link_libraries(MySimsModLoader PRIVATE DirectXTex)
-target_link_libraries(MySimsModLoader PRIVATE minhook)
-target_link_libraries(MySimsModLoader PRIVATE pugixml-static)
+target_link_libraries(MySimsModLoader PRIVATE
+        imgui
+        DirectXTex
+        minhook
+        pugixml-static
+        d3d12
+        dxguid
+)
 
 set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "dsound")
 

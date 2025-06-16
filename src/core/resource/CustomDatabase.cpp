@@ -108,7 +108,9 @@ namespace msml::core::resource {
             }
 
             if (pDstRecord != nullptr) {
-                const auto record = new CustomRecord(key, new EA::IO::SubFileStream(item.path, item.record.chunkOffset, item.record.compressedSize), this);
+                const auto record = new CustomRecord(
+                    key, new EA::IO::SubFileStream(item.path, item.record.chunkOffset, item.record.compressedSize),
+                    this);
 
                 *pDstRecord = record;
 
@@ -169,10 +171,11 @@ namespace msml::core::resource {
         return result;
     }
 
+    // TODO: These don't actually check all values...
     size_t CustomDatabase::GetKeyList(eastl::vector<EA::ResourceMan::Key, EASTLDummyAllocatorType> &pDst,
                                       EA::ResourceMan::IKeyFilter *filter) {
         for (const auto &key: assets | std::views::keys) {
-            if (filter->IsValid(key)) {
+            if (!filter || filter->IsValid(key)) {
                 pDst.push_back(key);
             }
         }
@@ -276,11 +279,38 @@ namespace msml::core::resource {
         if (pAsset->type == assets::BUFFER) {
             MSML_LOG_INFO("Registering %s: <buffer>", IdResolver::ToFilename(pAsset->key).c_str());
         } else if (pAsset->type == assets::PATH) {
-            MSML_LOG_INFO("Registering %s: \"%s\"", IdResolver::ToFilename(pAsset->key).c_str(), pAsset->path.filename().string().c_str());
+            MSML_LOG_INFO("Registering %s: \"%s\"", IdResolver::ToFilename(pAsset->key).c_str(),
+                          pAsset->path.filename().string().c_str());
         } else if (pAsset->type == assets::REDIRECT) {
-            MSML_LOG_INFO("Registering %s: -> %s", IdResolver::ToFilename(pAsset->key).c_str(), IdResolver::ToFilename(pAsset->key_redirect).c_str());
+            MSML_LOG_INFO("Registering %s: -> %s", IdResolver::ToFilename(pAsset->key).c_str(),
+                          IdResolver::ToFilename(pAsset->key_redirect).c_str());
         }
         assets[pAsset->key] = pAsset;
+    }
+
+    void CustomDatabase::GetKeys(std::vector<EA::ResourceMan::Key> &keys) {
+        keys.clear();
+
+        for (const auto &
+             key: assets | std::views::keys) {
+            if (std::ranges::find(keys, key) == keys.end()) {
+                keys.push_back(key);
+            }
+        }
+
+        for (const auto &
+             key: Assets::GetInstance().ddf_paths | std::views::keys) {
+            if (std::ranges::find(keys, key) == keys.end()) {
+                keys.push_back(key);
+            }
+        }
+
+        for (const auto &
+             key: Assets::GetInstance().ddf_paths | std::views::keys) {
+            if (std::ranges::find(keys, key) == keys.end()) {
+                keys.push_back(key);
+            }
+        }
     }
 
 #pragma region Unused
