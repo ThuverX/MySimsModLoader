@@ -4,16 +4,19 @@
 
 #include "Hooks.h"
 #include "MinHook.h"
+#include "../modloader/ModLoader.h"
 #include "../system/Logger.h"
 
 namespace msml::core::Hooks {
     void Install(void* target, void *detour, void** original) {
         if (target == nullptr) {
             MSML_LOG_ERROR("Failed to install hook");
+            ModLoader::SoftCrash();
         }
 
         if (MH_CreateHook(target, detour, original) != MH_OK) {
             MSML_LOG_ERROR("Failed to install hook");
+            ModLoader::SoftCrash();
         }
     }
 

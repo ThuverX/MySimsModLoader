@@ -28,8 +28,8 @@ namespace msml::core {
         static Signatures& GetInstance();
         bool Search(const sigmatch::signature &sig, void*& address, uint32_t offset, bool first) const;
         bool SearchAll();
-        void Append(std::string name, SigSearchBase* sig);
-        std::array<uint8_t, 32U> GetCheckSum();
+        void Append(const std::string& name, SigSearchBase* sig);
+        static std::array<uint8_t, 32U> GetCheckSum();
 
     private:
         Signatures();
@@ -37,7 +37,7 @@ namespace msml::core {
         sigmatch::search_context context;
 
         bool LoadDatabase();
-        void SaveDatabase();
+        void SaveDatabase() const;
     };
 }
 

@@ -68,7 +68,7 @@ namespace msml::core {
 
     void ModLoader::SoftCrash() {
         MessageBox(nullptr, "The application is going to crash, check the logs.", "ModLoader::SoftCrash", 1);
-        exit(0);
+        exit(1);
     }
 
     ModLoader::ModLoader() {
