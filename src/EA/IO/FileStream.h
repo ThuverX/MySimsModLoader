@@ -16,9 +16,13 @@ namespace EA::IO {
     class FileStream final : public IStream {
         std::filesystem::path path;
         HANDLE hFile = INVALID_HANDLE_VALUE;
+        CD cd = CD::Default;
+        AccessFlags accessFlags = AccessFlags::None;
+        FileError fileError = FileError::Success;
 
     public:
         static constexpr uint32_t Type = 0xb7faadfe;
+        FileStream(const std::filesystem::path &path, AccessFlags access_flags, CD cd);
         explicit FileStream(const std::filesystem::path &path);
 
         [[nodiscard]] uint32_t GetType() const override;

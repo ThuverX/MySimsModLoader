@@ -4,17 +4,105 @@
 
 #include "FileStream.h"
 
+#include "../../core/system/Logger.h"
+
 namespace EA::IO {
-    FileStream::FileStream(const std::filesystem::path &path): path(path) {
+
+    FileError MapWindowsErrorToFileError(DWORD errorCode) {
+        switch (errorCode) {
+            case ERROR_SUCCESS:
+                return FileError::Success;
+            case ERROR_INVALID_HANDLE:
+                return FileError::InvalidHandle;
+            case ERROR_OUTOFMEMORY:
+            case ERROR_NOT_ENOUGH_MEMORY:
+                return FileError::OutOfMemory;
+            case ERROR_FILE_NOT_FOUND:
+                return FileError::FileNotFound;
+            case ERROR_PATH_NOT_FOUND:
+            case ERROR_INVALID_DRIVE:
+                return FileError::PathNotFound;
+            case ERROR_ACCESS_DENIED:
+                return FileError::AccessDenied;
+            case ERROR_WRITE_PROTECT:
+                return FileError::WriteProtect;
+            case ERROR_CURRENT_DIRECTORY:
+                return FileError::CurrentDirectory;
+            case ERROR_NOT_READY:
+                return FileError::NotReady;
+            case ERROR_CRC:
+                return FileError::CRC;
+            default:
+                return FileError::Other;
+        }
+    }
+
+    FileStream::FileStream(const std::filesystem::path &path, const AccessFlags access_flags, const CD cd): path(path), cd(cd), accessFlags(access_flags) {
+        DWORD wCd = 0;
+        DWORD wAccess = 0;
+        DWORD wFileShare = 0;
+
+        switch (cd) {
+            case CD::CreateNew:
+                wCd = CREATE_NEW;
+                break;
+            case CD::CreateAlways:
+                wCd = CREATE_ALWAYS;
+                break;
+            case CD::OpenExisting:
+                wCd = OPEN_EXISTING;
+                break;
+            case CD::OpenAlways:
+                wCd = OPEN_ALWAYS;
+                break;
+            case CD::TruncateExisting:
+                wCd = TRUNCATE_EXISTING;
+                break;
+            default:
+            case CD::LoadAllFiles:
+            case CD::Default:
+                wCd = OPEN_EXISTING;
+                break;
+        }
+
+        switch (access_flags) {
+            case AccessFlags::Read:
+                wAccess = GENERIC_READ;
+                wFileShare = FILE_SHARE_READ;
+                break;
+            case AccessFlags::Write:
+                wAccess = GENERIC_WRITE;
+                wFileShare = FILE_SHARE_WRITE;
+                break;
+            case AccessFlags::ReadWrite:
+                wAccess = GENERIC_READ | GENERIC_WRITE;
+                wFileShare = FILE_SHARE_READ | FILE_SHARE_WRITE;
+                break;
+            default:
+            case AccessFlags::None:
+                wAccess = GENERIC_READ;
+                wFileShare = FILE_SHARE_READ;
+                break;
+        }
+
         hFile = CreateFileW(
             path.c_str(),
-            GENERIC_READ,
-            FILE_SHARE_READ,
+            wAccess,
+            wFileShare,
             nullptr,
-            OPEN_EXISTING,
+            wCd,
             FILE_ATTRIBUTE_NORMAL,
             nullptr
         );
+
+        fileError = MapWindowsErrorToFileError(GetLastError());
+
+        if (hFile == INVALID_HANDLE_VALUE) {
+            MSML_LOG_ERROR("Failed to open file %s", path.string().c_str());
+        }
+    }
+
+    FileStream::FileStream(const std::filesystem::path &path): FileStream(path, AccessFlags::Read, CD::Default) {
     }
 
     uint32_t FileStream::GetType() const {
@@ -22,11 +110,11 @@ namespace EA::IO {
     }
 
     AccessFlags FileStream::GetAccessFlags() const {
-        return (hFile != INVALID_HANDLE_VALUE) ? AccessFlags::Read : AccessFlags::None;
+        return (hFile != INVALID_HANDLE_VALUE) ? accessFlags : AccessFlags::None;
     }
 
     FileError FileStream::GetState() const {
-        return (hFile != INVALID_HANDLE_VALUE) ? FileError::Success : FileError::InvalidHandle;
+        return fileError;
     }
 
     bool FileStream::Close() {
@@ -100,6 +188,8 @@ namespace EA::IO {
         if (ReadFile(hFile, pData, static_cast<DWORD>(nSize), &bytesRead, nullptr))
             return bytesRead;
 
+        fileError = MapWindowsErrorToFileError(GetLastError());
+
         return -1;
     }
 
@@ -109,7 +199,15 @@ namespace EA::IO {
     }
 
     size_t FileStream::Write(const void *pData, size_t nSize) {
-        return 0;
+        if (hFile == INVALID_HANDLE_VALUE || pData == nullptr) return -1;
+
+        DWORD bytesWritten = 0;
+        if (WriteFile(hFile, pData, static_cast<DWORD>(nSize), &bytesWritten, nullptr))
+            return bytesWritten;
+
+        fileError = MapWindowsErrorToFileError(GetLastError());
+
+        return -1;
     }
 
     std::filesystem::path FileStream::GetPath() {

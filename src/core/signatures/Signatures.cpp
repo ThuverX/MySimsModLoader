@@ -8,12 +8,17 @@
 
 #include "windows.h"
 #include "sigdef.h"
+#include "../../Version.h"
 #include "../../EA/IO/FileStream.h"
+#include "../../EA/IO/MemoryStream.h"
 #include "../../include/hash_sha256.h"
 #include "../system/Logger.h"
 #include "../util/StreamUtil.h"
 
 namespace msml::core {
+
+    static constexpr uint32_t SIGNATURE_VERSION = 0;
+
     Signatures & Signatures::GetInstance() {
         static Signatures signatures;
         return signatures;
@@ -48,7 +53,7 @@ namespace msml::core {
         return false;
     }
 
-    void Signatures::Append(std::string name, SigSearchBase* sig){
+    void Signatures::Append(const std::string& name, SigSearchBase* sig){
         signatures.emplace(name, sig);
     }
 
@@ -72,16 +77,16 @@ namespace msml::core {
     bool Signatures::SearchAll() {
         const auto start = std::chrono::high_resolution_clock::now();
 
-        if (!LoadDatabase()) {
-            for(const auto &val: signatures | std::views::values) {
-                if (!val->Search()) {
-                    return false;
-                }
+        LoadDatabase();
+
+        for(const auto &val: signatures | std::views::values) {
+            if (val->GetAddress() == nullptr && !val->Search()) {
+                return false;
             }
         }
 
-        auto elapsed = std::chrono::high_resolution_clock::now() - start;
-        double elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count() / 1000.0;
+        const auto elapsed = std::chrono::high_resolution_clock::now() - start;
+        const double elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count() / 1000.0;
         MSML_LOG_INFO("Search time: %.3f milliseconds", elapsed_ms);
 
         SaveDatabase();
@@ -94,83 +99,78 @@ namespace msml::core {
         context = target.in_module("MySims.exe");
     }
 
-#define READ_BIN(var) infile.read((char*)&var, sizeof(var));
-#define WRITE_BIN(var) outfile.write((char*)&var, sizeof(var))
-
-#define SIGCACHE_DB_NAME "sigcache.db"
-
     bool Signatures::LoadDatabase() {
 #ifndef NDEBUG
         return false;
 #endif
+        const auto stream = new EA::IO::FileStream("signatures.db");
 
-        std::ifstream infile(SIGCACHE_DB_NAME, std::ios::in | std::ios::binary);
-        if (!infile.good()) {
-            MSML_LOG_ERROR("Failed to open sigcache");
+        uint32_t sig_version = UINT32_MAX;
+        READ(stream, sig_version);
+
+        if (sig_version != SIGNATURE_VERSION) {
             return false;
         }
 
+        std::string msml_version;
+        READ_LEN_STRING(stream, msml_version);
+
         std::array<uint8_t, 32U> checksum{};
         for (auto i = 0; i < 32U; i++) {
-            READ_BIN(checksum[i]);
+            READ(stream, checksum[i]);
         }
 
-        if (std::array<uint8_t, 32U> currentChecksum = GetCheckSum(); checksum != currentChecksum) {
+        if (const std::array<uint8_t, 32U> currentChecksum = GetCheckSum(); checksum != currentChecksum) {
             MSML_LOG_ERROR("Checksum mismatch, searching for new signatures");
             return false;
         }
 
         uint32_t sigCount;
-        READ_BIN(sigCount);
-        for (uint32_t i = 0; i < sigCount; i++) {
-            uint32_t length;
-            READ_BIN(length);
+        READ(stream, sigCount);
 
-            char name[1024];
-            infile.read(name, length);
+        for (int i =0; i < sigCount; i++) {
+            std::string sig_name;
+            READ_LEN_STRING(stream, sig_name);
+            uint64_t address;
+            READ(stream, address);
 
-            auto name_str = std::string(name, length);
-
-            uintptr_t addr;
-            READ_BIN(addr);
-
-            if (signatures.contains(name_str)) {
-                signatures[name_str]->ApplyAddress(reinterpret_cast<void *>(addr));
+            if (signatures.contains(sig_name)) {
+                signatures[sig_name]->ApplyAddress(reinterpret_cast<void *>(address));
             } else {
-                MSML_LOG_ERROR("Failed to find signatures with name %s", name_str);
+                MSML_LOG_ERROR("Failed to find signatures with name %s", sig_name.c_str());
+                return false;
             }
         }
+
+        MSML_LOG_INFO("Read %d signatures from signatures.db", sigCount);
+
+        stream->Close();
 
         return true;
     }
 
-    void Signatures::SaveDatabase() {
+    void Signatures::SaveDatabase() const {
 #ifndef NDEBUG
         return;
 #endif
+        const auto stream = new EA::IO::FileStream("signatures.db", EA::IO::AccessFlags::Write, EA::IO::CD::CreateAlways);
 
-        std::ofstream outfile(SIGCACHE_DB_NAME, std::ios::out | std::ios::binary);
+        WRITE(stream, SIGNATURE_VERSION);
+        WRITE_LEN_STRING(stream, MSML_VERSION);
 
-        std::array<uint8_t, 32U> checksum = GetCheckSum();
-        size_t count = signatures.size();
-
+        const std::array<uint8_t, 32U> checksum = GetCheckSum();
         for (auto i = 0; i < 32U; i++) {
-            WRITE_BIN(checksum[i]);
+            WRITE(stream, checksum[i]);
         }
-        WRITE_BIN(count);
 
-        for (const auto &sig: signatures) {
-            std::string name = sig.first;
-            size_t length = name.length();
-            auto addr = reinterpret_cast<uintptr_t>(sig.second->GetAddress());
-
-            WRITE_BIN(length);
-            outfile.write(name.c_str(), length);
-            WRITE_BIN(addr);
+        WRITE_VALUE(stream, uint32_t, signatures.size());
+        for (const auto& signature : signatures) {
+            WRITE_LEN_STRING(stream, signature.first.c_str());
+            WRITE_VALUE(stream, uint64_t, reinterpret_cast<uint64_t>(signature.second->GetAddress()));
         }
 
         MSML_LOG_INFO("Signature cache saved");
 
-        outfile.close();
+        stream->Close();
     }
 }
