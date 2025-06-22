@@ -38,6 +38,14 @@ namespace msml::core::resource {
 
         hashes32.clear();
         hashes64.clear();
+
+        if (stream->GetState() != EA::IO::FileError::Success || stream->GetAccessFlags() == EA::IO::AccessFlags::None) {
+            MSML_LOG_ERROR("Failed to load Hashes from %s", path.c_str());
+            stream->Close();
+            stream->Release();
+            return; // exit early instead of trying to read from invalid stream
+        }
+
         uint64_t count;
         READ(stream, count);
 
