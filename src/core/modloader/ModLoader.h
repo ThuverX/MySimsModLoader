@@ -20,22 +20,20 @@
 #define W_DATA_PATH L"../SimsRevData"
 #endif
 
-namespace msml::core {
+namespace Msml::Core {
     class ModLoader {
+        ModLoader();
+
+        System::Console mConsole;
     public:
         static ModLoader &GetInstance();
 
         void Initialize();
 
         // Root game folder path
-        std::filesystem::path modulePath;
+        std::filesystem::path mModulePath;
 
         static void SoftCrash();
-
-    private:
-        ModLoader();
-
-        system::Console console;
     };
 }
 

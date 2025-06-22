@@ -4,18 +4,18 @@
 
 #include "MaterialSetBuilder.h"
 
-MaterialSetBuilder & MaterialSetBuilder::withMaterial(const Material &mat) {
-    matSet.materials.push_back(mat.self);
+MaterialSetBuilder &MaterialSetBuilder::WithMaterial(const Material &kMaterial) {
+    mMaterialSet.mMaterials.push_back(kMaterial.mSelf);
 
     return *this;
 }
 
-MaterialSetBuilder & MaterialSetBuilder::withMaterial(const EA::ResourceMan::Key key) {
-    matSet.materials.push_back(key);
+MaterialSetBuilder &MaterialSetBuilder::WithMaterial(const EA::ResourceMan::Key kKey) {
+    mMaterialSet.mMaterials.push_back(kKey);
 
     return *this;
 }
 
-MaterialSet MaterialSetBuilder::build() {
-    return matSet;
+MaterialSet MaterialSetBuilder::Build() {
+    return mMaterialSet;
 }

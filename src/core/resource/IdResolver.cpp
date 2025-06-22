@@ -10,80 +10,80 @@
 #include "../hash/FNV.h"
 #include "../system/Logger.h"
 
-namespace msml::core::resource {
+namespace Msml::Core::Resource {
     IdResolver &IdResolver::GetInstance() {
         static IdResolver instance;
         return instance;
     }
 
-    std::string IdResolver::GetHash64(const uint64_t hash) {
-        if (hashes64.contains(hash)) {
-            return hashes64.at(hash);
+    std::string IdResolver::GetHash64(const uint64_t kHash) {
+        if (mHashes64.contains(kHash)) {
+            return mHashes64.at(kHash);
         }
 
-        return std::format("{:016x}", hash);
+        return std::format("{:016x}", kHash);
     }
 
-    std::string IdResolver::GetHash32(const uint32_t hash) {
-        if (hashes32.contains(hash)) {
-            return hashes32.at(hash);
+    std::string IdResolver::GetHash32(const uint32_t kHash) {
+        if (mHashes32.contains(kHash)) {
+            return mHashes32.at(kHash);
         }
 
-        return std::format("{:08x}", hash);
+        return std::format("{:08x}", kHash);
     }
 
     void IdResolver::Load(const std::string &path) {
-        const auto stream = new EA::IO::FileStream(path);
-        stream->AddRef();
+        auto *const kStream = new EA::IO::FileStream(path);
+        kStream->AddRef();
 
-        hashes32.clear();
-        hashes64.clear();
-        uint64_t count;
-        READ(stream, count);
+        mHashes32.clear();
+        mHashes64.clear();
+        uint64_t count = 0;
+        READ(kStream, count);
 
-        for (int i = 0; i < count; i++) {
-            char *text;
-            READ_CSTRING(stream, text);
-            uint32_t fnv32;
-            READ(stream, fnv32);
-            uint64_t fnv64;
-            READ(stream, fnv64);
+        for (uint64_t i = 0; i < count; i++) {
+            std::string text;
+            READ_CSTRING(kStream, text);
+            uint32_t fnv32 = 0;
+            READ(kStream, fnv32);
+            uint64_t fnv64 = 0;
+            READ(kStream, fnv64);
 
-            hashes32.insert(std::pair<uint32_t, std::string>(fnv32, text));
-            hashes64.insert(std::pair<uint64_t, std::string>(fnv64, text));
-
-            delete[] text;
+            mHashes32.insert(std::pair(fnv32, text));
+            mHashes64.insert(std::pair(fnv64, text));
         }
 
-        stream->Close();
-        stream->Release();
+        kStream->Close();
+        kStream->Release();
 
-        MSML_LOG_INFO("Loaded %d Hashes from %s", hashes32.size(), path.c_str());
+        MSML_LOG_INFO("Loaded %d Hashes from %s", mHashes32.size(), path.c_str());
     }
 
-    void IdResolver::Add(const std::string &str) {
-        uint64_t fnv64 = hash::fnv::FromString64(str.c_str());
-        uint32_t fnv32 = hash::fnv::FromString32(str.c_str());
+    void IdResolver::Add(const std::string &kStr) {
+        uint64_t fnv64 = Hash::FNV::FromString64(kStr);
+        uint32_t fnv32 = Hash::FNV::FromString32(kStr);
 
-        hashes32.insert(std::pair(fnv32, str));
-        hashes64.insert(std::pair(fnv64, str));
+        mHashes32.insert(std::pair(fnv32, kStr));
+        mHashes64.insert(std::pair(fnv64, kStr));
     }
 
     std::string IdResolver::ToHumanReadable(const EA::ResourceMan::Key &key) {
-        const std::string instance = GetInstance().GetHash64(key.instance);
-        const std::string type = assets::Asset::GetTypeName(key.type);
-        const std::string group = GetInstance().GetHash32(key.group);
+        const std::string kInstance = GetInstance().GetHash64(key.mInstance);
+        const std::string kType = Asset::GetTypeName(key.mType);
+        const std::string kGroup = GetInstance().GetHash32(key.mGroup);
 
-        if (key.group == 0) return instance + "." + type;
+        if (key.mGroup == 0) {
+            return kInstance + "." + kType;
+        }
 
-        return group + "!" + instance + "." + type;
+        return kGroup + "!" + kInstance + "." + kType;
     }
 
     std::string IdResolver::ToFilename(const EA::ResourceMan::Key &key) {
-        const std::string instance = std::format("0x{:016x}", key.instance);
-        const std::string type = assets::Asset::GetTypeName(key.type);
-        const std::string group = std::format("0x{:08x}", key.group);
+        const std::string kInstance = std::format("0x{:016x}", key.mInstance);
+        const std::string kType = Asset::GetTypeName(key.mType);
+        const std::string kGroup = std::format("0x{:08x}", key.mGroup);
 
-        return group + "!" + instance + "." + type;
+        return kGroup + "!" + kInstance + "." + kType;
     }
 }

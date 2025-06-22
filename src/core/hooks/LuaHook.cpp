@@ -9,16 +9,16 @@
 #include "../modloader/Mods.h"
 #include "../signatures/sigdef.h"
 
-namespace msml::core::hooks {
-    int lua_print(lua_State* L) {
-        const int nargs = lua_gettop(L);
+namespace Msml::Core::Hooks {
+    int LuaPrint(lua_State* L) {
+        const int kNargs = lua_gettop(L);
         std::string logMessage;
 
-        for (int i = 1; i <= nargs; ++i) {
+        for (int i = 1; i <= kNargs; ++i) {
             const char* arg = lua_tostring(L, i);
-            logMessage += arg ? arg : "(nil)";
+            logMessage += (arg != nullptr) ? arg : "(nil)";
 
-            if (i < nargs) {
+            if (i < kNargs) {
                 logMessage += " ";
             }
         }
@@ -27,18 +27,18 @@ namespace msml::core::hooks {
         return 0;
     }
 
-    static int original_require_ref = LUA_REFNIL;
+    static int sOriginalRequireRef = LUA_REFNIL;
 
-    int lua_require(lua_State* L) {
-        modloader::Mods::GetInstance().RunPreHooks();
+    int LuaRequire(lua_State* L) {
+        Modloader::Mods::GetInstance().RunPreHooks();
 
         lua_pushstring(L, MSML_VERSION);
         lua_setglobal(L, "MSML_VERSION");
 
-        lua_pushcclosure(L, lua_print, 0);
+        lua_pushcclosure(L, LuaPrint, 0);
         lua_setglobal(L, "print");
 
-        lua_rawgeti(L, LUA_REGISTRYINDEX, original_require_ref);
+        lua_rawgeti(L, LUA_REGISTRYINDEX, sOriginalRequireRef);
 
         lua_pushvalue(L, 1);
 
@@ -47,38 +47,38 @@ namespace msml::core::hooks {
             return 0;
         }
 
-        modloader::Mods::GetInstance().RunPostHooks();
+        Modloader::Mods::GetInstance().RunPostHooks();
 
         return 1;
     }
 
-    void __fastcall LuaScriptingSystemStartupHooked(EA::ScriptOs::LuaScriptingSystem::LuaScriptingSystem* this_ptr) {
-        EA::ScriptOs::LuaScriptingSystem::StartupHook.Original(this_ptr);
+    void __fastcall LuaScriptingSystemStartupHooked(EA::ScriptOs::LuaScriptingSystem::LuaScriptingSystem* pThisPtr) {
+        EA::ScriptOs::LuaScriptingSystem::StartupHook.Original(pThisPtr);
 
-        lua_State* L = this_ptr->state;
+        lua_State* L = pThisPtr->mState;
 
         lua_getglobal(L, "CodeRequire");
-        original_require_ref = luaL_ref(L, LUA_REGISTRYINDEX);
-        lua_pushcclosure(L, lua_require, 0);
+        sOriginalRequireRef = luaL_ref(L, LUA_REGISTRYINDEX);
+        lua_pushcclosure(L, LuaRequire, 0);
         lua_setglobal(L, "CodeRequire");
 
-        LuaHook::GlobalState = L;
+        LuaHook::sGlobalState = L;
 
         MSML_LOG_INFO("Lua hooked successfully!");
     }
 
-    lua_State* LuaHook::GlobalState = nullptr;
+    lua_State* LuaHook::sGlobalState = nullptr;
 
     void LuaHook::Require(const std::string& path) {
-        lua_State* L = GlobalState;
+        lua_State* L = sGlobalState;
 
-        const auto stream = new EA::IO::FileStream(path);
-        stream->AddRef();
-        const auto n_size = stream->GetSize();
-        std::string string(n_size, '\0');
-        stream->Read(string.data(), n_size);
-        stream->Close();
-        stream->Release();
+        auto *const kStream = new EA::IO::FileStream(path);
+        kStream->AddRef();
+        const auto kNSize = kStream->GetSize();
+        std::string string(kNSize, '\0');
+        kStream->Read(string.data(), kNSize);
+        kStream->Close();
+        kStream->Release();
 
         if (luaL_loadbuffer(L, string.data(), string.size(), "_chunk") != LUA_OK) {
             MSML_LOG_ERROR("Lua Error at %s: %s", path.c_str(), lua_tostring(L, -1));

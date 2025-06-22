@@ -4,12 +4,13 @@
 
 #ifndef FNV_H
 #define FNV_H
+
 #include <cstdint>
 #include <string>
 
-namespace msml::hash::fnv {
-    uint64_t FromString64(const char* str);
-    uint32_t FromString32(const char* str);
+namespace Msml::Hash::FNV {
+    uint64_t FromString64(const std::string_view &kStr);
+    uint32_t FromString32(const std::string_view &kStr);
 }
 
 

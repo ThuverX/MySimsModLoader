@@ -1,0 +1,44 @@
+﻿InheritParentConfig: true
+Checks: >
+  -*,
+  readability-identifier-naming,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-pro-type-cstyle-cast,
+  performance-*,
+  bugprone-*,
+  readability-*,
+  -cppcoreguidelines-special-member-functions,
+  -modernize-avoid-c-arrays,
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -performance-no-int-to-ptr,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic
+
+CheckOptions:
+  - { key: readability-identifier-naming.EnumCase, value: CamelCase }
+  - { key: readability-identifier-naming.EnumConstantCase, value: CamelCase }
+  - { key: readability-identifier-naming.ClassCase, value: CamelCase }
+  - { key: readability-identifier-naming.StructCase, value: CamelCase }
+  - { key: readability-identifier-naming.FunctionCase, value: CamelCase }
+  - { key: readability-identifier-naming.NamespaceCase, value: CamelCase }
+  - { key: readability-identifier-naming.MemberCase, value: CamelCase }
+  - { key: readability-identifier-naming.MemberPrefix, value: m }
+  - { key: readability-identifier-naming.PointerCase, value: camelBack }
+  - { key: readability-identifier-naming.PointerPrefix, value: p }
+  - { key: readability-identifier-naming.ConstantCase, value: CamelCase }
+  - { key: readability-identifier-naming.ConstantPrefix, value: k }
+  - { key: readability-identifier-naming.GlobalVariableCase, value: CamelCase }
+  - { key: readability-identifier-naming.GlobalVariablePrefix, value: s }
+  - { key: readability-identifier-naming.ParameterCase, value: camelBack }
+  - { key: readability-identifier-naming.LocalVariableCase, value: camelBack }
+  - { key: readability-identifier-naming.EnumConstantCase, value: CamelCase }
+  - { key: readability-identifier-naming.EnumConstantPrefix, value: k }
+  - { key: readability-identifier-naming.ParameterPointerPrefix, value: p }
+  - { key: readability-identifier-naming.ParameterPointerCase, value: camelBack }
+  - { key: cppcoreguidelines-avoid-do-while.IgnoreMacros, value: 1 }

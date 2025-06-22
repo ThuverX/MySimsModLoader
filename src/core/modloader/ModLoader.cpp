@@ -17,14 +17,14 @@
 #include "../signatures/Signatures.h"
 #include "../system/Logger.h"
 
-namespace msml::core {
+namespace Msml::Core {
     ModLoader &ModLoader::GetInstance() {
         static ModLoader instance;
         return instance;
     }
 
     void ModLoader::Initialize() {
-        system::Logger::module = modulePath;
+        System::Logger::sModule = mModulePath;
 
         bool consoleEnabled = false;
 
@@ -32,11 +32,13 @@ namespace msml::core {
         consoleEnabled = true;
 #endif
 
-        if (IsDebuggerPresent())
+        if (IsDebuggerPresent() != 0) {
             consoleEnabled = false;
+        }
 
-        if (consoleEnabled)
-            console.Enable();
+        if (consoleEnabled) {
+            mConsole.Enable();
+        }
 
         MSML_LOG_INFO("MSML Version: %s", MSML_VERSION);
 
@@ -57,12 +59,12 @@ namespace msml::core {
 #endif
         }
 
-        resource::IdResolver::GetInstance().Load("./hashes.bin");
-        modloader::Mods::GetInstance().Find();
+        Resource::IdResolver::GetInstance().Load("./hashes.bin");
+        Modloader::Mods::GetInstance().Find();
         Assets::Install();
         Assets::GetInstance().CreateDatabase();
-        hooks::ArgscriptHook::Install();
-        hooks::LuaHook::Install();
+        Hooks::ArgscriptHook::Install();
+        Hooks::LuaHook::Install();
         Hooks::Enable();
     }
 
@@ -72,6 +74,6 @@ namespace msml::core {
     }
 
     ModLoader::ModLoader() {
-        modulePath = absolute(std::filesystem::current_path());
+        mModulePath = absolute(std::filesystem::current_path());
     }
 }

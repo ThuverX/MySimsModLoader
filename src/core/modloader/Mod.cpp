@@ -11,80 +11,83 @@
 #include "../hooks/LuaHook.h"
 #include "../system/Logger.h"
 
-namespace msml::core::modloader {
-    Mod * Mod::fromXML(const std::filesystem::path &path) {
+namespace Msml::Core::Modloader {
+    Mod * Mod::FromXML(const std::filesystem::path &path) {
         pugi::xml_document doc;
 
-        if (const pugi::xml_parse_result result = doc.load_file((path / "mod.xml").c_str()); !result)
+        if (const pugi::xml_parse_result kResult = doc.load_file((path / "mod.xml").c_str()); !kResult) {
             return nullptr;
+        }
 
-        const pugi::xml_node modNode = doc.child("Mod");
-        if (!modNode)
+        const pugi::xml_node kModNode = doc.child("Mod");
+        if (!kModNode) {
             return nullptr;
+        }
 
-        const std::string name = modNode.child("Name").text().as_string();
-        const std::string description = modNode.child("Description").text().as_string();
-        const std::string author = modNode.child("Author").text().as_string();
+        const std::string kName = kModNode.child("Name").text().as_string();
+        const std::string kDescription = kModNode.child("Description").text().as_string();
+        const std::string kAuthor = kModNode.child("Author").text().as_string();
 
-        if (name.empty()) {
+        if (kName.empty()) {
             MSML_LOG_ERROR("Mod %s is missing <Name>", path);
             return nullptr;
         }
 
-        if (description.empty()) {
+        if (kDescription.empty()) {
             MSML_LOG_ERROR("Mod %s is missing <Description>", path);
             return nullptr;
         }
 
-        if (author.empty()) {
+        if (kAuthor.empty()) {
             MSML_LOG_ERROR("Mod %s is missing <Author>", path);
             return nullptr;
         }
 
-        const auto mod = new Mod;
+        auto *const kMod = new Mod;
 
-        if (!modNode.attribute("priority").empty())
-            mod->priority = modNode.attribute("priority").as_int();
+        if (!kModNode.attribute("priority").empty()) {
+            kMod->mPriority = kModNode.attribute("priority").as_int();
+        }
 
-        mod->name = name;
-        mod->description = description;
-        mod->author = author;
-        mod->path = path.string();
+        kMod->mName = kName;
+        kMod->mDescription = kDescription;
+        kMod->mAuthor = kAuthor;
+        kMod->mPath = path.string();
 
         uint32_t hookCount = 0;
 
-        if (const pugi::xml_node hooksNode = modNode.child("Hooks"); hooksNode != nullptr) {
-            for (pugi::xml_node hook: hooksNode.children("Hook")) {
+        if (const pugi::xml_node kHooksNode = kModNode.child("Hooks"); kHooksNode != nullptr) {
+            for (pugi::xml_node hook: kHooksNode.children("Hook")) {
                 std::string hookPath = hook.text().as_string();
                 std::string fullpath = absolute(path / hookPath).string();
 
-                mod->postHooks.push_back(fullpath);
+                kMod->mPostHooks.push_back(fullpath);
                 hookCount++;
             }
 
-            for (pugi::xml_node hook: hooksNode.children("Prehook")) {
+            for (pugi::xml_node hook: kHooksNode.children("Prehook")) {
                 std::string hookPath = hook.text().as_string();
                 std::string fullpath = std::filesystem::absolute(std::filesystem::path(path) / std::filesystem::path(hookPath)).string();
 
-                mod->preHooks.push_back(fullpath);
+                kMod->mPreHooks.push_back(fullpath);
                 hookCount++;
             }
         }
 
-        MSML_LOG_INFO("%s registered %d hook(s)", mod->name.c_str(), hookCount);
+        MSML_LOG_INFO("%s registered %d hook(s)", kMod->mName.c_str(), hookCount);
 
-        return mod;
+        return kMod;
     }
 
     void Mod::RunPostHooks() const {
-        for (const auto& hook: postHooks) {
-            hooks::LuaHook::Require(hook);
+        for (const auto& hook: mPostHooks) {
+            Hooks::LuaHook::Require(hook);
         }
     }
 
     void Mod::RunPreHooks() const {
-        for (const auto& hook: preHooks) {
-            hooks::LuaHook::Require(hook);
+        for (const auto& hook: mPreHooks) {
+            Hooks::LuaHook::Require(hook);
         }
     }
 }

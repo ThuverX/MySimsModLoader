@@ -11,8 +11,8 @@
 
 #include "../../EA/ResourceMan/ResourceKey.h"
 
-namespace msml::core::assets {
-    enum DDFFileType: uint32_t {
+namespace Msml::Core {
+    enum class FileType: uint32_t {
         MODEL = 0x01661233,
         REVOMODEL = 0xF9E50586,
         WINDOWSMODEL = 0xB359C791,
@@ -58,70 +58,70 @@ namespace msml::core::assets {
         UNKNOWN = 0x00000000,
     };
 
-    static const std::unordered_map<std::string, DDFFileType> stringToEnum = {
-        {"model", MODEL},
-        {"revomodel", REVOMODEL},
-        {"windowsmodel", WINDOWSMODEL},
-        {"download", DOWNLOAD},
-        {"rig", RIG},
-        {"clip", CLIP},
-        {"keynamemap", KEYNAMEMAP},
-        {"geometry", GEOMETRY},
-        {"material", MATERIAL},
-        {"materialset", MATERIALSET},
-        {"oldspeedtree", OLDSPEEDTREE},
-        {"speedtree", SPEEDTREE},
-        {"dds", DDS},
-        {"compositetexture", COMPOSITETEXTURE},
-        {"simoutfit", SIMOUTFIT},
-        {"level_xml", LEVEL_XML},
-        {"level_bin", LEVEL_BIN},
-        {"physics", PHYSICS},
-        {"lightset_xml", LIGHTSET_XML},
-        {"lightset_bin", LIGHTSET_BIN},
-        {"xml", XML},
-        {"footprintset", FOOTPRINTSET},
-        {"objectconstruction_xml", OBJECTCONSTRUCTION_XML},
-        {"objectconstruction_bin", OBJECTCONSTRUCTION_BIN},
-        {"slot_xml", SLOT_XML},
-        {"slot_bin", SLOT_BIN},
-        {"swm", SWM},
-        {"swarm_bin", SWARM_BIN},
-        {"xml_bin", XML_BIN},
-        {"cab_xml", CAB_XML},
-        {"cab_bin", CAB_BIN},
-        {"big", BIG},
-        {"bnk", BNK},
-        {"lua", LUA},
-        {"luo", LUO},
-        {"lightbox_xml", LIGHTBOX_XML},
-        {"lightbox_bin", LIGHTBOX_BIN},
-        {"xmb", XMB},
-        {"ttf", TTF},
-        {"ttc", TTC},
-        {"runtimesettings_xml", RUNTIMESETTINGS_XML},
-        {"fx", FX}
+    static const std::unordered_map<std::string, FileType> kStringToEnum = {
+        {"model", FileType::MODEL},
+        {"revomodel", FileType::REVOMODEL},
+        {"windowsmodel", FileType::WINDOWSMODEL},
+        {"download", FileType::DOWNLOAD},
+        {"rig", FileType::RIG},
+        {"clip", FileType::CLIP},
+        {"keynamemap", FileType::KEYNAMEMAP},
+        {"geometry", FileType::GEOMETRY},
+        {"material", FileType::MATERIAL},
+        {"materialset", FileType::MATERIALSET},
+        {"oldspeedtree", FileType::OLDSPEEDTREE},
+        {"speedtree", FileType::SPEEDTREE},
+        {"dds", FileType::DDS},
+        {"compositetexture", FileType::COMPOSITETEXTURE},
+        {"simoutfit", FileType::SIMOUTFIT},
+        {"level_xml", FileType::LEVEL_XML},
+        {"level_bin", FileType::LEVEL_BIN},
+        {"physics", FileType::PHYSICS},
+        {"lightset_xml", FileType::LIGHTSET_XML},
+        {"lightset_bin", FileType::LIGHTSET_BIN},
+        {"xml", FileType::XML},
+        {"footprintset", FileType::FOOTPRINTSET},
+        {"objectconstruction_xml", FileType::OBJECTCONSTRUCTION_XML},
+        {"objectconstruction_bin", FileType::OBJECTCONSTRUCTION_BIN},
+        {"slot_xml", FileType::SLOT_XML},
+        {"slot_bin", FileType::SLOT_BIN},
+        {"swm", FileType::SWM},
+        {"swarm_bin", FileType::SWARM_BIN},
+        {"xml_bin", FileType::XML_BIN},
+        {"cab_xml", FileType::CAB_XML},
+        {"cab_bin", FileType::CAB_BIN},
+        {"big", FileType::BIG},
+        {"bnk", FileType::BNK},
+        {"lua", FileType::LUA},
+        {"luo", FileType::LUO},
+        {"lightbox_xml", FileType::LIGHTBOX_XML},
+        {"lightbox_bin", FileType::LIGHTBOX_BIN},
+        {"xmb", FileType::XMB},
+        {"ttf", FileType::TTF},
+        {"ttc", FileType::TTC},
+        {"runtimesettings_xml", FileType::RUNTIMESETTINGS_XML},
+        {"fx", FileType::FX}
     };
 
-    enum AssetType : uint32_t {
-        PATH,
-        BUFFER,
-        REDIRECT
+    enum class AssetType : uint8_t {
+        kPath,
+        kBuffer,
+        kRedirect
     };
 
     class Asset {
     public:
-        EA::ResourceMan::Key key;
-        std::filesystem::path path;
-        EA::ResourceMan::Key key_redirect = {};
-        std::vector<uint8_t> buffer = {};
-        AssetType type = PATH;
+        EA::ResourceMan::Key mKey;
+        std::filesystem::path mPath;
+        EA::ResourceMan::Key mKeyRedirect = {};
+        std::vector<uint8_t> mBuffer;
+        AssetType mType = AssetType::kPath;
 
-        explicit Asset(const EA::ResourceMan::Key key, const AssetType type = PATH): key(key), type(type) {}
+        explicit Asset(const EA::ResourceMan::Key kKey, const AssetType kType = AssetType::kPath): mKey(kKey), mType(kType) {}
 
         EA::IO::IStream* GetStream() const;
 
-        static DDFFileType GetFileType(const std::string &extension);
+        static FileType GetFileType(const std::string &extension);
 
         static std::string GetTypeName(uint32_t value);
 

@@ -7,60 +7,62 @@
 #include "../hooks/Config.h"
 #include "../signatures/sigdef.h"
 
-void __fastcall ArgScriptOutputHookedWin64(EA::ArgScript::ArgScript *this_ptr CATCH_EDX, void *, const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
+namespace Msml::Core::Hooks {
+    void __fastcall ArgScriptOutputHookedWin64(EA::ArgScript::ArgScript *thisPtr CATCH_EDX, void *, const char *fmt, ...) {
+        va_list args = nullptr;
+        va_start(args, fmt);
 
-    char temp[1024];
-    vsnprintf(temp, sizeof(temp), fmt, args);
+        char temp[1024];
+        vsnprintf(temp, sizeof(temp), fmt, args);
 
-    MSML_LOG_INFO("ArgScript: %s", temp);
+        MSML_LOG_INFO("ArgScript: %s", temp);
 
-    va_end(args);
-}
+        va_end(args);
+    }
 
-void __fastcall ArgScriptErrorOutputHookedWin64(EA::ArgScript::ArgScript *this_ptr CATCH_EDX, const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
+    void __fastcall ArgScriptErrorOutputHookedWin64(EA::ArgScript::ArgScript *thisPtr CATCH_EDX, const char *fmt, ...) {
+        va_list args = nullptr;
+        va_start(args, fmt);
 
-    char temp[1024];
-    vsnprintf(temp, sizeof(temp), fmt, args);
+        char temp[1024];
+        vsnprintf(temp, sizeof(temp), fmt, args);
 
-    MSML_LOG_ERROR("ArgScript: %s", temp);
+        MSML_LOG_ERROR("ArgScript: %s", temp);
 
-    va_end(args);
-}
+        va_end(args);
+    }
 
-void __fastcall ArgScriptOutputHookedWin32(const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
+    void __fastcall ArgScriptOutputHookedWin32(const char *fmt, ...) {
+        va_list args = nullptr;
+        va_start(args, fmt);
 
-    char temp[1024];
-    vsnprintf(temp, sizeof(temp), fmt, args);
+        char temp[1024];
+        vsnprintf(temp, sizeof(temp), fmt, args);
 
-    MSML_LOG_INFO("ArgScript: %s", temp);
+        MSML_LOG_INFO("ArgScript: %s", temp);
 
-    va_end(args);
-}
+        va_end(args);
+    }
 
-void __fastcall ArgScriptErrorOutputHookedWin32(const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
+    void __fastcall ArgScriptErrorOutputHookedWin32(const char *fmt, ...) {
+        va_list args = nullptr;
+        va_start(args, fmt);
 
-    char temp[1024];
-    vsnprintf(temp, sizeof(temp), fmt, args);
+        char temp[1024];
+        vsnprintf(temp, sizeof(temp), fmt, args);
 
-    MSML_LOG_ERROR("ArgScript: %s", temp);
+        MSML_LOG_ERROR("ArgScript: %s", temp);
 
-    va_end(args);
-}
+        va_end(args);
+    }
 
-void msml::core::hooks::ArgscriptHook::Install() {
+    void ArgscriptHook::Install() {
 #ifdef _WIN64
-    EA::ArgScript::ErrorOutputHook.Install(&ArgScriptErrorOutputHookedWin64);
-    EA::ArgScript::OutputHook.Install(&ArgScriptOutputHookedWin64);
+        EA::ArgScript::ErrorOutputHook.Install(&ArgScriptErrorOutputHookedWin64);
+        EA::ArgScript::OutputHook.Install(&ArgScriptOutputHookedWin64);
 #else
-    EA::ArgScript::ErrorOutputHook.Install(&ArgScriptErrorOutputHookedWin32);
-    EA::ArgScript::OutputHook.Install(&ArgScriptOutputHookedWin32);
+        EA::ArgScript::ErrorOutputHook.Install(&ArgScriptErrorOutputHookedWin32);
+        EA::ArgScript::OutputHook.Install(&ArgScriptOutputHookedWin32);
 #endif
+    }
 }

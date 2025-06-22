@@ -15,29 +15,29 @@
 #include "../system/Logger.h"
 #include "../util/StreamUtil.h"
 
-namespace msml::core {
+namespace Msml::Core {
 
-    static constexpr uint32_t SIGNATURE_VERSION = 0;
+    static constexpr uint32_t kSignatureVersion = 0;
 
     Signatures & Signatures::GetInstance() {
         static Signatures signatures;
         return signatures;
     }
 
-    bool Signatures::Search(const sigmatch::signature &sig, void *&address, const uint32_t offset, bool first) const {
-        sigmatch::search_result result = context.search(sig);
+    bool Signatures::Search(const sigmatch::signature &sig, void *&pAddress, const uint32_t kOffset, const bool kbFirst) const {
+        sigmatch::search_result result = mContext.search(sig);
 
         auto matches = result.matches();
 
-        const size_t matchCount = std::distance(matches.begin(), matches.end());
+        const size_t kMatchCount = std::distance(matches.begin(), matches.end());
 
-        if(matchCount == 0) {
+        if(kMatchCount == 0) {
             MSML_LOG_ERROR("Failed to find any matches");
             return false;
         }
 
-        if(!first && matchCount > 1) {
-            MSML_LOG_ERROR("Too many matches: %d", matchCount);
+        if(!kbFirst && kMatchCount > 1) {
+            MSML_LOG_ERROR("Too many matches: %d", kMatchCount);
             for (const std::byte *foundAddress : matches) {
                 MSML_LOG_ERROR(" Matched: %p", foundAddress);
             }
@@ -45,8 +45,8 @@ namespace msml::core {
         }
 
         for (const std::byte *foundAddress : matches) {
-            address = reinterpret_cast<void *>(const_cast<std::byte*>(foundAddress));
-            address = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(address) + offset);
+            pAddress = reinterpret_cast<void *>(const_cast<std::byte*>(foundAddress));
+            pAddress = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(pAddress) + kOffset);
             return true;
         }
 
@@ -54,7 +54,7 @@ namespace msml::core {
     }
 
     void Signatures::Append(const std::string& name, SigSearchBase* sig){
-        signatures.emplace(name, sig);
+        mSignatures.emplace(name, sig);
     }
 
     std::array<uint8_t, 32U> Signatures::GetCheckSum() {
@@ -65,29 +65,29 @@ namespace msml::core {
         char path[MAX_PATH];
         GetModuleFileName(nullptr, path, MAX_PATH);
 
-        const auto stream = new EA::IO::FileStream(path);
-        const auto buffer = util::StreamUtil::ReadBytes(stream);
-        stream->Close();
+        auto *const kStream = new EA::IO::FileStream(path);
+        const auto kBuffer = Util::StreamUtil::ReadBytes(kStream);
+        kStream->Close();
 
-        checksum.sha256_update(buffer.data(), buffer.size());
+        checksum.sha256_update(kBuffer.data(), kBuffer.size());
 
         return checksum.sha256_final();
     }
 
     bool Signatures::SearchAll() {
-        const auto start = std::chrono::high_resolution_clock::now();
+        const auto kStart = std::chrono::high_resolution_clock::now();
 
         LoadDatabase();
 
-        for(const auto &val: signatures | std::views::values) {
+        for(const auto &val: mSignatures | std::views::values) {
             if (val->GetAddress() == nullptr && !val->Search()) {
                 return false;
             }
         }
 
-        const auto elapsed = std::chrono::high_resolution_clock::now() - start;
-        const double elapsed_ms = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count() / 1000.0;
-        MSML_LOG_INFO("Search time: %.3f milliseconds", elapsed_ms);
+        const auto kElapsed = std::chrono::high_resolution_clock::now() - kStart;
+        const double kElapsedMs = std::chrono::duration_cast<std::chrono::microseconds>(kElapsed).count() / 1000.0;
+        MSML_LOG_INFO("Search time: %.3f milliseconds", kElapsedMs);
 
         SaveDatabase();
 
@@ -95,56 +95,56 @@ namespace msml::core {
     }
 
     Signatures::Signatures() {
-        const sigmatch::this_process_target target;
-        context = target.in_module("MySims.exe");
+        const sigmatch::this_process_target kTarget;
+        mContext = kTarget.in_module("MySims.exe");
     }
 
     bool Signatures::LoadDatabase() {
 #ifndef NDEBUG
         return false;
 #endif
-        const auto stream = new EA::IO::FileStream("signatures.db");
+        auto *const kStream = new EA::IO::FileStream("signatures.db");
 
-        uint32_t sig_version = UINT32_MAX;
-        READ(stream, sig_version);
+        uint32_t sigVersion = UINT32_MAX;
+        READ(kStream, sigVersion);
 
-        if (sig_version != SIGNATURE_VERSION) {
+        if (sigVersion != kSignatureVersion) {
             return false;
         }
 
-        std::string msml_version;
-        READ_LEN_STRING(stream, msml_version);
+        std::string msmlVersion;
+        READ_LEN_STRING(kStream, msmlVersion);
 
         std::array<uint8_t, 32U> checksum{};
         for (auto i = 0; i < 32U; i++) {
-            READ(stream, checksum[i]);
+            READ(kStream, checksum[i]);
         }
 
-        if (const std::array<uint8_t, 32U> currentChecksum = GetCheckSum(); checksum != currentChecksum) {
+        if (const std::array<uint8_t, 32U> kCurrentChecksum = GetCheckSum(); checksum != kCurrentChecksum) {
             MSML_LOG_ERROR("Checksum mismatch, searching for new signatures");
             return false;
         }
 
-        uint32_t sigCount;
-        READ(stream, sigCount);
+        uint32_t sigCount = 0;
+        READ(kStream, sigCount);
 
-        for (int i =0; i < sigCount; i++) {
-            std::string sig_name;
-            READ_LEN_STRING(stream, sig_name);
-            uint64_t address;
-            READ(stream, address);
+        for (uint32_t i = 0; i < sigCount; i++) {
+            std::string sigName;
+            READ_LEN_STRING(kStream, sigName);
+            uint64_t address = 0;
+            READ(kStream, address);
 
-            if (signatures.contains(sig_name)) {
-                signatures[sig_name]->ApplyAddress(reinterpret_cast<void *>(address));
+            if (mSignatures.contains(sigName)) {
+                mSignatures[sigName]->ApplyAddress(reinterpret_cast<void *>(address));
             } else {
-                MSML_LOG_ERROR("Failed to find signatures with name %s", sig_name.c_str());
+                MSML_LOG_ERROR("Failed to find signatures with name %s", sigName.c_str());
                 return false;
             }
         }
 
         MSML_LOG_INFO("Read %d signatures from signatures.db", sigCount);
 
-        stream->Close();
+        kStream->Close();
 
         return true;
     }
@@ -153,24 +153,24 @@ namespace msml::core {
 #ifndef NDEBUG
         return;
 #endif
-        const auto stream = new EA::IO::FileStream("signatures.db", EA::IO::AccessFlags::Write, EA::IO::CD::CreateAlways);
+        auto *const kStream = new EA::IO::FileStream("signatures.db", EA::IO::AccessFlags::kWrite, EA::IO::CD::kCreateAlways);
 
-        WRITE(stream, SIGNATURE_VERSION);
-        WRITE_LEN_STRING(stream, MSML_VERSION);
+        WRITE(kStream, kSignatureVersion);
+        WRITE_LEN_STRING(kStream, MSML_VERSION);
 
-        const std::array<uint8_t, 32U> checksum = GetCheckSum();
+        const std::array<uint8_t, 32U> kChecksum = GetCheckSum();
         for (auto i = 0; i < 32U; i++) {
-            WRITE(stream, checksum[i]);
+            WRITE(kStream, kChecksum[i]);
         }
 
-        WRITE_VALUE(stream, uint32_t, signatures.size());
-        for (const auto& signature : signatures) {
-            WRITE_LEN_STRING(stream, signature.first.c_str());
-            WRITE_VALUE(stream, uint64_t, reinterpret_cast<uint64_t>(signature.second->GetAddress()));
+        WRITE_VALUE(kStream, uint32_t, mSignatures.size());
+        for (const auto& signature : mSignatures) {
+            WRITE_LEN_STRING(kStream, signature.first.c_str());
+            WRITE_VALUE(kStream, uint64_t, reinterpret_cast<uint64_t>(signature.second->GetAddress()));
         }
 
         MSML_LOG_INFO("Signature cache saved");
 
-        stream->Close();
+        kStream->Close();
     }
 }

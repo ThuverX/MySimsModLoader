@@ -9,23 +9,23 @@
 #include <vector>
 #include <filesystem>
 
-namespace msml::core::modloader {
+namespace Msml::Core::Modloader {
     class Mod {
     public:
-        std::string name;
-        std::string description;
-        std::string author;
-        std::string path;
-        int priority = 0;
+        std::string mName;
+        std::string mDescription;
+        std::string mAuthor;
+        std::string mPath;
+        int mPriority = 0;
 
         void RunPostHooks() const;
 
         void RunPreHooks() const;
 
-        std::vector<std::string> postHooks;
-        std::vector<std::string> preHooks;
+        std::vector<std::string> mPostHooks;
+        std::vector<std::string> mPreHooks;
 
-        static Mod *fromXML(const std::filesystem::path &path);
+        static Mod *FromXML(const std::filesystem::path &path);
     };
 }
 

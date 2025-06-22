@@ -7,66 +7,66 @@
 namespace EA::IO {
     MemoryStream::MemoryStream() = default;
 
-    MemoryStream::MemoryStream(const void *data, const size_t size) {
-        buffer.resize(size);
-        memcpy(buffer.data(), data, size);
+    MemoryStream::MemoryStream(const void *pData, const size_t kSize) {
+        mBuffer.resize(kSize);
+        memcpy(mBuffer.data(), pData, kSize);
     }
 
     uint32_t MemoryStream::GetType() const {
-        return Type;
+        return kType;
     }
 
     AccessFlags MemoryStream::GetAccessFlags() const {
-        return AccessFlags::ReadWrite;
+        return AccessFlags::kReadWrite;
     }
 
     FileError MemoryStream::GetState() const {
-        return FileError::Success;
+        return FileError::kSuccess;
     }
 
     bool MemoryStream::Close() {
-        buffer.clear();
+        mBuffer.clear();
         return true;
     }
 
     size_t MemoryStream::GetSize() const {
-        return buffer.size();
+        return mBuffer.size();
     }
 
     bool MemoryStream::SetSize(size_t size) {
-        buffer.resize(size);
+        mBuffer.resize(size);
         return false;
     }
 
     size_t MemoryStream::GetPosition(PositionType positionType) const {
-        if (positionType == PositionType::Begin) {
-            return position;
+        if (positionType == PositionType::kBegin) {
+            return mPosition;
         }
 
-        if (positionType == PositionType::End) {
-            return buffer.size() - position;
+        if (positionType == PositionType::kEnd) {
+            return mBuffer.size() - mPosition;
         }
 
         return 0;
     }
 
     bool MemoryStream::SetPosition(int distance, PositionType positionType) {
-        if (distance > buffer.size()) {
+        if (distance > mBuffer.size()) {
             return false;
         }
 
-        if (positionType == PositionType::Begin) {
-            position = distance;
+        if (positionType == PositionType::kBegin) {
+            mPosition = distance;
             return true;
         }
 
-        if (positionType == PositionType::Current) {
-            position += distance;
+        if (positionType == PositionType::kCurrent) {
+            mPosition += distance;
             return true;
         }
 
-        if (positionType == PositionType::End) {
-            position = buffer.size() - distance;
+        if (positionType == PositionType::kEnd) {
+            mPosition = mBuffer.size() - distance;
             return true;
         }
 
@@ -74,34 +74,41 @@ namespace EA::IO {
     }
 
     size_t MemoryStream::GetAvailable() const {
-        if (position >= buffer.size()) return 0;
-        return buffer.size() - position;
+        if (mPosition >= mBuffer.size()) {
+            return 0;
+        }
+        return mBuffer.size() - mPosition;
     }
 
     size_t MemoryStream::Read(void *pData, size_t nSize) {
-        if (pData == nullptr) return 0;
-        const size_t available = buffer.size() - position;
-        const size_t to_copy = (nSize < available) ? nSize : available;
+        if (pData == nullptr) {
+            return 0;
+        }
+        const size_t kAvailable = mBuffer.size() - mPosition;
+        const size_t kToCopy = (nSize < kAvailable) ? nSize : kAvailable;
 
-        memcpy(pData, &buffer[position], to_copy);
-        position += to_copy;
+        memcpy(pData, &mBuffer[mPosition], kToCopy);
+        mPosition += kToCopy;
 
-        return to_copy;
+        return kToCopy;
     }
 
     bool MemoryStream::Flush() {
-        buffer.clear();
+        mBuffer.clear();
         return true;
     }
 
     size_t MemoryStream::Write(const void *pData, size_t nSize) {
-        if (pData == nullptr) return 0;
+        if (pData == nullptr) {
+            return 0;
+        }
 
-        if (buffer.size() < position + nSize)
-            buffer.resize(position + nSize);
+        if (mBuffer.size() < mPosition + nSize) {
+            mBuffer.resize(mPosition + nSize);
+        }
 
-        memcpy(&buffer[position], pData, nSize);
-        position += nSize;
+        memcpy(&mBuffer[mPosition], pData, nSize);
+        mPosition += nSize;
 
         return nSize;
     }

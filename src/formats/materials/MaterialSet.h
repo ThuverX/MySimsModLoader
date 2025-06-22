@@ -8,24 +8,20 @@
 #include "../../EA/ResourceMan/ResourceKey.h"
 
 struct MTST {
-    uint32_t name;
-    uint32_t index;
-    uint32_t count;
-    std::vector<uint32_t> indices;
+    uint32_t mName;
+    uint32_t mIndex;
+    std::vector<uint32_t> mIndices;
 };
 
 struct MaterialSet {
-    uint32_t numMaterials;
-    EA::ResourceMan::Key self;
-    std::vector<EA::ResourceMan::Key> materials;
-    uint32_t headerSize;
-    uint32_t mtstSize;
-    MTST mtst;
+    EA::ResourceMan::Key mSelf;
+    std::vector<EA::ResourceMan::Key> mMaterials;
+    MTST mMtst;
 
-    static void Read(MaterialSet &instance, EA::IO::IStream* stream);
-    void Write(EA::IO::IStream* stream);
+    static void Read(MaterialSet &instance, EA::IO::IStream *pStream);
+
+    void Write(EA::IO::IStream *pStream);
 };
-
 
 
 #endif //MATERIALSET_H

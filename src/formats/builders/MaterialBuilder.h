@@ -4,6 +4,7 @@
 
 #ifndef MATERIALBUILDER_H
 #define MATERIALBUILDER_H
+
 #include "../materials/Material.h"
 
 #include <unordered_map>
@@ -81,7 +82,7 @@ enum class ShaderType: uint32_t {
     WaterShinyBumpy = 0xFF8234C4
 };
 
-static const std::unordered_map<std::string, ShaderType> stringToEnum = {
+static const std::unordered_map<std::string, ShaderType> kStringToEnum = {
     {"casFace", ShaderType::casFace},
     {"casFaceShiny", ShaderType::casFaceShiny},
     {"casFaceShinyModulatedAccents", ShaderType::casFaceShinyModulatedAccents},
@@ -154,20 +155,25 @@ static const std::unordered_map<std::string, ShaderType> stringToEnum = {
 };
 
 ShaderType GetShaderType(const std::string &type);
-std::string GetShaderName(uint32_t value);
+
+std::string GetShaderName(uint32_t kValue);
 
 class MaterialBuilder {
-    Material mat{};
+    Material mMaterial{};
 
 public:
-    MaterialBuilder& withShader(ShaderType type);
-    MaterialBuilder& withKey(const EA::ResourceMan::Key& key);
-    MaterialBuilder& withColorParameter(uint32_t name, float x, float y, float z, float w);
-    MaterialBuilder& withValueParameter(uint32_t name, int value);
-    MaterialBuilder& withKeyParameter(uint32_t name, EA::ResourceMan::Key key);
-    Material build();
-};
+    MaterialBuilder &WithShader(ShaderType type);
 
+    MaterialBuilder &WithKey(const EA::ResourceMan::Key &kKey);
+
+    MaterialBuilder &WithColorParameter(uint32_t kName, float x, float y, float z, float w);
+
+    MaterialBuilder &WithValueParameter(uint32_t kName, uint32_t kValue);
+
+    MaterialBuilder &WithKeyParameter(uint32_t kName, EA::ResourceMan::Key kKey);
+
+    Material Build();
+};
 
 
 #endif //MATERIALBUILDER_H

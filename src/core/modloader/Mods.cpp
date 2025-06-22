@@ -11,24 +11,24 @@
 #include "../modloader/ModLoader.h"
 #include "../system/Logger.h"
 
-namespace msml::core::modloader {
+namespace Msml::Core::Modloader {
     Mods &Mods::GetInstance() {
-        auto absolutePath = absolute(
-            ModLoader::GetInstance().modulePath / MODS_PATH).string();
+        auto absolutePath = std::filesystem::absolute(
+            ModLoader::GetInstance().mModulePath / MODS_PATH).string();
 
         static Mods instance(absolutePath);
         return instance;
     }
 
     void Mods::Find() {
-        MSML_LOG_INFO("Searching for mods in %s", rootPath.c_str());
-        mods.clear();
+        MSML_LOG_INFO("Searching for mods in %s", mRootPath.c_str());
+        mMods.clear();
         try {
-            if (std::filesystem::exists(rootPath)) {
-                for (const auto &entry: std::filesystem::directory_iterator(rootPath)) {
+            if (std::filesystem::exists(mRootPath)) {
+                for (const auto &entry: std::filesystem::directory_iterator(mRootPath)) {
                     if (is_directory(entry.path()) && exists(entry.path() / "mod.xml")) {
-                        if (Mod *mod = Mod::fromXML(entry.path())) {
-                            mods.emplace_back(mod);
+                        if (Mod *mod = Mod::FromXML(entry.path())) {
+                            mMods.emplace_back(mod);
                         }
                     }
                 }
@@ -39,9 +39,9 @@ namespace msml::core::modloader {
     }
 
     std::vector<Mod *> Mods::GetModsSorted() const {
-        std::vector<Mod *> sortedMods = mods;
-        std::ranges::sort(sortedMods, [](const Mod *a, const Mod *b) {
-            return a->priority < b->priority;
+        std::vector<Mod *> sortedMods = mMods;
+        std::ranges::sort(sortedMods, [](const Mod *kModA, const Mod *kModB) {
+            return kModA->mPriority < kModB->mPriority;
         });
         return sortedMods;
     }
@@ -58,7 +58,5 @@ namespace msml::core::modloader {
         }
     }
 
-    Mods::Mods(std::string rootPath) {
-        this->rootPath = std::move(rootPath);
-    }
+    Mods::Mods(std::string rootPath) : mRootPath(std::move(rootPath)) {}
 }

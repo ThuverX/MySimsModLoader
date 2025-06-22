@@ -10,9 +10,9 @@
 
 #include "../../Version.h"
 
-class outbuf : public std::streambuf {
+class Outbuf : public std::streambuf {
 public:
-    outbuf() {
+    Outbuf() {
         setp(nullptr, nullptr);
     }
 
@@ -21,35 +21,40 @@ public:
     }
 };
 
-outbuf obuf;
-std::streambuf *sb = nullptr;
+namespace Msml::Core::System {
+    static Outbuf sObuf;
+    static std::streambuf *sStreamBuffer = nullptr;
 
-namespace msml::core::system {
     void Console::Enable() {
-        if (isEnabled) return;
-
-        if (!AllocConsole())
+        if (mIsEnabled) {
             return;
+        }
+
+        if (AllocConsole() == 0) {
+            return;
+        }
 
         SetConsoleTitle("MSML " MSML_VERSION);
 
-        FILE *tmp;
+        FILE *tmp = nullptr;
         freopen_s(&tmp, "conout$", "w", stdout);
         freopen_s(&tmp, "conout$", "w", stderr);
         freopen_s(&tmp, "CONIN$", "r", stdin);
 
-        sb = std::cout.rdbuf(&obuf);
+        sStreamBuffer = std::cout.rdbuf(&sObuf);
 
-        isEnabled = true;
+        mIsEnabled = true;
     }
 
     void Console::Disable() {
-        if (!isEnabled) return;
+        if (!mIsEnabled) {
+            return;
+        }
 
-        std::cout.rdbuf(sb);
+        std::cout.rdbuf(sStreamBuffer);
         FreeConsole();
 
-        isEnabled = false;
+        mIsEnabled = false;
     }
 
     Console::~Console() {

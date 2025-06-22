@@ -5,8 +5,8 @@
 #ifndef HOOKS_H
 #define HOOKS_H
 
-namespace msml::core::Hooks {
-    void Install(void *target, void *detour, void **original);
+namespace Msml::Core::Hooks {
+    void Install(void * pTarget, void * pDetour, void ** ppOriginal);
     bool Initialize();
     bool Enable();
     void Uninitialize();

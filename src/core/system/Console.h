@@ -5,9 +5,9 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-namespace msml::core::system {
+namespace Msml::Core::System {
     class Console {
-        bool isEnabled = false;
+        bool mIsEnabled = false;
 
     public:
         void Enable();

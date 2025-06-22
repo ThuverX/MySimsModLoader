@@ -4,79 +4,77 @@
 
 #include "MaterialSet.h"
 
-void ReadMTST(MTST &mtst, EA::IO::IStream *stream) {
-    SKIP(stream, 4); // MTST
-    SKIP(stream, 4); // MTST version
-    READ(stream, mtst.name);
-    READ(stream, mtst.index);
-    READ(stream, mtst.count);
-    for (uint32_t i = 0; i < mtst.count; i++) {
-        uint32_t index;
-        READ(stream, index);
+void ReadMTST(MTST &mtst, EA::IO::IStream *pStream) {
+    SKIP(pStream, 4); // MTST
+    SKIP(pStream, 4); // MTST version
+    READ(pStream, mtst.mName);
+    READ(pStream, mtst.mIndex);
+    READ_VALUE(pStream, uint32_t, count);
+    for (uint32_t i = 0; i < count; i++) {
+        uint32_t index = 0;
+        READ(pStream, index);
 
-        mtst.indices.push_back(index);
+        mtst.mIndices.push_back(index);
     }
 }
 
-void WriteMTST(MTST &mtst, EA::IO::IStream *stream) {
-    WRITE_STRING(stream, "MTST");
-    WRITE_VALUE(stream, uint32_t, 1);
-    WRITE(stream, mtst.name);
-    WRITE(stream, mtst.index);
-    mtst.count = mtst.indices.size();
-    WRITE(stream, mtst.count);
-    for (auto & index : mtst.indices) {
-        WRITE(stream, index);
+void WriteMTST(MTST &mtst, EA::IO::IStream *pStream) {
+    WRITE_STRING(pStream, "MTST");
+    WRITE_VALUE(pStream, uint32_t, 1);
+    WRITE(pStream, mtst.mName);
+    WRITE(pStream, mtst.mIndex);
+    WRITE_VALUE(pStream, uint32_t, mtst.mIndices.size());
+    for (auto &index: mtst.mIndices) {
+        WRITE(pStream, index);
     }
 }
 
-void MaterialSet::Read(MaterialSet &instance, EA::IO::IStream *stream) {
-    SKIP(stream, 4); // 1
-    SKIP(stream, 4); // 1
-    SKIP(stream, 4); // 0
+void MaterialSet::Read(MaterialSet &instance, EA::IO::IStream *pStream) {
+    SKIP(pStream, 4); // 1
+    SKIP(pStream, 4); // 1
+    SKIP(pStream, 4); // 0
 
-    READ(stream, instance.numMaterials);
+    READ_VALUE(pStream, uint32_t, numMaterials);
 
-    SKIP(stream, 4); // 1
+    SKIP(pStream, 4); // 1
 
-    EA::ResourceMan::Key::Read(instance.self, stream);
+    EA::ResourceMan::Key::Read(instance.mSelf, pStream);
 
-    for (uint32_t i = 0; i < instance.numMaterials; i++) {
+    for (uint32_t i = 0; i < numMaterials; i++) {
         EA::ResourceMan::Key key{};
-        EA::ResourceMan::Key::Read(key, stream);
+        EA::ResourceMan::Key::Read(key, pStream);
 
-        instance.materials.push_back(key);
+        instance.mMaterials.push_back(key);
     }
 
-    READ(stream, instance.headerSize);
-    READ(stream, instance.mtstSize);
-    ReadMTST(instance.mtst, stream);
+    SKIP(pStream, 4); // Header size
+    SKIP(pStream, 4); // MTST size
+    ReadMTST(instance.mMtst, pStream);
 }
 
-void MaterialSet::Write(EA::IO::IStream *stream) {
-    WRITE_VALUE(stream, uint32_t, 1);
-    WRITE_VALUE(stream, uint32_t, 1);
-    WRITE_VALUE(stream, uint32_t, 0);
+void MaterialSet::Write(EA::IO::IStream *pStream) {
+    WRITE_VALUE(pStream, uint32_t, 1);
+    WRITE_VALUE(pStream, uint32_t, 1);
+    WRITE_VALUE(pStream, uint32_t, 0);
 
-    numMaterials = materials.size();
-    WRITE_VALUE(stream, uint32_t, numMaterials);
+    WRITE_VALUE(pStream, uint32_t, mMaterials.size());
 
-    WRITE_VALUE(stream, uint32_t, 1);
+    WRITE_VALUE(pStream, uint32_t, 1);
 
-    self.Write(stream);
+    mSelf.Write(pStream);
 
-    for (auto & material : materials) {
-        material.Write(stream);
+    for (auto &material: mMaterials) {
+        material.Write(pStream);
     }
 
-    WRITE_VALUE(stream, uint32_t, OFFSET(stream) + 8);
-    CREATE_HOLE(stream, mtstSize, uint32_t);
+    WRITE_VALUE(pStream, uint32_t, OFFSET(pStream) + 8);
+    CREATE_HOLE(pStream, mtstSize, uint32_t);
 
-    const size_t mtstOffset = OFFSET(stream);
+    const size_t kMtstOffset = OFFSET(pStream);
 
-    WriteMTST(mtst, stream);
+    WriteMTST(mMtst, pStream);
 
-    const uint32_t mtstSize = OFFSET(stream) - mtstOffset;
+    const uint32_t kMtstSize = OFFSET(pStream) - kMtstOffset;
 
-    FILL_HOLE(stream, mtstSize, mtstSize);
+    FILL_HOLE(pStream, mtstSize, kMtstSize);
 }

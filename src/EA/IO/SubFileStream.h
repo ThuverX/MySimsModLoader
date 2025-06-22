@@ -10,17 +10,19 @@
 #include <filesystem>
 #include <windows.h>
 
+#include "FileStream.h"
+
 namespace EA::IO {
     class SubFileStream final : public IStream {
-        std::filesystem::path path;
-        HANDLE hFile = INVALID_HANDLE_VALUE;
+        FileStream mFileStream;
 
-        size_t begin;
-        size_t size;
-        size_t end;
+        size_t mBegin;
+        size_t mSize;
+        size_t mEnd;
 
     public:
-        explicit SubFileStream(const std::filesystem::path &path, size_t offset, size_t size);
+        static constexpr uint32_t kType = 0x1489eb2f;
+        explicit SubFileStream(const std::filesystem::path &kPath, size_t kOffset, size_t kSize);
 
         [[nodiscard]] uint32_t GetType() const override;
 

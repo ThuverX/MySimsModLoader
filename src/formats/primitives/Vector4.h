@@ -8,11 +8,11 @@ struct Vector4 {
     float z;
     float w;
 
-    static void Read(Vector4 &instance, EA::IO::IStream* stream) {
-        READ(stream, instance.x);
-        READ(stream, instance.y);
-        READ(stream, instance.z);
-        READ(stream, instance.w);
+    static void Read(Vector4 &instance, EA::IO::IStream *pStream) {
+        READ(pStream, instance.x);
+        READ(pStream, instance.y);
+        READ(pStream, instance.z);
+        READ(pStream, instance.w);
     }
 };
 

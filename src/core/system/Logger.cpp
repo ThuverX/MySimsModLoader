@@ -13,15 +13,16 @@
 #include <sstream>
 #include <windows.h>
 
-namespace msml::core::system {
-    std::filesystem::path Logger::module = "";
+namespace Msml::Core::System {
+    std::filesystem::path Logger::sModule = "";
 
     // TODO: Logging should probably be on its own thread
-    void Logger::Log(const LogLevel level, const bool do_cout, const char *file, int line, const char *format, ...) {
-        const std::time_t now = std::time(nullptr);
+    void Logger::Log(const LogLevel kLevel, const bool kbDoCout, const char *pFile, const int kLine,
+                     const char *pFormat, ...) {
+        const std::time_t kNow = std::time(nullptr);
         std::tm timeInfo{};
-        if (localtime_s(&timeInfo, &now) != 0) {
-            std::cerr << "Failed to get local time" << std::endl;
+        if (localtime_s(&timeInfo, &kNow) != 0) {
+            std::cerr << "Failed to get local time\n";
             return;
         }
 
@@ -31,42 +32,45 @@ namespace msml::core::system {
 #ifndef UNIT_TESTING
         char dateBuffer[11];
         std::strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d", &timeInfo);
-        const auto logFileName = module / (std::string("log_") + dateBuffer + ".log");
+        const auto kLogFileName = sModule / (std::string("log_") + dateBuffer + ".log");
 
-        std::ofstream logFile(logFileName, std::ios::app);
+        std::ofstream logFile(kLogFileName, std::ios::app);
         if (!logFile) {
-            std::cerr << "Failed to open log file: " << logFileName << std::endl;
+            std::cerr << "Failed to open log file: " << kLogFileName << "\n";
         }
 #endif // UNIT_TESTING
 
         char logMessage[1024];
-        va_list args;
-        va_start(args, format);
-        std::vsnprintf(logMessage, sizeof(logMessage), format, args);
+        va_list args = nullptr;
+        va_start(args, pFormat);
+        std::vsnprintf(logMessage, sizeof(logMessage), pFormat, args);
         va_end(args);
 
-        const std::string relativeFile = std::string(file).substr(strlen(PROJECT_ROOT) + 1);
+        const std::string kRelativeFile = std::string(pFile).substr(strlen(PROJECT_ROOT) + 1);
 
-        const std::string logEntry = "[" + std::string(timeBuffer) + "] [" + LogLevelToString(level) + "] (" + relativeFile + ":" + std::to_string(line) + ") " + logMessage + "\n";
+        const std::string kLogEntry = "[" + std::string(timeBuffer) + "] [" + LogLevelToString(kLevel) + "] (" +
+                                      kRelativeFile + ":" + std::to_string(kLine) + ") " + logMessage + "\n";
 
 #ifndef UNIT_TESTING
-        if (do_cout)
-            std::cout << logEntry;
-        if (logFile)
-            logFile << logEntry;
+        if (kbDoCout) {
+            std::cout << kLogEntry;
+        }
+        if (logFile) {
+            logFile << kLogEntry;
+        }
 #else
         std::cout << logEntry;
 #endif // UNIT_TESTING
     }
 
-    const char * Logger::LogLevelToString(LogLevel level) {
-        switch (level) {
-            case LogLevel::WARNING:     return "WARNING";
-            case LogLevel::ERR:         return "ERROR";
-            case LogLevel::DEBUG:       return "DEBUG";
-            case LogLevel::LUA:         return "LUA";
-            case LogLevel::INFO:
-                default:                    return "INFO";
+    const char *Logger::LogLevelToString(const LogLevel kLevel) {
+        switch (kLevel) {
+            case LogLevel::kWarning: return "WARNING";
+            case LogLevel::kError: return "ERROR";
+            case LogLevel::kDebug: return "DEBUG";
+            case LogLevel::kLua: return "LUA";
+            case LogLevel::kInfo:
+            default: return "INFO";
         }
     }
 }

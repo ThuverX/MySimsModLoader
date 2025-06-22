@@ -11,23 +11,23 @@
 
 namespace EA::IO {
     class IStream {
-        uint32_t refCount = 0;
+        uint32_t mRefCount = 0;
 
     public:
         virtual ~IStream() = default;
 
         virtual uint32_t AddRef() {
-            return ++refCount;
+            return ++mRefCount;
         }
 
         virtual uint32_t Release() {
-            const uint32_t newCount = --refCount;
+            const uint32_t kNewCount = --mRefCount;
 
-            if (newCount == 0) {
+            if (kNewCount == 0) {
                 delete this;
             }
 
-            return newCount;
+            return kNewCount;
         }
 
         /// Returns the type of the stream, which is different for each Stream subclass.
@@ -74,7 +74,7 @@ namespace EA::IO {
         /// Stream subclass can provide such functionality if needed.
         /// Returns -1 upon error.
         /// @param positionType
-        [[nodiscard]] virtual size_t GetPosition(PositionType positionType = PositionType::Begin) const = 0;
+        [[nodiscard]] virtual size_t GetPosition(PositionType positionType = PositionType::kBegin) const = 0;
 
         /// Sets the read/write position of the stream. If the specified position is
         /// beyond the size of a fixed stream, the position is set to the end of the stream.
@@ -82,7 +82,7 @@ namespace EA::IO {
         /// beyond the end of the stream results in an increase in the stream size.
         /// @param distance
         /// @param positionType
-        virtual bool SetPosition(int distance, PositionType positionType = PositionType::Begin) = 0;
+        virtual bool SetPosition(int distance, PositionType positionType = PositionType::kBegin) = 0;
 
         /// Returns the number of bytes available for reading.
         /// Returns (size_type)-1 (a.k.a. kSizeTypeError) upon error.
@@ -131,6 +131,10 @@ namespace EA::IO {
 #define READ(stream_name, variable) \
     stream_name->Read(&variable, sizeof(variable))
 
+#define READ_VALUE(stream_name, type, variable) \
+    type variable = 0; \
+    stream_name->Read(&variable, sizeof(variable))
+
 #define WRITE(stream_name, variable) \
     stream_name->Write(&variable, sizeof(variable))
 
@@ -157,7 +161,7 @@ namespace EA::IO {
         stream_name->Read(&__len, sizeof(uint32_t));                         \
         if (__len > 0) {                                                     \
             (out_str).resize(__len);                                         \
-            stream_name->Read(&(out_str)[0], __len);                         \
+            stream_name->Read(out_str.data(), __len);                        \
         } else {                                                             \
             (out_str).clear();                                               \
         }                                                                    \
@@ -171,8 +175,7 @@ namespace EA::IO {
             stream_name->Read(&_ch, sizeof(char));                \
             _tmp_str.push_back(_ch);                              \
         } while (_ch != '\0');                                    \
-        str = new char[_tmp_str.size()];                          \
-        memcpy(str, _tmp_str.data(), _tmp_str.size());            \
+        str.assign(_tmp_str.begin(), _tmp_str.end());             \
     } while (0)
 
 #define WRITE_LENGTH(stream_name, len)                      \
@@ -185,13 +188,13 @@ namespace EA::IO {
 
 
 #define SKIP(stream_name, len) \
-    stream_name->SetPosition(len, ::EA::IO::PositionType::Current)
+    stream_name->SetPosition(len, ::EA::IO::PositionType::kCurrent)
 
 #define SEEK(stream_name, pos, type) \
     stream_name->SetPosition(pos, type)
 
 #define OFFSET(stream_name) \
-    stream_name->GetPosition(::EA::IO::PositionType::Begin)
+    stream_name->GetPosition(::EA::IO::PositionType::kBegin)
 
 #define CREATE_HOLE(stream_name, name, type)            \
     using name##__type = type;                          \
@@ -201,9 +204,9 @@ namespace EA::IO {
 #define FILL_HOLE(stream_name, name, value)                                 \
     do {                                                                    \
         size_t before__##name = OFFSET(stream_name);                        \
-        SEEK(stream_name, name##__offset, ::EA::IO::PositionType::Begin);   \
+        SEEK(stream_name, name##__offset, ::EA::IO::PositionType::kBegin);   \
         WRITE_VALUE(stream_name, name##__type, value);                      \
-        SEEK(stream_name, before__##name, ::EA::IO::PositionType::Begin);   \
+        SEEK(stream_name, before__##name, ::EA::IO::PositionType::kBegin);   \
     } while (0)
 
 #endif //ISTREAM_H
