@@ -14,7 +14,7 @@
 TEST(MaterialSet, Read) {
     MaterialSet materialSet;
 
-    auto *const stream = new EA::IO::FileStream(TEST_ASSETS_DIR "0xdd91919d!0x00000000db272b16.mMaterialset");
+    auto *const stream = new EA::IO::FileStream(TEST_ASSETS_DIR "0xdd91919d!0x00000000db272b16.Materialset");
     stream->AddRef();
     MaterialSet::Read(materialSet, stream);
 
@@ -67,7 +67,7 @@ TEST(MaterialSet, Read) {
 
 TEST(MaterialSet, Write) {
     MaterialSet materialSet;
-    auto *const kReadStream = new EA::IO::FileStream(TEST_ASSETS_DIR "0xdd91919d!0x00000000db272b16.mMaterialset");
+    auto *const kReadStream = new EA::IO::FileStream(TEST_ASSETS_DIR "0xdd91919d!0x00000000db272b16.Materialset");
     kReadStream->AddRef();
     auto *const kWriteStream = new EA::IO::MemoryStream;
     kWriteStream->AddRef();

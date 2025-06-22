@@ -32,15 +32,15 @@ namespace Msml::Core::Resource {
         return std::format("{:08x}", kHash);
     }
 
-    void IdResolver::Load(const std::string &path) {
-        auto *const kStream = new EA::IO::FileStream(path);
+    void IdResolver::Load(const std::string &kPath) {
+        auto *const kStream = new EA::IO::FileStream(kPath);
         kStream->AddRef();
 
         mHashes32.clear();
         mHashes64.clear();
 
         if (kStream->GetState() != EA::IO::FileError::kSuccess || kStream->GetAccessFlags() == EA::IO::AccessFlags::kNone) {
-            MSML_LOG_ERROR("Failed to load Hashes from %s", path.c_str());
+            MSML_LOG_ERROR("Failed to load Hashes from %s", kPath.c_str());
             kStream->Close();
             kStream->Release();
             return;
@@ -64,7 +64,7 @@ namespace Msml::Core::Resource {
         kStream->Close();
         kStream->Release();
 
-        MSML_LOG_INFO("Loaded %d Hashes from %s", mHashes32.size(), path.c_str());
+        MSML_LOG_INFO("Loaded %d Hashes from %s", mHashes32.size(), kPath.c_str());
     }
 
     void IdResolver::Add(const std::string &kStr) {

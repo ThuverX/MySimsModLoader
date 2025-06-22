@@ -59,7 +59,7 @@ namespace Msml::Core::System {
             logFile << kLogEntry;
         }
 #else
-        std::cout << logEntry;
+        std::cout << kLogEntry;
 #endif // UNIT_TESTING
     }
 
