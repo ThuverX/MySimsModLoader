@@ -38,6 +38,14 @@ namespace Msml::Core::Resource {
 
         mHashes32.clear();
         mHashes64.clear();
+
+        if (kStream->GetState() != EA::IO::FileError::kSuccess || kStream->GetAccessFlags() == EA::IO::AccessFlags::kNone) {
+            MSML_LOG_ERROR("Failed to load Hashes from %s", path.c_str());
+            kStream->Close();
+            kStream->Release();
+            return;
+        }
+
         uint64_t count = 0;
         READ(kStream, count);
 
