@@ -100,7 +100,7 @@ namespace Msml::Core {
     }
 
     bool Signatures::LoadDatabase() {
-#ifndef NDEBUG
+#ifdef BUILD_DEBUG
         return false;
 #endif
         auto *const kStream = new EA::IO::FileStream("signatures.db");
@@ -150,7 +150,7 @@ namespace Msml::Core {
     }
 
     void Signatures::SaveDatabase() const {
-#ifndef NDEBUG
+#ifdef BUILD_DEBUG
         return;
 #endif
         auto *const kStream = new EA::IO::FileStream("signatures.db", EA::IO::AccessFlags::kWrite, EA::IO::CD::kCreateAlways);

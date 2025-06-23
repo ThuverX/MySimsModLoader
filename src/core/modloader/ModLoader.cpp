@@ -28,7 +28,7 @@ namespace Msml::Core {
 
         bool consoleEnabled = false;
 
-#ifndef NDEBUG
+#ifdef BUILD_DEBUG
         consoleEnabled = true;
 #endif
 
@@ -45,7 +45,7 @@ namespace Msml::Core {
         Hooks::Initialize();
         if (!Signatures::GetInstance().SearchAll()) {
             // If we failed to get any signatures, we quit
-#ifndef NDEBUG
+#ifdef BUILD_DEBUG
             MSML_LOG_ERROR("Failed to find addresses for some functions, did you write the signature correctly?");
             Hooks::Uninitialize();
 

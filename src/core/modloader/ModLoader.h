@@ -9,17 +9,6 @@
 
 #include "../system/Console.h"
 
-#define MODS_PATH "mods/"
-#define W_MODS_PATH L"mods/"
-
-#ifdef _WIN64
-#define DATA_PATH "data"
-#define W_DATA_PATH L"data"
-#else
-#define DATA_PATH "../SimsRevData"
-#define W_DATA_PATH L"../SimsRevData"
-#endif
-
 namespace Msml::Core {
     class ModLoader {
         ModLoader();

@@ -4,7 +4,6 @@
 
 #include "ArgscriptHook.h"
 
-#include "../hooks/Config.h"
 #include "../signatures/sigdef.h"
 
 namespace Msml::Core::Hooks {
@@ -57,7 +56,7 @@ namespace Msml::Core::Hooks {
     }
 
     void ArgscriptHook::Install() {
-#ifdef _WIN64
+#ifdef PLATFORM_WIN64
         EA::ArgScript::ErrorOutputHook.Install(&ArgScriptErrorOutputHookedWin64);
         EA::ArgScript::OutputHook.Install(&ArgScriptOutputHookedWin64);
 #else

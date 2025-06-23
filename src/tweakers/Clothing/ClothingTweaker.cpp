@@ -169,7 +169,7 @@ bool ClothingTweaker::OnRegister(Msml::Core::Asset &asset) {
 
         uint32_t modelInstance = Msml::Hash::FNV::FromString32(model);
 
-#ifdef VERSION_TACO_BELL
+#ifdef PLATFORM_WIN32
         MSML_LOG_ERROR("Clothing tweaking is not yet supported for your game version");
         return false;
         // EA::ResourceMan::IRecord* texture_record;
@@ -184,7 +184,7 @@ bool ClothingTweaker::OnRegister(Msml::Core::Asset &asset) {
         // }
 #endif
 
-#ifdef VERSION_COZY_BUNDLE
+#ifdef PLATFORM_WIN64
 
         CreateMaterial(modelInstance, type, fileName, texture, 0); {
             const EA::ResourceMan::Key kMaskKey = {

@@ -43,7 +43,6 @@ set(SOURCES
         src/include/hash_sha256.h
         src/core/resource/IdResolver.cpp
         src/core/resource/IdResolver.h
-        src/core/hooks/Config.h
         src/formats/materials/Material.h
         src/formats/materials/Material.cpp
         src/formats/xml/CharacterDef.h
@@ -141,13 +140,11 @@ target_link_libraries(MySimsModLoader PRIVATE minhook)
 target_link_libraries(MySimsModLoader PRIVATE pugixml-static)
 
 set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "dsound")
+target_compile_options(MySimsModLoader PRIVATE /FI${CMAKE_SOURCE_DIR}/src/Config.h)
 
 if (CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
-    target_compile_definitions(MySimsModLoader PRIVATE VERSION_COZY_BUNDLE)
     set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "WSOCK32")
-else ()
-    target_compile_definitions(MySimsModLoader PRIVATE VERSION_TACO_BELL)
-endif()
+endif ()
 
 if (BUILD_TESTS)
     # For Windows: Prevent overriding the parent project's compiler/linker settings

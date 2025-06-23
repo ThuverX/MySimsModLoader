@@ -11,7 +11,7 @@
 #include "../../tweakers/Tweaker.h"
 #include "../hash/FNV.h"
 #include "../signatures/sigdef.h"
-#include "../hooks/Config.h"
+#include "../../Config.h"
 #include "../modloader/ModLoader.h"
 #include "../modloader/Mods.h"
 #include "../resource/IdResolver.h"
@@ -156,7 +156,7 @@ namespace Msml::Core {
         return kRet;
     }
 
-#ifdef VERSION_COZY_BUNDLE
+#ifdef PLATFORM_WIN64
     void *LoadBody(void * _a, char *dynamicSkinName, void * _c, EA::ResourceMan::IResource *materialResource,
                    EA::ResourceMan::IResource *textureResource, EA::ResourceMan::IResource *maskResource) {
         auto *const kManager = EA::ResourceMan::Manager::GetManager();
@@ -206,7 +206,7 @@ namespace Msml::Core {
 
         Revo::ResourceSystem::InitHook.Install(&ResourceSystemInitHooked);
         Revo::App::ReadXMLFromPathHook.Install(&ReadXMLFromPathHooked);
-#ifdef VERSION_COZY_BUNDLE
+#ifdef PLATFORM_WIN64
         Revo::load_bodyHook.Install(&LoadBody);
 #endif
     }

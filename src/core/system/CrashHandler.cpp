@@ -84,7 +84,7 @@ namespace Msml::Core::System {
         SymInitialize(process, nullptr, TRUE);
 
         STACKFRAME64 stackFrame = {};
-#ifdef _WIN64
+#ifdef PLATFORM_WIN64
         DWORD machineType = IMAGE_FILE_MACHINE_AMD64;
 
         stackFrame.AddrPC.Offset = context->Rip;
@@ -93,7 +93,8 @@ namespace Msml::Core::System {
         stackFrame.AddrFrame.Mode = AddrModeFlat;
         stackFrame.AddrStack.Offset = context->Rsp;
         stackFrame.AddrStack.Mode = AddrModeFlat;
-#else
+#endif
+#ifdef PLATFORM_WIN32
         DWORD machineType = IMAGE_FILE_MACHINE_I386;
         stackFrame.AddrPC.Offset    = context->Eip;
         stackFrame.AddrPC.Mode      = AddrModeFlat;

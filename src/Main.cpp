@@ -12,9 +12,11 @@
 #include "core/system/CrashHandler.h"
 #include "EASTL/internal/config.h"
 
-#ifdef _WIN64
+#ifdef PLATFORM_WIN64
 #include "platform/w64/wsock.h"
-#else
+#endif
+
+#ifdef PLATFORM_WIN32
 #include "platform/w32/dsound.h"
 #endif
 
@@ -38,10 +40,12 @@ BOOL APIENTRY DllMain(HMODULE hModule, const DWORD kReason, LPVOID lpReserved) {
 
         char lpBuffer[MAX_PATH];
         GetSystemDirectoryA(lpBuffer, MAX_PATH);
-#ifdef _WIN64
+#ifdef PLATFORM_WIN64
         strcat_s(lpBuffer, "\\WSOCK32.dll");
-#else
-        strcat_s(bufd, "\\dsound.dll");
+#endif
+
+#ifdef PLATFORM_WIN32
+        strcat_s(lpBuffer, "\\dsound.dll");
 #endif
 
         Msml::Core::ModLoader::GetInstance().Initialize();

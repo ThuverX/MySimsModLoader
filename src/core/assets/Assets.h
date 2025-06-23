@@ -10,7 +10,6 @@
 
 #include "../../EA/ResourceMan/ResourceKey.h"
 #include "../resource/CustomDatabase.h"
-#include "../resource/CustomRecord.h"
 
 namespace Msml::Core {
     struct DBPFRecordInfo {
