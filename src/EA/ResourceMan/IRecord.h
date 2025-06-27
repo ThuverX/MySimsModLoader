@@ -16,7 +16,7 @@ namespace EA::ResourceMan {
 
         virtual Key &GetKey() = 0;
 
-        virtual void SetKey(const Key &key) = 0;
+        virtual void SetKey(const Key &kKey) = 0;
 
         virtual IO::IStream *GetStream() = 0;
 
@@ -24,7 +24,7 @@ namespace EA::ResourceMan {
 
         virtual void Close() = 0;
 
-        virtual void SetStream(IO::IStream *stream) = 0;
+        virtual void SetStream(IO::IStream *pStream) = 0;
     };
 }
 #endif //IRECORD_H

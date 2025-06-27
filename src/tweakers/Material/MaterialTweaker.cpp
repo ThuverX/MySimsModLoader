@@ -14,36 +14,38 @@
 #include "../../formats/builders/MaterialBuilder.h"
 #include "../../formats/materials/MaterialSet.h"
 
-bool MaterialTweaker::OnLoad(msml::core::resource::CustomRecord &asset) {
-    if (materialsToAddToSets.contains(asset.key)) {
-        const uint32_t materialCount = materialsToAddToSets[asset.key].size();
-        if (materialCount <= 0) return false;
+bool MaterialTweaker::OnLoad(Msml::Core::Resource::CustomRecord &asset) {
+    if (mMaterialsToAddToSets.contains(asset.mKey)) {
+        const uint32_t kMaterialCount = mMaterialsToAddToSets[asset.mKey].size();
+        if (kMaterialCount <= 0) {
+            return false;
+        }
         MSML_LOG_INFO("Patching %s with %d material(s)",
-                      msml::core::resource::IdResolver::ToFilename(asset.key).c_str(),
-                      materialCount);
+                      Msml::Core::Resource::IdResolver::ToFilename(asset.mKey).c_str(),
+                      kMaterialCount);
 
         MaterialSet matSet;
-        const auto stream = asset.GetStream();
-        stream->AddRef();
+        auto *const kStream = asset.GetStream();
+        kStream->AddRef();
 
-        MaterialSet::Read(matSet, stream);
+        MaterialSet::Read(matSet, kStream);
 
-        stream->Release();
+        kStream->Release();
 
-        for (const auto &value: materialsToAddToSets[asset.key]) {
-            MSML_LOG_DEBUG("\tAdding %s to %s", msml::core::resource::IdResolver::ToFilename(value).c_str(),
-                           msml::core::resource::IdResolver::ToFilename(asset.key).c_str());
-            matSet.materials.emplace_back(value);
-            matSet.mtst.indices.emplace_back(matSet.mtst.indices.size() + matSet.mtst.index + 1);
+        for (const auto &value: mMaterialsToAddToSets[asset.mKey]) {
+            MSML_LOG_DEBUG("\tAdding %s to %s", Msml::Core::Resource::IdResolver::ToFilename(value).c_str(),
+                           Msml::Core::Resource::IdResolver::ToFilename(asset.mKey).c_str());
+            matSet.mMaterials.emplace_back(value);
+            matSet.mMtst.mIndices.emplace_back(matSet.mMtst.mIndices.size() + matSet.mMtst.mIndex + 1);
         }
 
-        const auto out_stream = new EA::IO::MemoryStream;
-        matSet.Write(out_stream);
+        auto *const kOutStream = new EA::IO::MemoryStream;
+        matSet.Write(kOutStream);
         // yeah this is stupid, and not having this baked in,
         // is a mistake waiting to happen
-        out_stream->SetPosition(0, EA::IO::PositionType::Begin);
+        kOutStream->SetPosition(0, EA::IO::PositionType::kBegin);
 
-        asset.SetStream(out_stream);
+        asset.SetStream(kOutStream);
 
         return true;
     }
@@ -51,66 +53,68 @@ bool MaterialTweaker::OnLoad(msml::core::resource::CustomRecord &asset) {
     return false;
 }
 
-bool MaterialTweaker::OnRegister(msml::core::assets::Asset &asset) {
-    if (asset.path.string().ends_with(".material.xml")) {
-        MSML_LOG_INFO("Loading material from %s", asset.path.filename().string().c_str());
-        const auto filename = asset.path.stem();
-        const EA::ResourceMan::Key key = msml::core::assets::Asset::GetKey(filename);
+bool MaterialTweaker::OnRegister(Msml::Core::Asset &asset) {
+    if (asset.mPath.string().ends_with(".material.xml")) {
+        MSML_LOG_INFO("Loading material from %s", asset.mPath.filename().string().c_str());
+        const auto kFilename = asset.mPath.stem();
+        const EA::ResourceMan::Key kKey = Msml::Core::Asset::GetKey(kFilename);
         auto materialBuilder = MaterialBuilder()
-                .withKey(key);
+                .WithKey(kKey);
 
-        const std::string xml_string = msml::core::util::StreamUtil::ReadString(asset.GetStream());
+        const std::string kXmlString = Msml::Core::Util::StreamUtil::ReadString(asset.GetStream());
 
         pugi::xml_document doc;
 
-        if (const pugi::xml_parse_result result = doc.load_string(xml_string.c_str()); !result)
+        if (const pugi::xml_parse_result kResult = doc.load_string(kXmlString.c_str()); !kResult) {
             return false;
+        }
 
-        const pugi::xml_node materialNode = doc.child("Material");
-        if (!materialNode)
+        const pugi::xml_node kMaterialNode = doc.child("Material");
+        if (!kMaterialNode) {
             return false;
+        }
 
-        std::string shader = materialNode.attribute("shader").as_string();
-        materialBuilder.withShader(GetShaderType(shader));
+        const std::string kShader = kMaterialNode.attribute("shader").as_string();
+        materialBuilder.WithShader(GetShaderType(kShader));
 
-        for (const auto &node: materialNode.children("Parameter")) {
+        for (const auto &node: kMaterialNode.children("Parameter")) {
             std::string type = node.attribute("type").as_string();
             std::string name = node.attribute("name").as_string();
 
-            uint32_t name_id = 0;
+            uint32_t nameId = 0;
 
             if (name.starts_with("0x")) {
-                name_id = std::stoul(name, nullptr, 0);
+                nameId = std::stoul(name, nullptr, 0);
             } else {
-                name_id = msml::hash::fnv::FromString32(name.c_str());
+                nameId = Msml::Hash::FNV::FromString32(name);
             }
 
             if (type == "map") {
-                EA::ResourceMan::Key mapKey = msml::core::assets::Asset::GetKey(node.text().as_string());
-                materialBuilder.withKeyParameter(name_id, mapKey);
+                const EA::ResourceMan::Key kMapKey = Msml::Core::Asset::GetKey(node.text().as_string());
+                materialBuilder.WithKeyParameter(nameId, kMapKey);
             } else if (type == "color") {
-                float r = node.attribute("r").as_float();
-                float g = node.attribute("g").as_float();
-                float b = node.attribute("b").as_float();
-                float a = node.attribute("a").as_float();
-                materialBuilder.withColorParameter(name_id, r, g, b, a);
+                const float r = node.attribute("r").as_float();
+                const float g = node.attribute("g").as_float();
+                const float b = node.attribute("b").as_float();
+                const float a = node.attribute("a").as_float();
+                materialBuilder.WithColorParameter(nameId, r, g, b, a);
             } else if (type == "int") {
-                uint32_t integer = std::stoul(node.text().as_string(), nullptr, 0);
-                materialBuilder.withValueParameter(name_id, integer);
+                const uint32_t kInteger = std::stoul(node.text().as_string(), nullptr, 0);
+                materialBuilder.WithValueParameter(nameId, kInteger);
             }
         }
 
-        auto material = materialBuilder.build();
-        const auto out_asset = new msml::core::assets::Asset(key, msml::core::assets::BUFFER);
-        const auto out_stream = new EA::IO::MemoryStream();
-        out_stream->AddRef();
+        auto material = materialBuilder.Build();
+        auto *const kOutAsset = new Msml::Core::Asset(kKey, Msml::Core::AssetType::kBuffer);
+        auto *const kOutStream = new EA::IO::MemoryStream();
+        kOutStream->AddRef();
 
-        material.Write(out_stream);
+        material.Write(kOutStream);
 
-        out_asset->buffer = msml::core::util::StreamUtil::ReadBytes(out_stream);
-        out_stream->Release();
+        kOutAsset->mBuffer = Msml::Core::Util::StreamUtil::ReadBytes(kOutStream);
+        kOutStream->Release();
 
-        msml::core::Assets::GetInstance().RegisterAsset(out_asset);
+        Msml::Core::Assets::GetInstance().RegisterAsset(kOutAsset);
 
         return true;
     }
@@ -118,10 +122,10 @@ bool MaterialTweaker::OnRegister(msml::core::assets::Asset &asset) {
     return false;
 }
 
-void MaterialTweaker::AddMaterial(const EA::ResourceMan::Key &setKey, const EA::ResourceMan::Key &materialKey) {
-    if (!materialsToAddToSets.contains(setKey)) {
-        materialsToAddToSets[setKey] = {};
+void MaterialTweaker::AddMaterial(const EA::ResourceMan::Key &kSetKey, const EA::ResourceMan::Key &kMaterialKey) {
+    if (!mMaterialsToAddToSets.contains(kSetKey)) {
+        mMaterialsToAddToSets[kSetKey] = {};
     }
 
-    materialsToAddToSets[setKey].push_back(materialKey);
+    mMaterialsToAddToSets[kSetKey].push_back(kMaterialKey);
 }

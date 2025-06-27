@@ -7,7 +7,7 @@
 
 #include <windows.h>
 
-namespace msml::core::system {
+namespace Msml::Core::System {
     LONG CALLBACK VectoredCrashHandler(PEXCEPTION_POINTERS pExceptionInfo);
 }
 

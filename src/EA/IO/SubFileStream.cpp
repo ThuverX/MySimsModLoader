@@ -4,129 +4,75 @@
 
 #include "SubFileStream.h"
 
+// TODO: we should really have tests for these and the other stream functions
 namespace EA::IO {
-    SubFileStream::SubFileStream(const std::filesystem::path &path, const size_t offset, const size_t size): path(path) {
-        hFile = CreateFileW(
-            path.c_str(),
-            GENERIC_READ,
-            FILE_SHARE_READ,
-            nullptr,
-            OPEN_EXISTING,
-            FILE_ATTRIBUTE_NORMAL,
-            nullptr
-        );
-
-        begin = offset;
-        this->size = size;
-        end = begin + size;
-
-        LARGE_INTEGER li;
-        li.QuadPart = static_cast<LONGLONG>(begin);
-
-        SetFilePointerEx(hFile, li, nullptr, FILE_BEGIN);
+    SubFileStream::SubFileStream(const std::filesystem::path &path, const size_t kOffset, const size_t kSize): mFileStream(path), mBegin(kOffset), mSize(kSize), mEnd(mBegin + kSize) {
+        mFileStream.SetPosition(mBegin, PositionType::kBegin);
     }
 
     uint32_t SubFileStream::GetType() const {
-        return 0x1489eb2f;
+        return kType;
     }
 
     AccessFlags SubFileStream::GetAccessFlags() const {
-        return (hFile != INVALID_HANDLE_VALUE) ? AccessFlags::Read : AccessFlags::None;
+        return mFileStream.GetAccessFlags();
     }
 
     FileError SubFileStream::GetState() const {
-        return (hFile != INVALID_HANDLE_VALUE) ? FileError::Success : FileError::InvalidHandle;
+        return mFileStream.GetState();
     }
 
     bool SubFileStream::Close() {
-        if (hFile != INVALID_HANDLE_VALUE) {
-            CloseHandle(hFile);
-            hFile = INVALID_HANDLE_VALUE;
-            return true;
-        }
-        return false;
+        return mFileStream.Close();
     }
 
     size_t SubFileStream::GetSize() const {
-        if (hFile == INVALID_HANDLE_VALUE) return -1;
-
-        return size;
+        return mSize;
     }
 
     bool SubFileStream::SetSize(size_t size) {
-        this->size = size;
-        end = begin + size;
+        mSize = size;
+        mEnd = mBegin + size;
         return true;
     }
 
     size_t SubFileStream::GetPosition(PositionType positionType) const {
-        if (hFile == INVALID_HANDLE_VALUE) return -1;
-
-        constexpr LARGE_INTEGER zero = {};
-        LARGE_INTEGER pos;
-
-        if (positionType == PositionType::End) {
-            if (SetFilePointerEx(hFile, zero, &pos, FILE_CURRENT))
-                return GetSize() - static_cast<size_t>(pos.QuadPart) - begin;
+        if (positionType == PositionType::kEnd) {
+            return GetSize() - mFileStream.GetPosition(PositionType::kBegin) - mBegin;
         }
 
-        if (SetFilePointerEx(hFile, zero, &pos, FILE_CURRENT))
-            return static_cast<size_t>(pos.QuadPart) - begin;
-
-        return -1;
+        return mFileStream.GetPosition(PositionType::kBegin) - mBegin;
     }
 
     bool SubFileStream::SetPosition(int distance, PositionType positionType) {
-        if (hFile == INVALID_HANDLE_VALUE) return false;
-
-        DWORD method = FILE_CURRENT;
         switch (positionType) {
-            case PositionType::Begin: {
-                method = FILE_BEGIN;
-                distance = begin + distance;
-                break;
-            }
-            case PositionType::End: {
-                method = FILE_BEGIN;
-                distance = end - distance;
-                break;
-            }
-            default: {
-                method = FILE_CURRENT;
-                break;
-            }
+            case PositionType::kBegin:
+                return mFileStream.SetPosition(mBegin + distance, PositionType::kBegin);
+            case PositionType::kEnd:
+                return mFileStream.SetPosition(mEnd - distance, PositionType::kEnd);
+            case PositionType::kCurrent:
+                return mFileStream.SetPosition(distance, PositionType::kBegin);
         }
 
-        LARGE_INTEGER li;
-        li.QuadPart = static_cast<LONGLONG>(distance);
-
-        return SetFilePointerEx(hFile, li, nullptr, method);
+        return false;
     }
 
     size_t SubFileStream::GetAvailable() const {
-        if (hFile == INVALID_HANDLE_VALUE) return -1;
-
-        const size_t size = GetSize();
-        const size_t pos = GetPosition(PositionType::Begin);
-        return (pos <= size) ? (size - pos) : -1;
+        const size_t kSize = GetSize();
+        const size_t kPos = GetPosition(PositionType::kBegin);
+        return (kPos <= kSize) ? (kSize - kPos) : -1;
     }
 
     size_t SubFileStream::Read(void *pData, size_t nSize) {
-        if (hFile == INVALID_HANDLE_VALUE || pData == nullptr) return -1;
-
-        DWORD bytesRead = 0;
-        if (ReadFile(hFile, pData, static_cast<DWORD>(nSize), &bytesRead, nullptr))
-            return bytesRead;
-
-        return -1;
+        return mFileStream.Read(pData, nSize);
     }
 
     bool SubFileStream::Flush() {
-        if (hFile == INVALID_HANDLE_VALUE) return false;
-        return FlushFileBuffers(hFile) != 0;
+        return mFileStream.Flush();
+
     }
 
     size_t SubFileStream::Write(const void *pData, size_t nSize) {
-        return 0;
+        return mFileStream.Write(pData, nSize);
     }
 }

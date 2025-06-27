@@ -4,29 +4,28 @@
 
 #ifndef CLOTHINGTWEAKER_H
 #define CLOTHINGTWEAKER_H
+
 #include "../Tweaker.h"
 
-#include <unordered_map>
-
-// Allows for easily adding new clothing to the game
 struct OutfitEntry {
-    std::string context;
-    std::string type;
-    std::string design_mode;
-    std::string gender;
-    std::string category;
-    std::string model;
+    std::string mContext;
+    std::string mType;
+    std::string mDesignMode;
+    std::string mGender;
+    std::string mCategory;
+    std::string mModel;
 };
 
 class ClothingTweaker final : public Tweaker {
+    std::vector<OutfitEntry *> mOutfitsToAdd;
+
+    static void CreateMaterial(uint32_t kGroup, const std::string &kType, const std::string &kName,
+                               const std::string &kTexture, int kSkinId);
+
 public:
-    std::vector<OutfitEntry*> outfitsToAdd;
+    bool OnLoad(Msml::Core::Resource::CustomRecord &asset) override;
 
-    bool OnLoad(msml::core::resource::CustomRecord &asset) override;
-    bool OnRegister(msml::core::assets::Asset &asset) override;
-
-private:
-    static void CreateMaterial(uint32_t group, const std::string& type, const std::string &name, const std::string &texture, const int skin_id);
+    bool OnRegister(Msml::Core::Asset &asset) override;
 };
 
 #endif //CLOTHINGTWEAKER_H

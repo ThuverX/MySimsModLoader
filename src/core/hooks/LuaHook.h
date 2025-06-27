@@ -8,12 +8,13 @@
 
 #include "../../include/lua.h"
 
-namespace msml::core::hooks {
+namespace Msml::Core::Hooks {
     class LuaHook {
     public:
-        static void Require(const std::string& path);
+        static lua_State* sGlobalState;
+
+        static void Require(const std::string& kPath);
         static void Install();
-        static lua_State* GlobalState;
     };
 }
 

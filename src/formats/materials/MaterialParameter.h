@@ -1,29 +1,33 @@
 #ifndef MATERIALPARAMETER_H
 #define MATERIALPARAMETER_H
+
 #include "../../EA/IO/IStream.h"
 #include "../../EA/ResourceMan/ResourceKey.h"
 #include "../primitives/Vector4.h"
 
-enum ValueType: uint32_t {
-    Color = 1,
-    Value = 2,
-    Key = 4
+enum class ValueType: uint32_t {
+    kColor = 1,
+    kValue = 2,
+    kKey = 4
 };
 
 struct MaterialParameter {
-    uint32_t name;
-    uint32_t type;
-    uint32_t valueFieldCount;
-    uint32_t offset;
+    uint32_t mName;
+    ValueType mType;
+    uint32_t mValueFieldCount;
+    uint32_t mOffset;
 
-    Vector4 colorValue;
-    uint32_t intValue;
-    EA::ResourceMan::Key keyValue;
+    Vector4 mColorValue;
+    uint32_t mIntValue;
+    EA::ResourceMan::Key mKeyValue;
 
-    static void Read(MaterialParameter &instance, size_t base_offset, EA::IO::IStream* stream);
-    void WriteHeader(EA::IO::IStream* stream) const;
-    void WriteBody(EA::IO::IStream* stream) const;
-    [[nodiscard]] uint32_t GetBodySize() const;
+    static void Read(MaterialParameter &instance, size_t kBaseOffset, EA::IO::IStream *pStream);
+
+    void WriteHeader(EA::IO::IStream *pStream) const;
+
+    void WriteBody(EA::IO::IStream *pStream) const;
+
+    uint32_t GetBodySize() const;
 };
 
 #endif // MATERIALPARAMETER_H

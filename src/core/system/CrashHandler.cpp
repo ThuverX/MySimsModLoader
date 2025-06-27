@@ -13,9 +13,9 @@
 
 #pragma comment(lib, "dbghelp.lib")
 
-namespace msml::core::system {
-    std::string GetExceptionTypeName(DWORD exceptionCode) {
-        switch (exceptionCode) {
+namespace Msml::Core::System {
+    std::string GetExceptionTypeName(const DWORD kExceptionCode) {
+        switch (kExceptionCode) {
             case EXCEPTION_ACCESS_VIOLATION: return "EXCEPTION_ACCESS_VIOLATION";
             case EXCEPTION_ARRAY_BOUNDS_EXCEEDED: return "EXCEPTION_ARRAY_BOUNDS_EXCEEDED";
             case EXCEPTION_BREAKPOINT: return "EXCEPTION_BREAKPOINT";
@@ -40,28 +40,28 @@ namespace msml::core::system {
         }
     }
 
-    constexpr uintptr_t BASE_PTR = 0x140000000;
+    constexpr uintptr_t kBasePtr = 0x140000000;
 
     std::pair<std::string, uintptr_t> GetModuleLocation(uintptr_t addr) {
         HMODULE hMods[1024];
-        DWORD cbNeeded;
+        DWORD cbNeeded = 0;
         HANDLE hProcess = GetCurrentProcess();
 
         if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded)) {
             for (DWORD i = 0; i < cbNeeded / sizeof(HMODULE); ++i) {
                 MODULEINFO modInfo;
                 if (GetModuleInformation(hProcess, hMods[i], &modInfo, sizeof(modInfo))) {
-                    const auto base = reinterpret_cast<uintptr_t>(modInfo.lpBaseOfDll);
+                    const auto kBase = reinterpret_cast<uintptr_t>(modInfo.lpBaseOfDll);
                     const uintptr_t size = modInfo.SizeOfImage;
 
-                    if (addr >= base && addr < base + size) {
+                    if (addr >= kBase && addr < kBase + size) {
                         char modName[MAX_PATH];
                         GetModuleBaseNameA(hProcess, hMods[i], modName, MAX_PATH);
 
-                        uintptr_t offset = addr - base;
+                        uintptr_t offset = addr - kBase;
 
                         if (strcmp(modName, "MySims.exe") == 0) {
-                            offset += BASE_PTR;
+                            offset += kBasePtr;
                         }
 
                         return {modName, offset};
@@ -74,17 +74,17 @@ namespace msml::core::system {
     }
 
     std::string GetStackTrace(PEXCEPTION_POINTERS pExceptionInfo) {
-        auto context = pExceptionInfo->ContextRecord;
+        auto *context = pExceptionInfo->ContextRecord;
 
         std::stringstream stackTrace;
 
         HANDLE process = GetCurrentProcess();
         HANDLE thread = GetCurrentThread();
 
-        SymInitialize(process, NULL, TRUE);
+        SymInitialize(process, nullptr, TRUE);
 
         STACKFRAME64 stackFrame = {};
-#ifdef _WIN64
+#ifdef PLATFORM_WIN64
         DWORD machineType = IMAGE_FILE_MACHINE_AMD64;
 
         stackFrame.AddrPC.Offset = context->Rip;
@@ -93,7 +93,8 @@ namespace msml::core::system {
         stackFrame.AddrFrame.Mode = AddrModeFlat;
         stackFrame.AddrStack.Offset = context->Rsp;
         stackFrame.AddrStack.Mode = AddrModeFlat;
-#else
+#endif
+#ifdef PLATFORM_WIN32
         DWORD machineType = IMAGE_FILE_MACHINE_I386;
         stackFrame.AddrPC.Offset    = context->Eip;
         stackFrame.AddrPC.Mode      = AddrModeFlat;
@@ -104,10 +105,10 @@ namespace msml::core::system {
 #endif
 
         for (int i = 0; i < 32; ++i) {
-            if (!StackWalk64(machineType, process, thread, &stackFrame, context, NULL,
-                             SymFunctionTableAccess64, SymGetModuleBase64, NULL)) {
+            if (StackWalk64(machineType, process, thread, &stackFrame, context, nullptr,
+                            SymFunctionTableAccess64, SymGetModuleBase64, nullptr) == 0) {
                 break;
-                             }
+            }
 
             DWORD64 addr = stackFrame.AddrPC.Offset;
             if (addr == 0) break;
@@ -116,20 +117,22 @@ namespace msml::core::system {
 
             char symbolBuffer[sizeof(SYMBOL_INFO) + 256] = {};
 
-            auto pSymbol = reinterpret_cast<PSYMBOL_INFO>(symbolBuffer);
+            auto *pSymbol = reinterpret_cast<PSYMBOL_INFO>(symbolBuffer);
             pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
             pSymbol->MaxNameLen = 255;
 
-            DWORD64 displacement;
-            if (SymFromAddr(process, addr, &displacement, pSymbol)) {
+            DWORD64 displacement = 0;
+            if (SymFromAddr(process, addr, &displacement, pSymbol) != 0) {
                 stackTrace << "  " << std::setw(2) << std::setfill('0') << i
                         << ": " << pSymbol->Name
                         << " + 0x" << std::hex << std::uppercase << displacement
-                        << std::dec << std::nouppercase << " at " << ghidraPoint.first.c_str() << " 0x" << std::hex << (ghidraPoint.second + displacement)  << "\n";
+                        << std::dec << std::nouppercase << " at " << ghidraPoint.first.c_str() << " 0x" << std::hex << (
+                            ghidraPoint.second + displacement) << "\n";
             } else {
                 stackTrace << "  " << std::setw(2) << std::setfill('0') << i
                         << ": 0x" << std::setw(16) << std::setfill('0') << std::hex << std::uppercase << addr
-                << std::dec << std::nouppercase << " at " << ghidraPoint.first.c_str() << " 0x" << std::hex << (ghidraPoint.second + displacement) << "\n";
+                        << std::dec << std::nouppercase << " at " << ghidraPoint.first.c_str() << " 0x" << std::hex << (
+                            ghidraPoint.second + displacement) << "\n";
             }
         }
 
@@ -138,8 +141,8 @@ namespace msml::core::system {
         return stackTrace.str();
     }
 
-    bool IsDebugException(const DWORD code) {
-        switch (code) {
+    bool IsDebugException(const DWORD kCode) {
+        switch (kCode) {
             case 0x40010006: // DBG_PRINTEXCEPTION_C (OutputDebugString)
             case 0x4001000A: // DBG_RIPEXCEPTION
             case 0x40010007: // DBG_RIPEXCEPTION (older/misc variant)
@@ -156,7 +159,7 @@ namespace msml::core::system {
             return EXCEPTION_CONTINUE_EXECUTION;
         }
 
-        std::ofstream log(ModLoader::GetInstance().modulePath / "crash.log", std::ios::app);
+        std::ofstream log(ModLoader::GetInstance().mModulePath / "crash.log", std::ios::app);
 
         if (!log.is_open()) {
             return EXCEPTION_CONTINUE_EXECUTION;
@@ -166,17 +169,19 @@ namespace msml::core::system {
 
         log << "=== CRASH LOG ===\n";
 
-        auto expectionLocation = GetModuleLocation(
+        const auto kExpectionLocation = GetModuleLocation(
             reinterpret_cast<uintptr_t>(pExceptionInfo->ExceptionRecord->ExceptionAddress));
 
-        MSML_LOG_ERROR("Exception occurred: %s 0x%p", expectionLocation.first.c_str(), expectionLocation.second);
+        MSML_LOG_ERROR("Exception occurred: %s 0x%p", kExpectionLocation.first.c_str(), kExpectionLocation.second);
 
-        log << "\tException occurred: " << expectionLocation.first.c_str() << " 0x" << std::hex << expectionLocation.second
+        log << "\tException occurred: " << kExpectionLocation.first.c_str() << " 0x" << std::hex << kExpectionLocation.
+                second
                 << "\n";
-        DWORD exceptionCode = pExceptionInfo->ExceptionRecord->ExceptionCode;
-        MSML_LOG_ERROR("\t%s (0x%p)", GetExceptionTypeName(exceptionCode).c_str(), exceptionCode);
+        const DWORD kExceptionCode = pExceptionInfo->ExceptionRecord->ExceptionCode;
+        MSML_LOG_ERROR("\t%s (0x%p)", GetExceptionTypeName(kExceptionCode).c_str(), kExceptionCode);
 
-        log << "\tException type: " << GetExceptionTypeName(exceptionCode).c_str() << "(" << std::hex << exceptionCode <<
+        log << "\tException type: " << GetExceptionTypeName(kExceptionCode).c_str() << "(" << std::hex << kExceptionCode
+                <<
                 ")\n";
 
         log << "\n=== STACK TRACE ===\n";

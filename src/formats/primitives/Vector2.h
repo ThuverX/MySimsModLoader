@@ -6,9 +6,9 @@ struct Vector2 {
     float x;
     float y;
 
-    static void Read(Vector2 &instance, EA::IO::IStream* stream) {
-        READ(stream, instance.x);
-        READ(stream, instance.y);
+    static void Read(Vector2 &instance, EA::IO::IStream *pStream) {
+        READ(pStream, instance.x);
+        READ(pStream, instance.y);
     }
 };
 

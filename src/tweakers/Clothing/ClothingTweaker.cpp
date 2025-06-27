@@ -10,71 +10,74 @@
 #include "../../core/assets/Assets.h"
 #include "../../core/hash/FNV.h"
 #include "../../core/modloader/Mod.h"
-#include "../../core/modloader/Mods.h"
-#include "../../core/resource/IdResolver.h"
 #include "../../core/system/Logger.h"
 #include "../../core/util/StreamUtil.h"
 #include "../../EA/IO/MemoryStream.h"
 #include "../../formats/builders/MaterialBuilder.h"
-#include "../../formats/materials/MaterialSet.h"
 
-struct xml_string_writer: pugi::xml_writer
-{
-    std::string result;
+struct XmlStringWriter : pugi::xml_writer {
+    std::string mResult;
 
-    void write(const void* data, size_t size) override {
-        result.append(static_cast<const char*>(data), size);
+    void write(const void *pData, const size_t size) override {
+        mResult.append(static_cast<const char *>(pData), size);
     }
 };
 
-EA::ResourceMan::Key MasterInventoryKey = {
-    .instance = msml::hash::fnv::FromString64("CAS.inventory"),
-    .type = msml::core::assets::DDFFileType::XML,
-    .group = 0,
+const EA::ResourceMan::Key kMasterInventoryKey = {
+    .mInstance = Msml::Hash::FNV::FromString64("CAS.inventory"),
+    .mType = static_cast<uint32_t>(Msml::Core::FileType::XML),
+    .mGroup = 0,
 };
 
-bool ClothingTweaker::OnLoad(msml::core::resource::CustomRecord &asset) {
-    if (asset.key == MasterInventoryKey) {
+bool ClothingTweaker::OnLoad(Msml::Core::Resource::CustomRecord &asset) {
+    if (asset.mKey == kMasterInventoryKey) {
         MSML_LOG_INFO("Patching Master Inventory");
 
-        const std::string xml_string = msml::core::util::StreamUtil::ReadString(asset.GetStream());
+        const std::string kXmlString = Msml::Core::Util::StreamUtil::ReadString(asset.GetStream());
 
         pugi::xml_document doc;
 
-        if (const pugi::xml_parse_result result = doc.load_string(xml_string.c_str()); !result)
+        if (const pugi::xml_parse_result kResult = doc.load_string(kXmlString.c_str()); !kResult) {
             return false;
+        }
 
-        const pugi::xml_node inventoryNode = doc.child("Inventory");
-        if (!inventoryNode)
+        const pugi::xml_node kInventoryNode = doc.child("Inventory");
+        if (!kInventoryNode) {
             return false;
+        }
 
-        for (const auto & outfit_to_add : outfitsToAdd) {
-            auto contextNode = inventoryNode.find_child_by_attribute("name", outfit_to_add->context.c_str());
-            if (!contextNode) continue;
-            auto typeNode = contextNode.child(outfit_to_add->type.c_str());
-            if (!typeNode) continue;
+        for (const auto &outfitToAdd: mOutfitsToAdd) {
+            auto contextNode = kInventoryNode.find_child_by_attribute("name", outfitToAdd->mContext.c_str());
+            if (!contextNode) {
+                continue;
+            }
+            auto typeNode = contextNode.child(outfitToAdd->mType.c_str());
+            if (!typeNode) {
+                continue;
+            }
 
-            auto lastSetNode = typeNode.find_node([outfit_to_add] (const pugi::xml_node node) -> bool {
-                return strcmp(node.text().get(), outfit_to_add->model.c_str()) == 0;
+            auto lastSetNode = typeNode.find_node([outfitToAdd](const pugi::xml_node kNode) -> bool {
+                return strcmp(kNode.text().get(), outfitToAdd->mModel.c_str()) == 0;
             });
 
             auto modelNode = typeNode.append_child("Model");
-            modelNode.append_attribute("design_mode") = outfit_to_add->design_mode.c_str();
-            modelNode.append_attribute("gender") = outfit_to_add->gender.c_str();
-            modelNode.append_attribute("category") = outfit_to_add->category.c_str();
-            modelNode.text() = outfit_to_add->model.c_str();
+            modelNode.append_attribute("design_mode") = outfitToAdd->mDesignMode.c_str();
+            modelNode.append_attribute("gender") = outfitToAdd->mGender.c_str();
+            modelNode.append_attribute("category") = outfitToAdd->mCategory.c_str();
+            modelNode.text() = outfitToAdd->mModel.c_str();
 
-            if (lastSetNode != nullptr)
+            if (lastSetNode != nullptr) {
                 typeNode.insert_move_after(modelNode, lastSetNode);
+            }
         }
 
-        const auto str_writer = new xml_string_writer();
+        auto *const kStrWriter = new XmlStringWriter;
 
-        doc.save(*str_writer);
+        doc.save(*kStrWriter);
 
-        const auto out_stream = new EA::IO::MemoryStream(str_writer->result.data(), str_writer->result.size());
+        auto *const kOutStream = new EA::IO::MemoryStream(kStrWriter->mResult.data(), kStrWriter->mResult.size());
 
-        asset.SetStream(out_stream);
+        asset.SetStream(kOutStream);
 
         return true;
     }
@@ -84,86 +87,89 @@ bool ClothingTweaker::OnLoad(msml::core::resource::CustomRecord &asset) {
 
 // TODO: does not yet work on x86, look into 004bb920, Revo::CharacterVisualComponent::BodyMaterialSetResourceAcquireCallback
 
-void ClothingTweaker::CreateMaterial(const uint32_t group, const std::string& type, const std::string &name, const std::string &texture, const int skin_id) {
-    const std::string file_name_with_skin = name + "_s" + std::to_string(skin_id);
+void ClothingTweaker::CreateMaterial(const uint32_t kGroup, const std::string &kType, const std::string &kName,
+                                     const std::string &kTexture, int kSkinId) {
+    const std::string kFileNameWithSkin = kName + "_s" + std::to_string(kSkinId);
 
-    const EA::ResourceMan::Key material_key = {
-        .instance = msml::hash::fnv::FromString32(file_name_with_skin.c_str()),
-        .type = msml::core::assets::DDFFileType::MATERIAL,
-        .group = group,
+    const EA::ResourceMan::Key kMaterialKey = {
+        .mInstance = Msml::Hash::FNV::FromString32(kFileNameWithSkin),
+        .mType = static_cast<uint32_t>(Msml::Core::FileType::MATERIAL),
+        .mGroup = kGroup,
     };
 
-    const auto material_asset = new msml::core::assets::Asset(material_key, msml::core::assets::BUFFER);
-    const auto material_stream = new EA::IO::MemoryStream();
-    material_stream->AddRef();
+    auto *const kMaterialAsset = new Msml::Core::Asset(kMaterialKey, Msml::Core::AssetType::kBuffer);
+    auto *const kMaterialStream = new EA::IO::MemoryStream();
+    kMaterialStream->AddRef();
 
     auto material = MaterialBuilder()
-        .withShader(ShaderType::lambert)
-        .withKey(material_key)
-        .withColorParameter(0xDAA9532D, 0, 0, 0, 0)
-        .withColorParameter(0x3BD441A0,0,0,0,0)
-        .withColorParameter(0x988403F9,0,0,0,0)
-        .withColorParameter(0x5D22FD3,1,1,1,1)
-        .withValueParameter(0xF46B90AE, 0)
-        .withColorParameter(0x29BCDD1F,1,1,1,1)
-        .withColorParameter(0x73C9923E, 1,1,1,1)
-        .withColorParameter(0x4A5DAA3,0,0,0,0)
-        .withValueParameter(0x76F88689, 1)
-        .withColorParameter(0x7FEE2D1A,1,1,1,1)
-        .withKeyParameter(0x6CC0FD85, {
-            .instance = msml::hash::fnv::FromString32(texture.c_str()),
-            .type = msml::core::assets::DDFFileType::DDS,
-            .group = 0,
-        }).build();
+            .WithShader(ShaderType::lambert)
+            .WithKey(kMaterialKey)
+            .WithColorParameter(0xDAA9532D, 0, 0, 0, 0)
+            .WithColorParameter(0x3BD441A0, 0, 0, 0, 0)
+            .WithColorParameter(0x988403F9, 0, 0, 0, 0)
+            .WithColorParameter(0x5D22FD3, 1, 1, 1, 1)
+            .WithValueParameter(0xF46B90AE, 0)
+            .WithColorParameter(0x29BCDD1F, 1, 1, 1, 1)
+            .WithColorParameter(0x73C9923E, 1, 1, 1, 1)
+            .WithColorParameter(0x4A5DAA3, 0, 0, 0, 0)
+            .WithValueParameter(0x76F88689, 1)
+            .WithColorParameter(0x7FEE2D1A, 1, 1, 1, 1)
+            .WithKeyParameter(0x6CC0FD85, {
+                                  .mInstance = Msml::Hash::FNV::FromString32(kTexture),
+                                  .mType = static_cast<uint32_t>(Msml::Core::FileType::DDS),
+                                  .mGroup = 0,
+                              }).Build();
 
-    material.Write(material_stream);
-    material_asset->buffer = msml::core::util::StreamUtil::ReadBytes(material_stream);
-    material_stream->Close();
-    material_stream->Release();
+    material.Write(kMaterialStream);
+    kMaterialAsset->mBuffer = Msml::Core::Util::StreamUtil::ReadBytes(kMaterialStream);
+    kMaterialStream->Close();
+    kMaterialStream->Release();
 
-    const EA::ResourceMan::Key setKey {
-        .instance = group,
-        .type = msml::core::assets::DDFFileType::MATERIALSET,
-        .group = msml::hash::fnv::FromString32(type.c_str()),
+    const EA::ResourceMan::Key kSetKey{
+        .mInstance = kGroup,
+        .mType = static_cast<uint32_t>(Msml::Core::FileType::MATERIALSET),
+        .mGroup = Msml::Hash::FNV::FromString32(kType),
     };
 
-    material_tweaker.AddMaterial(setKey, material_key);
-    msml::core::Assets::GetInstance().RegisterAsset(material_asset);
+    material_tweaker.AddMaterial(kSetKey, kMaterialKey);
+    Msml::Core::Assets::GetInstance().RegisterAsset(kMaterialAsset);
 }
 
-bool ClothingTweaker::OnRegister(msml::core::assets::Asset &asset) {
-    if (asset.path.string().ends_with(".outfit.xml")) {
-        MSML_LOG_INFO("Registering clothing outfit: %s", asset.path.string().c_str());
+bool ClothingTweaker::OnRegister(Msml::Core::Asset &asset) {
+    if (asset.mPath.string().ends_with(".outfit.xml")) {
+        MSML_LOG_INFO("Registering clothing outfit: %s", asset.mPath.string().c_str());
         pugi::xml_document doc;
 
-        if (const pugi::xml_parse_result result = doc.load_file(asset.path.c_str()); !result)
+        if (const pugi::xml_parse_result kResult = doc.load_file(asset.mPath.c_str()); !kResult) {
             return false;
+        }
 
-        const pugi::xml_node outfitNode = doc.child("Outfit");
-        if (!outfitNode)
+        const pugi::xml_node kOutfitNode = doc.child("Outfit");
+        if (!kOutfitNode) {
             return false;
+        }
 
-        std::string name = outfitNode.child("Name").text().as_string();
-        std::string model = outfitNode.child("Model").text().as_string();
-        std::string category = outfitNode.attribute("category").as_string();
-        std::string type = outfitNode.attribute("type").as_string();
-        std::string gender = outfitNode.attribute("gender").as_string();
-        std::string texture = outfitNode.attribute("texture").as_string();
-        std::string mask = outfitNode.attribute("mask").as_string();
+        std::string name = kOutfitNode.child("Name").text().as_string();
+        std::string model = kOutfitNode.child("Model").text().as_string();
+        std::string category = kOutfitNode.attribute("category").as_string();
+        std::string type = kOutfitNode.attribute("type").as_string();
+        std::string gender = kOutfitNode.attribute("gender").as_string();
+        std::string texture = kOutfitNode.attribute("texture").as_string();
+        std::string mask = kOutfitNode.attribute("mask").as_string();
         std::vector<std::string> contexts;
 
-        for (const auto & node : outfitNode.child("Contexts").children("Context")) {
+        for (const auto &node: kOutfitNode.child("Contexts").children("Context")) {
             contexts.emplace_back(node.text().as_string());
         }
 
-        std::string design_mode = "_" + name;
+        std::string designMode = "_" + name;
 
-        std::string file_name = model + design_mode;
-        std::string mask_name = file_name + "_mask";
+        std::string fileName = model + designMode;
+        std::string maskName = fileName + "_mask";
 
-        uint32_t model_instance = msml::hash::fnv::FromString32(model.c_str());
+        uint32_t modelInstance = Msml::Hash::FNV::FromString32(model);
 
-#ifdef VERSION_TACO_BELL
+#ifdef PLATFORM_WIN32
         MSML_LOG_ERROR("Clothing tweaking is not yet supported for your game version");
         return false;
         // EA::ResourceMan::IRecord* texture_record;
@@ -178,38 +184,36 @@ bool ClothingTweaker::OnRegister(msml::core::assets::Asset &asset) {
         // }
 #endif
 
-#ifdef VERSION_COZY_BUNDLE
+#ifdef PLATFORM_WIN64
 
-        CreateMaterial(model_instance, type, file_name, texture, 0);
-
-        {
-            const EA::ResourceMan::Key mask_key = {
-                .instance = msml::hash::fnv::FromString32(mask_name.c_str()),
-                .type = msml::core::assets::DDFFileType::DDS,
-                .group = 0,
+        CreateMaterial(modelInstance, type, fileName, texture, 0); {
+            const EA::ResourceMan::Key kMaskKey = {
+                .mInstance = Msml::Hash::FNV::FromString32(maskName),
+                .mType = static_cast<uint32_t>(Msml::Core::FileType::DDS),
+                .mGroup = 0,
             };
 
-            auto mask_asset = new msml::core::assets::Asset(mask_key, msml::core::assets::REDIRECT);
-            mask_asset->key_redirect = {
-                .instance = msml::hash::fnv::FromString32(mask.c_str()),
-                .type = msml::core::assets::DDFFileType::DDS,
-                .group = 0,
+            auto *maskAsset = new Msml::Core::Asset(kMaskKey, Msml::Core::AssetType::kRedirect);
+            maskAsset->mKeyRedirect = {
+                .mInstance = Msml::Hash::FNV::FromString32(mask),
+                .mType = static_cast<uint32_t>(Msml::Core::FileType::DDS),
+                .mGroup = 0,
             };
 
-            msml::core::Assets::GetInstance().RegisterAsset(mask_asset);
+            Msml::Core::Assets::GetInstance().RegisterAsset(maskAsset);
         }
 #endif
 
-        MSML_LOG_INFO("Created materials for %s", file_name.c_str());
+        MSML_LOG_INFO("Created materials for %s", fileName.c_str());
 
-        for (const std::string & context : contexts) {
-            outfitsToAdd.push_back(new OutfitEntry{
-                .context = context,
-                .type = type,
-                .design_mode = design_mode,
-                .gender = gender,
-                .category = category,
-                .model = model
+        for (const std::string &context: contexts) {
+            mOutfitsToAdd.push_back(new OutfitEntry{
+                .mContext = context,
+                .mType = type,
+                .mDesignMode = designMode,
+                .mGender = gender,
+                .mCategory = category,
+                .mModel = model
             });
         }
 

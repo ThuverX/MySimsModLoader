@@ -7,15 +7,14 @@
 #include "ResourceKey.h"
 
 namespace EA::ResourceMan {
-    class IKeyFilter
-    {
+    class IKeyFilter {
     public:
         virtual ~IKeyFilter() = default;
 
         /// A method used to determine whether a file with this ResourceKey name is accepted.
         /// @param name
         /// @returns True if the file is accepted, false otherwise.
-        virtual bool IsValid(const Key& name) = 0;
+        virtual bool IsValid(const Key &kName) = 0;
     };
 }
 

@@ -4,21 +4,22 @@
 
 #ifndef MEMORYSTREAM_H
 #define MEMORYSTREAM_H
+
 #include "IStream.h"
 #include <vector>
 
 #include "Constants.h"
 
 namespace EA::IO {
-    class MemoryStream : public IStream {
-        size_t position = 0;
-        std::vector<uint8_t> buffer;
+    class MemoryStream final : public IStream {
+        size_t mPosition = 0;
+        std::vector<uint8_t> mBuffer;
 
     public:
-        static constexpr uint32_t Type = 0xe41cb215;
+        static constexpr uint32_t kType = 0xe41cb215;
 
         MemoryStream();
-        MemoryStream(const void* data, size_t size);
+        MemoryStream(const void* pData, size_t kSize);
 
         [[nodiscard]] uint32_t GetType() const override;
 

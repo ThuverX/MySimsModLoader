@@ -11,15 +11,20 @@ namespace EA::ResourceMan {
     class IResource {
     public:
         virtual int AddRef();
+
         virtual int Release();
-        virtual void* Cast(uint32_t typeID) const;
+
+        virtual void *Cast(uint32_t typeID) const;
+
         virtual int GetReferenceCount();
 
         Key GetResourceKey() const;
-        void SetResourceKey(const Key& key);
+
+        void SetResourceKey(const Key &kKey);
+
     protected:
-        int mnRefCount;
-        Key	mNameKey;
+        int mRefCount;
+        Key mNameKey;
     };
 }
 

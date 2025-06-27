@@ -10,26 +10,25 @@
 
 #include "../../EA/ResourceMan/ResourceKey.h"
 
-namespace msml::core::resource {
+namespace Msml::Core::Resource {
     class IdResolver {
+        std::unordered_map<uint32_t, std::string> mHashes32;
+        std::unordered_map<uint64_t, std::string> mHashes64;
+
     public:
         static IdResolver &GetInstance();
 
-        std::string GetHash64(uint64_t hash);
+        std::string GetHash64(uint64_t kHash);
 
-        std::string GetHash32(uint32_t hash);
+        std::string GetHash32(uint32_t kHash);
 
-        void Load(const std::string &path);
+        void Load(const std::string &kPath);
 
-        void Add(const std::string &str);
+        void Add(const std::string &kStr);
 
         static std::string ToHumanReadable(const EA::ResourceMan::Key &key);
 
         static std::string ToFilename(const EA::ResourceMan::Key &key);
-
-    private:
-        std::unordered_map<uint32_t, std::string> hashes32;
-        std::unordered_map<uint64_t, std::string> hashes64;
     };
 }
 

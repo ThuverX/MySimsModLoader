@@ -9,18 +9,17 @@
 
 #include "Mod.h"
 
-namespace msml::core::modloader {
+namespace Msml::Core {
     class Mods {
+        explicit Mods(std::string rootPath);
+        std::string mRootPath;
     public:
         static Mods& GetInstance();
         void Find();
         [[nodiscard]] std::vector<Mod*> GetModsSorted() const;
-        std::vector<Mod*> mods;
+        std::vector<Mod*> mMods;
         void RunPostHooks() const;
         void RunPreHooks() const;
-    private:
-        explicit Mods(std::string rootPath);
-        std::string rootPath;
     };
 }
 

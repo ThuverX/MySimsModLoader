@@ -100,43 +100,43 @@ using namespace sigmatch_literals;
 #endif
 
 template<typename OriginalFuncPtr>
-class SigSearch : public msml::core::SigSearchBase {
+class SigSearch : public Msml::Core::SigSearchBase {
 public:
-    std::string name;
-    sigmatch::signature signature;
-    void *&address;
-    OriginalFuncPtr Original = nullptr;
-    uint32_t offset;
-    bool first = false;
+    std::string mName;
+    sigmatch::signature mSignature;
+    void *&mAddress;
+    OriginalFuncPtr Original = nullptr; // this is a function, not a member
+    uint32_t mOffset;
+    bool mFirst = false;
 
-    SigSearch(const std::string &name, const sigmatch::signature &sig, void *&address, const int offset,
-              bool first): name(name), signature(sig), address(address), offset(offset), first(first) {
-        msml::core::Signatures::GetInstance().Append(name, this);
+    SigSearch(const std::string &name, const sigmatch::signature &sig, void *&address, const int kOffset,
+              const bool kFirst): mName(name), mSignature(sig), mAddress(address), mOffset(kOffset), mFirst(kFirst) {
+        Msml::Core::Signatures::GetInstance().Append(name, this);
     }
 
     [[nodiscard]] bool Search() const override {
-        if (!msml::core::Signatures::GetInstance().Search(signature, address, offset, first)) {
-            MSML_LOG_ERROR("Failed to find an address for %s", name.c_str());
+        if (!Msml::Core::Signatures::GetInstance().Search(mSignature, mAddress, mOffset, mFirst)) {
+            MSML_LOG_ERROR("Failed to find an address for %s", mName.c_str());
             return false;
         }
-        MSML_LOG_DEBUG("Found %s %p", name.c_str(), address);
+        MSML_LOG_DEBUG("Found %s %p", mName.c_str(), mAddress);
         return true;
     }
 
     [[nodiscard]] std::string GetName() const override {
-        return name;
+        return mName;
     }
 
     [[nodiscard]] void *GetAddress() const override {
-        return address;
+        return mAddress;
     }
 
     void ApplyAddress(void *addr) const override {
-        address = addr;
+        mAddress = addr;
     }
 
     void Install(void *detour) {
-        msml::core::Hooks::Install(address, detour, reinterpret_cast<void **>(&Original));
+        Msml::Core::Hooks::Install(mAddress, detour, reinterpret_cast<void **>(&Original));
     }
 };
 
@@ -144,21 +144,23 @@ public:
 
 #pragma pack(push, 1)
 
-typedef void (*VTable)();
+using VTable = void (*)();
 
 namespace Revo {
     struct Revo {
     };
 
-#ifdef VERSION_COZY_BUNDLE
+#ifdef PLATFORM_WIN64
     CREATE_NORMAL_CALLABLE_SIGNATURE(load_body, Revo, void*, "",
                                      "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 48 89 7C 24 20 41 56 48 83 EC 40 48 8B E9 4D 8B F1 48 8D 0D ?? ?? ?? ?? 49 8B F8 48 8B F2 E8 ?? ?? ?? ??",
-                                     0, void* a, char* dynamic_skin_name, void* c, EA::ResourceMan::IResource* material_resource,
-                                     EA::ResourceMan::IResource* texture_resource, EA::ResourceMan::IResource* mask_resource);
+                                     0, void* _a, char* pDynamicSkinName, void* _c,
+                                     EA::ResourceMan::IResource* pMaterialResource,
+                                     EA::ResourceMan::IResource* pTextureResource,
+                                     EA::ResourceMan::IResource* pMaskResource);
 #endif
     namespace ResourceSystem {
         struct ResourceSystem {
-            VTable *vTable;
+            VTable *mVTable;
         };
 
         CREATE_MEMBER_CALLABLE_SIGNATURE(Init, ResourceSystem, void,
@@ -196,17 +198,17 @@ namespace Revo {
 
     namespace ObjectFolder {
         struct ObjectFolder {
-            VTable *vTable;
+            VTable *mVTable;
         };
 
         struct ObjectDef {
-            VTable *vtable;
-            uint32_t values[63];
+            VTable *mVtable;
+            uint32_t mValues[63];
         };
 
         struct CharacterDef {
-            VTable *vtable;
-            uint32_t values[91];
+            VTable *mVtable;
+            uint32_t mValues[91];
         };
 
         // CREATE_MEMBER_CALLABLE_SIGNATURE(LoadAllObjectDefs, ObjectFolder, void, "FILL ME",
@@ -226,15 +228,11 @@ namespace Revo {
         struct ResourceProxy {
         };
 
-        enum AcquireType : uint32_t {
-            DEFAULT = 0,
-            USE_CACHE = 1,
-            NO_CACHE = 2
+        enum class AcquireType : uint32_t {
+            kDefault = 0,
+            kUseCache = 1,
+            kNoCache = 2
         };
-
-        // CREATE_MEMBER_CALLABLE_SIGNATURE(Acquire, ResourceProxy, void*,
-        //                                  "53 55 56 8B F1 57 8B 7C 24 14 8B 07 89 46 08 8B 4F 04 89 4E 0C", "", 0,
-        //                                  const EA::ResourceMan::Key&, AcquireType acquire_type, uint32_t acquire_priority);
     }
 }
 
@@ -248,14 +246,14 @@ namespace EA {
             void,
             "8B 4C 24 04 83 EC 10 85 C9 0F 84 C4 00 00 00 8B 01",
             "48 89 54 24 10 4C 89 44 24 18 4C 89 4C 24 20 53 56 57 48 83 EC 40 48 8B D9 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ??",
-            0, void*, const char* fmt);
+            0, void*, const char* pFormat);
 
         CREATE_MEMBER_CALLABLE_SIGNATURE_VA_ARGS(
             ErrorOutput, ArgScript,
             void,
             "83 EC 14 8B 0D E4 FA 08 01 85 C9 B8 90 0E 09 01",
             "48 89 54 24 10 4C 89 44 24 18 4C 89 4C 24 20 53 57 48 83 EC 28 48 8B D9 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? C7 43 18 05 00 00 00 48 8D 05 ?? ?? ?? ?? 48 89 03",
-            0, const char* fmt);
+            0, const char* pFormat);
     }
 
     namespace ResourceMan {
@@ -265,14 +263,14 @@ namespace EA {
 
         namespace PFIndexModifiable {
             struct PFIndexModifiable {
-                VTable *vtable;
-                eastl::hash_map<Key, RecordInfo> itemMap;
+                VTable *mVtable;
+                eastl::hash_map<Key, RecordInfo> mItemMap;
             };
         }
 
         namespace DatabasePackedFile {
             struct DatabasePackedFile {
-                VTable *vtable;
+                VTable *mVtable;
             };
 
             CREATE_MEMBER_CALLABLE_SIGNATURE(OpenRecord, DatabasePackedFile, bool,
@@ -280,13 +278,14 @@ namespace EA {
                                              "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 4C 89 4C 24 20 57 41 54 41 55 41 56 41 57 48 81 EC A0 00 00 00 4D 8B F8 4C 8B F2",
                                              0,
                                              const Key& key, IRecord** pDstRecord,
-                                             IO::AccessFlags accessFlags, IO::CD cd, int, EA::ResourceMan::RecordInfo*);
+                                             IO::AccessFlags accessFlags, IO::CD creationDisposition, int,
+                                             EA::ResourceMan::RecordInfo* pRecordInfo);
 
             CREATE_MEMBER_CALLABLE_SIGNATURE(Open, DatabasePackedFile, bool,
                                              "56 8B F1 8A 4C 24 10 32 C0 84 C9",
                                              "48 89 5C 24 10 48 89 6C 24 18 48 89 74 24 20 57 48 83 EC 30 48 8B D9 41 0F B6 E9 48 8D 0D ?? ?? ?? ?? 41 8B F0",
                                              0,
-                                             EA::IO::AccessFlags access_flags, EA::IO::CD creation_disposition, bool,
+                                             EA::IO::AccessFlags accessFlags, EA::IO::CD creationDisposition, bool,
                                              bool);
 
             CREATE_MEMBER_CALLABLE_SIGNATURE(GetIndex, DatabasePackedFile, PFIndexModifiable::PFIndexModifiable*,
@@ -312,9 +311,9 @@ namespace EA {
                                              "83 EC 10 53 56 32 DB 38 5C 24 1C 57 8B F1 ?? ?? 8B 7C 24 38 85 FF",
                                              "48 89 5C 24 10 48 89 6C 24 18 56 57 41 56 48 83 EC 60 49 8B F9 49 8B F0 48 8B EA",
                                              0,
-                                             const Key& key, IResource** resource_out, void*, IDatabase* database,
-                                             void* factory,
-                                             const Key*, uint32_t, uint32_t, uint32_t, uint32_t);
+                                             const Key& key, IResource** ppResource, void*, IDatabase* pDatabase,
+                                             void* pFactory,
+                                             const Key* kpKey, uint32_t, uint32_t, uint32_t, uint32_t);
 
             CREATE_MEMBER_CALLABLE_SIGNATURE(SetTypename, Manager, bool,
                                              "83 EC 08 56 8B F1 57 8D BE 38 01 00 00 68 2C 95 E7 00 8B CF E8 ?? ?? ?? ?? 8D 44 24 14 50 8D 4C 24 0C 81 C6 E8 00 00 00 51 8B CE E8 ?? ?? ?? ?? 8B 56 08 8B 4E 04 8B 44 24 08 3B 04 91",
@@ -324,34 +323,35 @@ namespace EA {
             CREATE_MEMBER_CALLABLE_SIGNATURE(RegisterDatabase, Manager, void,
                                              "83 EC 10 53 55 56 57 8B F9 8D 4F 48 68 2C 95 E7 00 89 4C 24 18",
                                              "48 89 5C 24 10 48 89 6C 24 18 56 57 41 54 41 56 41 57 48 83 EC 40 41 8B E9 49 8B F0 0F B6 FA",
-                                             0, bool add, IDatabase* pDatabase, uint32_t priority);
+                                             0, bool bAdd, IDatabase* pDatabase, uint32_t priority);
         }
 
         namespace DatabaseDirectoryFiles {
             struct DatabaseDirectoryFiles {
-                VTable *vtable;
-                size_t padding1[2];
-                wchar_t *location;
+                VTable *mVtable;
+                size_t _padding[2];
+                wchar_t *mLocation;
             };
 
             CREATE_MEMBER_CALLABLE_SIGNATURE(OpenRecord, DatabaseDirectoryFiles, bool,
                                              "81 EC 18 04 00 00 A1 C0 44 02 01 33 C4",
                                              "40 53 55 56 57 41 54 41 55 41 56 41 57 48 81 EC A8 04 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 90 04 00 00 45 8B E1 4C 89 44 24 48 4C 8B EA",
                                              0,
-                                             const Key& key, IRecord** pDstRecord,
-                                             IO::AccessFlags accessFlags, IO::CD cd, int, EA::ResourceMan::RecordInfo*);
+                                             const Key& key, IRecord** ppDstRecord,
+                                             IO::AccessFlags accessFlags, IO::CD creationDisposition, int,
+                                             EA::ResourceMan::RecordInfo* pRecordInfo);
             CREATE_MEMBER_CALLABLE_SIGNATURE(AddFile, DatabaseDirectoryFiles, void*,
                                              "83 EC 68 8B 44 24 70 56 6A 02 50 8B F1 ?? ?? ?? ?? ?? 8B 8C 24 80 00 00 00 83 C4 08 52 50 51",
                                              "48 89 5C 24 10 48 89 74 24 18 55 57 41 56 48 8D 6C 24 B9 48 81 EC C0 00 00 00 49 8B F9 49 8B D8",
-                                             0, const Key&, const wchar_t* path, const wchar_t* name);
+                                             0, const Key&, const wchar_t* pPath, const wchar_t* pName);
         }
     }
 
     namespace ScriptOs::LuaScriptingSystem {
         struct LuaScriptingSystem {
-            VTable *vtable;
-            size_t padding[3];
-            lua_State *state;
+            VTable *mVtable;
+            size_t _padding[3];
+            lua_State *mState;
         };
 
         CREATE_MEMBER_CALLABLE_SIGNATURE(Startup, LuaScriptingSystem, void,
