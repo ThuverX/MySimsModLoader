@@ -278,11 +278,11 @@ namespace Msml::Core::Resource {
 
     void CustomDatabase::AddAsset(Asset *pAsset) {
         if (pAsset->mType == AssetType::kBuffer) {
-            MSML_LOG_INFO("Registering %s: <buffer>", IdResolver::ToFilename(pAsset->mKey).c_str());
+            MSML_LOG_DEBUG("Registering %s: <buffer>", IdResolver::ToFilename(pAsset->mKey).c_str());
         } else if (pAsset->mType == AssetType::kPath) {
-            MSML_LOG_INFO("Registering %s: \"%s\"", IdResolver::ToFilename(pAsset->mKey).c_str(), pAsset->mPath.filename().string().c_str());
+            MSML_LOG_DEBUG("Registering %s: \"%s\"", IdResolver::ToFilename(pAsset->mKey).c_str(), pAsset->mPath.filename().string().c_str());
         } else if (pAsset->mType == AssetType::kRedirect) {
-            MSML_LOG_INFO("Registering %s: -> %s", IdResolver::ToFilename(pAsset->mKey).c_str(), IdResolver::ToFilename(pAsset->mKeyRedirect).c_str());
+            MSML_LOG_DEBUG("Registering %s: -> %s", IdResolver::ToFilename(pAsset->mKey).c_str(), IdResolver::ToFilename(pAsset->mKeyRedirect).c_str());
         }
         mAssets[pAsset->mKey] = pAsset;
     }

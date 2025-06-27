@@ -22,7 +22,8 @@ namespace Msml::Core {
         // Root game folder path
         std::filesystem::path mModulePath;
 
-        static void SoftCrash();
+        static void Message(const std::string& message);
+        static void MessageAndExit(const std::string& message);
     };
 }
 

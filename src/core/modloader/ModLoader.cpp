@@ -49,7 +49,7 @@ namespace Msml::Core {
             MSML_LOG_ERROR("Failed to find addresses for some functions, did you write the signature correctly?");
             Hooks::Uninitialize();
 
-            SoftCrash();
+            MessageAndExit("Failed to find addresses for some functions, did you write the signature correctly?");
 #else
             MSML_LOG_ERROR("Failed to find functions. Please report this on github and include your log file at");
             MSML_LOG_ERROR("https://github.com/ThuverX/MySimsModLoader/issues\n");
@@ -68,8 +68,12 @@ namespace Msml::Core {
         Hooks::Enable();
     }
 
-    void ModLoader::SoftCrash() {
-        MessageBox(nullptr, "The application is going to crash, check the logs.", "ModLoader::SoftCrash", 1);
+    void ModLoader::Message(const std::string &message) {
+        MessageBox(nullptr, message.c_str(), "MySims ModLoader", 0);
+    }
+
+    void ModLoader::MessageAndExit(const std::string &message) {
+        MessageBox(nullptr, message.c_str(), "MySims ModLoader", 1);
         exit(1);
     }
 

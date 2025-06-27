@@ -13,13 +13,13 @@ namespace Msml::Core::Hooks {
         if (pTarget == nullptr) {
             MSML_LOG_ERROR("Failed to install hook");
             Signatures::CleanSignatureCache();
-            ModLoader::SoftCrash();
+            ModLoader::MessageAndExit("Failed to install hook, deleting signature cache");
         }
 
         if (MH_CreateHook(pTarget, pDetour, ppOriginal) != MH_OK) {
             MSML_LOG_ERROR("Failed to install hook");
             Signatures::CleanSignatureCache();
-            ModLoader::SoftCrash();
+            ModLoader::MessageAndExit("Failed to install hook, deleting signature cache");
         }
     }
 
