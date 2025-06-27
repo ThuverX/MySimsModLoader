@@ -9,9 +9,12 @@
 #include "windows.h"
 #include "sigdef.h"
 #include "../../Version.h"
+#include "../../EA/IO/File.h"
 #include "../../EA/IO/FileStream.h"
 #include "../../EA/IO/MemoryStream.h"
 #include "../../include/hash_sha256.h"
+#include "../modloader/Mod.h"
+#include "../modloader/ModLoader.h"
 #include "../system/Logger.h"
 #include "../util/StreamUtil.h"
 
@@ -94,6 +97,10 @@ namespace Msml::Core {
         return true;
     }
 
+    void Signatures::CleanSignatureCache() {
+        EA::IO::File::Remove(ModLoader::GetInstance().mModulePath / "signatures.db");
+    }
+
     Signatures::Signatures() {
         const sigmatch::this_process_target kTarget;
         mContext = kTarget.in_module("MySims.exe");
@@ -103,7 +110,7 @@ namespace Msml::Core {
 #ifdef BUILD_DEBUG
         return false;
 #endif
-        auto *const kStream = new EA::IO::FileStream("signatures.db");
+        auto *const kStream = new EA::IO::FileStream(ModLoader::GetInstance().mModulePath / "signatures.db");
 
         uint32_t sigVersion = UINT32_MAX;
         READ(kStream, sigVersion);
@@ -153,7 +160,7 @@ namespace Msml::Core {
 #ifdef BUILD_DEBUG
         return;
 #endif
-        auto *const kStream = new EA::IO::FileStream("signatures.db", EA::IO::AccessFlags::kWrite, EA::IO::CD::kCreateAlways);
+        auto *const kStream = new EA::IO::FileStream(ModLoader::GetInstance().mModulePath / "signatures.db", EA::IO::AccessFlags::kWrite, EA::IO::CD::kCreateAlways);
 
         WRITE(kStream, kSignatureVersion);
         WRITE_LEN_STRING(kStream, MSML_VERSION);

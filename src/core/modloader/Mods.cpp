@@ -11,7 +11,7 @@
 #include "../modloader/ModLoader.h"
 #include "../system/Logger.h"
 
-namespace Msml::Core::Modloader {
+namespace Msml::Core {
     Mods &Mods::GetInstance() {
         auto absolutePath = std::filesystem::absolute(
             ModLoader::GetInstance().mModulePath / MODS_PATH).string();

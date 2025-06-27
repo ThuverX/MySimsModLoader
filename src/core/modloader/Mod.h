@@ -9,7 +9,7 @@
 #include <vector>
 #include <filesystem>
 
-namespace Msml::Core::Modloader {
+namespace Msml::Core {
     class Mod {
     public:
         std::string mName;

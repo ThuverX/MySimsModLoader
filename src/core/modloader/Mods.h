@@ -9,7 +9,7 @@
 
 #include "Mod.h"
 
-namespace Msml::Core::Modloader {
+namespace Msml::Core {
     class Mods {
         explicit Mods(std::string rootPath);
         std::string mRootPath;

@@ -11,7 +11,7 @@
 #include "../hooks/LuaHook.h"
 #include "../system/Logger.h"
 
-namespace Msml::Core::Modloader {
+namespace Msml::Core {
     Mod * Mod::FromXML(const std::filesystem::path &path) {
         pugi::xml_document doc;
 

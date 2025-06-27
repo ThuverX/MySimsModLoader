@@ -274,11 +274,11 @@ namespace Msml::Core {
     void Assets::CreateDatabase() {
         mDatabase = new Resource::CustomDatabase;
 
-        if (Modloader::Mods::GetInstance().mMods.empty()) {
+        if (Mods::GetInstance().mMods.empty()) {
             return;
         }
 
-        for (const auto &mod: Modloader::Mods::GetInstance().mMods) {
+        for (const auto &mod: Mods::GetInstance().mMods) {
             std::filesystem::path modPath(mod->mPath);
 
             CreateDatabaseEntries(modPath);

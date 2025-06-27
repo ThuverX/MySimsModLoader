@@ -30,7 +30,7 @@ namespace Msml::Core::Hooks {
     static int sOriginalRequireRef = LUA_REFNIL;
 
     int LuaRequire(lua_State* L) {
-        Modloader::Mods::GetInstance().RunPreHooks();
+        Mods::GetInstance().RunPreHooks();
 
         lua_pushstring(L, MSML_VERSION);
         lua_setglobal(L, "MSML_VERSION");
@@ -47,7 +47,7 @@ namespace Msml::Core::Hooks {
             return 0;
         }
 
-        Modloader::Mods::GetInstance().RunPostHooks();
+        Mods::GetInstance().RunPostHooks();
 
         return 1;
     }

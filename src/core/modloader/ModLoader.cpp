@@ -60,7 +60,7 @@ namespace Msml::Core {
         }
 
         Resource::IdResolver::GetInstance().Load("./hashes.bin");
-        Modloader::Mods::GetInstance().Find();
+        Mods::GetInstance().Find();
         Assets::Install();
         Assets::GetInstance().CreateDatabase();
         Hooks::ArgscriptHook::Install();

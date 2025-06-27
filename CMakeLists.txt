@@ -93,6 +93,8 @@ set(SOURCES
         src/core/util/StreamUtil.h
         src/tweakers/Clothing/SkintoneVariantGenerator.cpp
         src/tweakers/Clothing/SkintoneVariantGenerator.h
+        src/EA/IO/File.cpp
+        src/EA/IO/File.h
 )
 
 if (CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
