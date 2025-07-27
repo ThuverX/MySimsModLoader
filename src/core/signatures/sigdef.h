@@ -361,6 +361,26 @@ namespace EA {
     }
 }
 
+#pragma region apt
+
+CREATE_NORMAL_CALLABLE_SIGNATURE(GetAptMovieCharacter, AptCharacterHelper, void*, "",
+                                 "48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 85 C0 75 71 48 8B 0D 25 9C 96 00 8D 50 68",
+                                 0)
+
+CREATE_NORMAL_CALLABLE_SIGNATURE(sMethod_createTextField, AptCIH, void*, "",
+                                 "48 8B C4 48 89 58 10 48 89 68 18 56 57 41 55 41 56 41 57",
+                                 0, void*, uint32_t)
+
+CREATE_NORMAL_CALLABLE_SIGNATURE(CreateString, AptValueFactory, void*, "",
+                                 "48 89 5C 24 08 57 48 83 EC 20 48 8B F9 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 1D B0 33 96 00 48 85 DB 74 57",
+                                 0, const char*)
+
+CREATE_NORMAL_CALLABLE_SIGNATURE(_AptInternalUpdate, Apt, void, "",
+                                 "48 89 5C 24 18 48 89 74 24 20 57 48 81 EC 40 03 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 30 03 00 00 8B FA 8B D9 48 8D 0D ?? ?? ?? ??",
+                                 0, uint32_t, uint32_t)
+
+#pragma endregion
+
 #pragma region lua functions
 
 // These are correct, but very hard to find...

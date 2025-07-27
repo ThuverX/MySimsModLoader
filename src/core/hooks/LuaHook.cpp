@@ -92,7 +92,18 @@ namespace Msml::Core::Hooks {
         }
     }
 
+    void _AptInternalUpdateHooked(uint32_t a, uint32_t b) {
+        MSML_LOG_DEBUG_HIDDEN("_AptInternalUpdateHooked");
+        // void* mv = GetAptMovieCharacter();
+
+        void* apt_string = CreateString("TEST STRING");
+
+        // sMethod_createTextField(apt_string, a);
+        _AptInternalUpdateHook.Original(a, b);
+    }
+
     void LuaHook::Install() {
+        _AptInternalUpdateHook.Install(&_AptInternalUpdateHooked);
         EA::ScriptOs::LuaScriptingSystem::StartupHook.Install(&LuaScriptingSystemStartupHooked);
     }
 }
