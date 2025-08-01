@@ -9,3 +9,4 @@ cmake-build-release32-msvc
 src/Version.h
 .idea
 build/
+libs/theforge/
