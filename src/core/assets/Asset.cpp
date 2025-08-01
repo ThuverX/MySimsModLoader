@@ -9,23 +9,32 @@
 #include "../../EA/IO/MemoryStream.h"
 #include "../hash/FNV.h"
 
-namespace msml::core::assets {
+namespace Msml::Core {
     EA::IO::IStream * Asset::GetStream() const {
-        if (type == PATH) return new EA::IO::FileStream(path);
-        if (type == REDIRECT) {
-            if (key == key_redirect) return nullptr; // failsafe
+        if (mType == AssetType::kPath) {
+            return new EA::IO::FileStream(mPath);
+        }
+
+        if (mType == AssetType::kRedirect) {
+            if (mKey == mKeyRedirect) {
+                return nullptr; // failsafe
+            }
             EA::ResourceMan::IRecord* record = {};
 
-            if (Assets::GetInstance().database->OpenRecord2(key_redirect, &record, EA::IO::AccessFlags::Read, EA::IO::CD::LoadAllFiles, 0, nullptr))
+            if (Assets::GetInstance().mDatabase->OpenRecord2(mKeyRedirect, &record, EA::IO::AccessFlags::kRead, EA::IO::CD::kLoadAllFiles, 0, nullptr)) {
                 return record->GetStream();
+            }
             return nullptr;
         }
-        if (type == BUFFER) return new EA::IO::MemoryStream(buffer.data(), buffer.size());
+
+        if (mType == AssetType::kBuffer) {
+            return new EA::IO::MemoryStream(mBuffer.data(), mBuffer.size());
+        }
 
         return nullptr;
     }
 
-    DDFFileType Asset::GetFileType(const std::string &extension) {
+    FileType Asset::GetFileType(const std::string &extension) {
         std::string ext = extension;
 
         std::ranges::transform(ext, ext.begin(), ::tolower);
@@ -34,15 +43,15 @@ namespace msml::core::assets {
             ext = ext.substr(1);
         }
 
-        if (const auto it = stringToEnum.find(ext); it != stringToEnum.end()) {
-            return it->second;
+        if (const auto kIt = kStringToEnum.find(ext); kIt != kStringToEnum.end()) {
+            return kIt->second;
         }
-        return UNKNOWN;
+        return FileType::UNKNOWN;
     }
 
-    std::string Asset::GetTypeName(const uint32_t value) {
-        for (const auto &[name, enumValue]: stringToEnum) {
-            if (static_cast<uint32_t>(enumValue) == value) {
+    std::string Asset::GetTypeName(const uint32_t kValue) {
+        for (const auto &[name, enumValue]: kStringToEnum) {
+            if (static_cast<uint32_t>(enumValue) == kValue) {
                 return name;
             }
         }
@@ -51,47 +60,46 @@ namespace msml::core::assets {
     }
 
     EA::ResourceMan::Key Asset::GetKey(const std::filesystem::path &path) {
-        const auto filename = path.stem().string();
-        const auto extension = path.extension().string();
+        const auto kFilename = path.stem().string();
+        const auto kExtension = path.extension().string();
 
-        const uint32_t type = GetFileType(extension);
+        const auto kType = GetFileType(kExtension);
 
-        if (const auto sep = filename.find('!'); sep != std::string::npos) {
-            const auto left = filename.substr(0, sep);
-            const auto right = filename.substr(sep + 1);
+        if (const auto kSep = kFilename.find('!'); kSep != std::string::npos) {
+            const auto kLeft = kFilename.substr(0, kSep);
+            const auto kRight = kFilename.substr(kSep + 1);
 
             // Fix for weird file names on tb
-            if (left.find('_') != std::string::npos || right.find('_') != std::string::npos) {
+            if (kLeft.find('_') != std::string::npos || kRight.find('_') != std::string::npos) {
                 return {
-                    .instance = 0,
-                    .type = UNKNOWN,
-                    .group = 0
+                    .mInstance = 0,
+                    .mType = 0,
+                    .mGroup = 0
                 };
             }
 
-            const auto group = static_cast<uint32_t>(std::stoul(left, nullptr, 16));
-            const auto instance = std::stoull(right, nullptr, 16);
+            const auto kGroup = static_cast<uint32_t>(std::stoul(kLeft, nullptr, 16));
+            const auto kInstance = std::stoull(kRight, nullptr, 16);
 
             return {
-                .instance = instance,
-                .type = type,
-                .group = group
+                .mInstance = kInstance,
+                .mType = static_cast<uint32_t>(kType),
+                .mGroup = kGroup
             };
         }
 
         uint64_t instance = 0;
 
-        // TODO: This is prob not right...
-        if (type == DDS) {
-            instance = hash::fnv::FromString32(filename.c_str());
+        if (kType == FileType::DDS) {
+            instance = Hash::FNV::FromString32(kFilename);
         } else {
-            instance = hash::fnv::FromString64(filename.c_str());
+            instance = Hash::FNV::FromString64(kFilename);
         }
 
         return {
-            .instance = instance,
-            .type = type,
-            .group = 0,
+            .mInstance = instance,
+            .mType = static_cast<uint32_t>(kType),
+            .mGroup = 0,
         };
     }
 }

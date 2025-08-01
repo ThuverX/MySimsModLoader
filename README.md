@@ -7,16 +7,16 @@
 
 The MySims modloader is a new way to install and distribute mods. Instead of modifying game files, or even worse sharing installers. You can now simply download a mod and put it in your mods folder.
 
-For any questions visit the [MySims Clubhouse](https://discord.gg/2j9mU6zNJH) modding Discord channel.
+For any questions, visit the [MySims Clubhouse](https://discord.gg/2j9mU6zNJH) modding Discord channel.
 
 ## Supported versions
 
-|Version| Supported |
-|-|--|
-|MySims Release / Origin (EA App)|❌️|
-|MySims Taco Bell Edition|✔️|
-|MySims EA App / Steam|✔️|
-|MySims Kingdom EA App / Steam|✔️|
+| Version                          | Supported |
+|----------------------------------|-----------|
+| MySims EA App / Steam            | ✔️        |
+| MySims Taco Bell Edition         | ✔️        |
+| MySims Release / Origin (EA App) | ❌️        |
+| MySims Kingdom EA App / Steam    | ❌️        |
 
 ## Installation
 
@@ -50,8 +50,7 @@ To uninstall simply remove that folder from the `mods`.
 
 ## Making mods
 
-Making mods is currently limited to texture and lua based mods. For now take a look at these places:
-- ⚠️ WORK IN PROGRESS [Wiki](https://thuverx.github.io/mysims-research/Modding/index.html)
+[Wiki](https://thuverx.github.io/mysims-research/Modding/index.html)
 
 ## Building  
 1. **Clone the repository**:  
@@ -62,6 +61,8 @@ Making mods is currently limited to texture and lua based mods. For now take a l
 2. **Generate the build files using CMake**:
    ```sh
    cmake -B build -G "Visual Studio 17 2022" -A Win32 # For TacoBell ⚠️ Make sure to specify `-A Win32` to build in x86 mode!  
+   ```
+   ```sh
    cmake -B build -G "Visual Studio 17 2022" # For Cozy Bundle
    ```
 

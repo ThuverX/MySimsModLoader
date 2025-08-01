@@ -11,53 +11,51 @@
 #include "../../tweakers/Tweaker.h"
 #include "../hash/FNV.h"
 #include "../signatures/sigdef.h"
-#include "../hooks/Config.h"
+#include "../../Config.h"
 #include "../modloader/ModLoader.h"
 #include "../modloader/Mods.h"
 #include "../resource/IdResolver.h"
 
-namespace msml::core {
+namespace Msml::Core {
     Assets &Assets::GetInstance() {
         static Assets instance;
         return instance;
     }
 
-    void * __fastcall AddFileHooked(EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *this_ptr CATCH_EDX,
+    void * __fastcall AddFileHooked(EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *thisPtr CATCH_EDX,
                                     const EA::ResourceMan::Key &key, const wchar_t *path,
                                     const wchar_t *name) {
-        const std::filesystem::path asset_path = ModLoader::GetInstance().modulePath / DATA_PATH / path;
-        const auto filename = asset_path.stem().string();
+        const std::filesystem::path kAssetPath = ModLoader::GetInstance().mModulePath / DATA_PATH / path;
+        const auto kFilename = kAssetPath.stem().string();
 
-        Assets::GetInstance().ddf_paths[key] = asset_path;
+        Assets::GetInstance().mDDFPaths[key] = kAssetPath;
 
-        resource::IdResolver::GetInstance().Add(filename);
+        Resource::IdResolver::GetInstance().Add(kFilename);
 
-        return EA::ResourceMan::DatabaseDirectoryFiles::AddFileHook.Original(this_ptr, key, path, name);
+        return EA::ResourceMan::DatabaseDirectoryFiles::AddFileHook.Original(thisPtr, key, path, name);
     }
 
-    void __fastcall ResourceSystemInitHooked(Revo::ResourceSystem::ResourceSystem *this_ptr CATCH_EDX) {
-        EA::ResourceMan::Manager::RegisterDatabase(reinterpret_cast<EA::ResourceMan::Manager::Manager *>(this_ptr),
+    void __fastcall ResourceSystemInitHooked(Revo::ResourceSystem::ResourceSystem *thisPtr CATCH_EDX) {
+        EA::ResourceMan::Manager::RegisterDatabase(reinterpret_cast<EA::ResourceMan::Manager::Manager *>(thisPtr),
                                                    true,
-                                                   Assets::GetInstance().database, 1000);
+                                                   Assets::GetInstance().mDatabase, 1000);
 
-        Revo::ResourceSystem::InitHook.Original(this_ptr);
+        Revo::ResourceSystem::InitHook.Original(thisPtr);
     }
 
     bool __fastcall DatabaseDirectoryFilesOpenRecordHooked(
-        EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *this_ptr CATCH_EDX,
+        EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *thisPtr CATCH_EDX,
         const EA::ResourceMan::Key &key,
-        EA::ResourceMan::IRecord **pDstRecord,
-        EA::IO::AccessFlags accessFlags, EA::IO::CD cd, int a, EA::ResourceMan::RecordInfo *record_info) {
-        // bad ddf, dont care
+        EA::ResourceMan::IRecord **ppDstRecord,
+        EA::IO::AccessFlags accessFlags, EA::IO::CD creationDisposition, int _a, EA::ResourceMan::RecordInfo * pRecordInfo) {
         return false;
     }
 
     bool __fastcall DatabasePackedFileOpenRecordHooked(
-        EA::ResourceMan::DatabasePackedFile::DatabasePackedFile *this_ptr CATCH_EDX,
+        EA::ResourceMan::DatabasePackedFile::DatabasePackedFile *thisPtr CATCH_EDX,
         const EA::ResourceMan::Key &key,
-        EA::ResourceMan::IRecord **pDstRecord,
-        EA::IO::AccessFlags accessFlags, EA::IO::CD cd, int a, EA::ResourceMan::RecordInfo *record_info) {
-        // bad dbpf, dont care
+        EA::ResourceMan::IRecord **ppDstRecord,
+        EA::IO::AccessFlags accessFlags, EA::IO::CD creationDisposition, int _a, EA::ResourceMan::RecordInfo *pRecordInfo) {
         return false;
     }
 
@@ -85,113 +83,119 @@ namespace msml::core {
     // }
 
     bool __fastcall DatabasePackedFileOpenHooked(
-        EA::ResourceMan::DatabasePackedFile::DatabasePackedFile *this_ptr CATCH_EDX, EA::IO::AccessFlags access_flags,
-        EA::IO::CD creation_disposition, bool a, bool b) {
-        const auto didOpen = EA::ResourceMan::DatabasePackedFile::OpenHook.Original(
-            this_ptr, access_flags, creation_disposition, a, b);
+        EA::ResourceMan::DatabasePackedFile::DatabasePackedFile *thisPtr CATCH_EDX, EA::IO::AccessFlags accessFlags,
+        EA::IO::CD creationDisposition, bool _a, bool _b) {
+        const auto kDidOpen = EA::ResourceMan::DatabasePackedFile::OpenHook.Original(
+            thisPtr, accessFlags, creationDisposition, _a, _b);
 
-        if (didOpen) {
+        if (kDidOpen) {
             EA::ResourceMan::PFIndexModifiable::PFIndexModifiable *pfIndex =
-                    EA::ResourceMan::DatabasePackedFile::GetIndex(this_ptr);
+                    EA::ResourceMan::DatabasePackedFile::GetIndex(thisPtr);
 
-            const std::filesystem::path db_path =
-                    ModLoader::GetInstance().modulePath / DATA_PATH / EA::ResourceMan::DatabasePackedFile::GetLocation(
-                        this_ptr);
+            const std::filesystem::path kDbPath =
+                    ModLoader::GetInstance().mModulePath / DATA_PATH / EA::ResourceMan::DatabasePackedFile::GetLocation(
+                        thisPtr);
 
             // TODO: we might lose these if the game unloads them...
-            for (auto element: pfIndex->itemMap) {
-                Assets::GetInstance().dbpf_items[element.first] = {
-                    db_path,
-                    element.second,
+            for (auto element: pfIndex->mItemMap) {
+                Assets::GetInstance().mDBPFItems[element.first] = {
+                    .mPath = kDbPath,
+                    .mRecord = element.second,
                 };
             }
         }
 
-        return didOpen;
+        return kDidOpen;
     }
 
     wchar_t *CharToWChar(const char *input) {
-        if (!input) return nullptr;
+        if (input == nullptr) {
+            return nullptr;
+        }
 
-        size_t len = std::mbstowcs(nullptr, input, 0);
-        if (len == static_cast<size_t>(-1)) return nullptr;
+        const size_t kLen = std::mbstowcs(nullptr, input, 0);
+        if (kLen == static_cast<size_t>(-1)) {
+            return nullptr;
+        }
 
-        auto *wstr = new wchar_t[len + 1];
-        std::mbstowcs(wstr, input, len + 1);
+        auto *wstr = new wchar_t[kLen + 1];
+        std::mbstowcs(wstr, input, kLen + 1);
         return wstr;
     }
 
-    Revo::App::TinyXmlInstance * ReadXMLFromPathHooked(Revo::App::TinyXmlInstance *xml_instance, const char *filename, void *document,
-                                            const char *rootType, bool isGameFile, double *e, const char *folder) {
+    Revo::App::TinyXmlInstance *ReadXMLFromPathHooked(Revo::App::TinyXmlInstance *pXmlInstance, const char *pFilename,
+                                                      void *document,
+                                                      const char *pRootType, bool bIsGameFile, double *_e,
+                                                      const char *pFolder) {
+        const auto kKey = Asset::GetKey(pFilename);
 
-        const auto key = assets::Asset::GetKey(filename);
+        if (!bIsGameFile || kKey.mType == static_cast<uint32_t>(FileType::UNKNOWN)) {
+            return Revo::App::ReadXMLFromPathHook.Original(pXmlInstance, pFilename, document, pRootType, bIsGameFile, _e,
+                                                           pFolder);
+        }
 
-        if (!isGameFile || key.type == assets::DDFFileType::UNKNOWN)
-            return Revo::App::ReadXMLFromPathHook.Original(xml_instance, filename, document, rootType, isGameFile, e,
-                                                           folder);
+        const auto *const kWideFilename = CharToWChar(pFilename);
+        const auto *const kWideFolder = CharToWChar(pFolder);
 
-        const auto wide_filename = CharToWChar(filename);
-        const auto wide_folder = CharToWChar(folder);
+        wchar_t realPath[MAX_PATH];
+        Revo::App::GetCorrectLoadFolder(realPath, bIsGameFile, kWideFolder, kWideFilename);
 
-        wchar_t real_path[MAX_PATH];
-        Revo::App::GetCorrectLoadFolder(real_path, isGameFile, wide_folder, wide_filename);
+        delete[] kWideFilename;
+        delete[] kWideFolder;
 
-        delete[] wide_filename;
-        delete[] wide_folder;
+        auto *const kRecord = new Resource::CustomRecord(kKey, new EA::IO::FileStream(realPath),
+                                                         Assets::GetInstance().mDatabase);
 
-        const auto record = new resource::CustomRecord(key, new EA::IO::FileStream(real_path),
-                                                       Assets::GetInstance().database);
+        Tweaker::RegistryOnLoad(kRecord);
 
-        Tweaker::RegistryOnLoad(record);
+        auto *const kRet = Revo::App::ReadXMLFromStream(pFilename, kRecord->mStream, document, pRootType, _e);
 
-        const auto ret = Revo::App::ReadXMLFromStream(filename, record->stream, document, rootType, e);
+        pXmlInstance->tinyXmlImplementation = kRet->tinyXmlImplementation;
+        pXmlInstance->tiXmlElement = kRet->tiXmlElement;
 
-        xml_instance->tinyXmlImplementation = ret->tinyXmlImplementation;
-        xml_instance->tiXmlElement = ret->tiXmlElement;
-
-        return ret;
+        return kRet;
     }
 
-#ifdef VERSION_COZY_BUNDLE
-    void *load_body(void *a, char *dynamic_skin_name, void *c, EA::ResourceMan::IResource *material_resource,
-                    EA::ResourceMan::IResource *texture_resource, EA::ResourceMan::IResource *mask_resource) {
-        const auto manager = EA::ResourceMan::Manager::GetManager();
+#ifdef PLATFORM_WIN64
+    void *LoadBody(void * _a, char *dynamicSkinName, void * _c, EA::ResourceMan::IResource *materialResource,
+                   EA::ResourceMan::IResource *textureResource, EA::ResourceMan::IResource *maskResource) {
+        auto *const kManager = EA::ResourceMan::Manager::GetManager();
 
-        if (material_resource == nullptr) {
-            const EA::ResourceMan::Key key = {
-                .instance = hash::fnv::FromString64("fallback"),
-                .type = assets::MATERIAL,
-                .group = 0
+        if (materialResource == nullptr) {
+            const EA::ResourceMan::Key kKey = {
+                .mInstance = Hash::FNV::FromString64("fallback"),
+                .mType = static_cast<uint32_t>(FileType::MATERIAL),
+                .mGroup = 0
             };
 
-            EA::ResourceMan::Manager::GetResource(manager, key, &material_resource, nullptr, nullptr, nullptr, nullptr,
+            EA::ResourceMan::Manager::GetResource(kManager, kKey, &materialResource, nullptr, nullptr, nullptr, nullptr,
                                                   0, 0, 0, 0);
         }
 
-        if (texture_resource == nullptr) {
-            const EA::ResourceMan::Key key = {
-                .instance = hash::fnv::FromString32("fallback"),
-                .type = assets::DDS,
-                .group = 0
+        if (textureResource == nullptr) {
+            const EA::ResourceMan::Key kKey = {
+                .mInstance = Hash::FNV::FromString32("fallback"),
+                .mType = static_cast<uint32_t>(FileType::DDS),
+                .mGroup = 0
             };
 
-            EA::ResourceMan::Manager::GetResource(manager, key, &texture_resource, nullptr, nullptr, nullptr, nullptr,
+            EA::ResourceMan::Manager::GetResource(kManager, kKey, &textureResource, nullptr, nullptr, nullptr, nullptr,
                                                   0, 0, 0, 0);
         }
 
-        if (mask_resource == nullptr) {
-            const EA::ResourceMan::Key key = {
-                .instance = hash::fnv::FromString32("empty"),
-                .type = assets::DDS,
-                .group = 0
+        if (maskResource == nullptr) {
+            const EA::ResourceMan::Key kKey = {
+                .mInstance = Hash::FNV::FromString32("empty"),
+                .mType = static_cast<uint32_t>(FileType::DDS),
+                .mGroup = 0
             };
 
-            EA::ResourceMan::Manager::GetResource(manager, key, &mask_resource, nullptr, nullptr, nullptr, nullptr, 0,
+            EA::ResourceMan::Manager::GetResource(kManager, kKey, &maskResource, nullptr, nullptr, nullptr, nullptr, 0,
                                                   0, 0, 0);
         }
 
-        return Revo::load_bodyHook.Original(a, dynamic_skin_name, c, material_resource, texture_resource,
-                                            mask_resource);
+        return Revo::load_bodyHook.Original(_a, dynamicSkinName, _c, materialResource, textureResource,
+                                            maskResource);
     }
 #endif
     void Assets::Install() {
@@ -202,8 +206,8 @@ namespace msml::core {
 
         Revo::ResourceSystem::InitHook.Install(&ResourceSystemInitHooked);
         Revo::App::ReadXMLFromPathHook.Install(&ReadXMLFromPathHooked);
-#ifdef VERSION_COZY_BUNDLE
-        Revo::load_bodyHook.Install(&load_body);
+#ifdef PLATFORM_WIN64
+        Revo::load_bodyHook.Install(&LoadBody);
 #endif
     }
 
@@ -216,60 +220,76 @@ namespace msml::core {
     }
 
     void Assets::RegisterAsset(const std::filesystem::path &path) const {
-        const EA::ResourceMan::Key key = assets::Asset::GetKey(path);
+        const EA::ResourceMan::Key kKey = Asset::GetKey(path);
 
         // Lua files with the same name as game ones will override them. Causing the game not to load
         // we want to discourage doing this and using hooks instead.
-        if (key.type == assets::DDFFileType::LUA) return;
+        if (kKey.mType == static_cast<uint32_t>(FileType::LUA)) {
+            return;
+        }
 
-        const auto filename = path.stem().string();
+        const auto kFilename = path.stem().string();
 
-        resource::IdResolver::GetInstance().Add(filename);
+        Resource::IdResolver::GetInstance().Add(kFilename);
 
-        const auto asset = new assets::Asset(key, assets::PATH);
-        asset->path = path;
+        auto *const kAsset = new Asset(kKey, AssetType::kPath);
+        kAsset->mPath = path;
 
-        if (database != nullptr)
-            database->AddAsset(asset);
+        if (mDatabase != nullptr) {
+            mDatabase->AddAsset(kAsset);
+        }
     }
 
-    void Assets::RegisterAsset(assets::Asset *asset) const {
-        if (asset->key.type == assets::DDFFileType::LUA) return;
+    void Assets::RegisterAsset(Asset *pAsset) const {
+        if (pAsset->mKey.mType == static_cast<uint32_t>(FileType::LUA)) {
+            return;
+        }
 
-        const auto filename = asset->path.stem().string();
+        const auto kFilename = pAsset->mPath.stem().string();
 
-        resource::IdResolver::GetInstance().Add(filename);
+        Resource::IdResolver::GetInstance().Add(kFilename);
 
-        if (database != nullptr)
-            database->AddAsset(asset);
+        if (mDatabase != nullptr) {
+            mDatabase->AddAsset(pAsset);
+
+        }
     }
 
-    bool Assets::GetAsset(const EA::ResourceMan::Key &key, EA::ResourceMan::IRecord ** record) {
-        if (GetInstance().database == nullptr) return false;
-        return GetInstance().database->OpenRecord2(key, record, EA::IO::AccessFlags::Read, EA::IO::CD::LoadAllFiles, 0, nullptr);
+    bool Assets::GetAsset(const EA::ResourceMan::Key &key, EA::ResourceMan::IRecord **ppRecord) {
+        if (GetInstance().mDatabase == nullptr) {
+            return false;
+        }
+        return GetInstance().mDatabase->OpenRecord2(key, ppRecord, EA::IO::AccessFlags::kRead, EA::IO::CD::kLoadAllFiles, 0,
+                                                   nullptr);
     }
 
-    bool Assets::GetAsset(const std::string& name, EA::ResourceMan::IRecord ** record) {
-        if (GetInstance().database == nullptr) return false;
-        return GetInstance().database->OpenRecord2(assets::Asset::GetKey(name), record, EA::IO::AccessFlags::Read, EA::IO::CD::LoadAllFiles, 0, nullptr);
+    bool Assets::GetAsset(const std::string &name, EA::ResourceMan::IRecord **ppRecord) {
+        if (GetInstance().mDatabase == nullptr) {
+            return false;
+        }
+        return GetInstance().mDatabase->OpenRecord2(Asset::GetKey(name), ppRecord, EA::IO::AccessFlags::kRead,
+                                                   EA::IO::CD::kLoadAllFiles, 0, nullptr);
     }
 
     void Assets::CreateDatabase() {
-        database = new resource::CustomDatabase;
+        mDatabase = new Resource::CustomDatabase;
 
-        if (modloader::Mods::GetInstance().mods.empty()) return;
-        for (const auto &mod: modloader::Mods::GetInstance().mods) {
-            std::filesystem::path mod_path(mod->path);
+        if (Mods::GetInstance().mMods.empty()) {
+            return;
+        }
 
-            CreateDatabaseEntries(mod_path);
+        for (const auto &mod: Mods::GetInstance().mMods) {
+            std::filesystem::path modPath(mod->mPath);
 
-            for (const auto &entry: std::filesystem::recursive_directory_iterator(mod_path)) {
+            CreateDatabaseEntries(modPath);
+
+            for (const auto &entry: std::filesystem::recursive_directory_iterator(modPath)) {
                 if (is_directory(entry.path())) {
                     CreateDatabaseEntries(entry.path());
                 }
             }
         }
-        for (const auto &val: database->assets | std::views::values) {
+        for (const auto &val: mDatabase->mAssets | std::views::values) {
             Tweaker::RegistryOnRegister(val);
         }
 

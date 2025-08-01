@@ -4,16 +4,22 @@
 
 #include "Hooks.h"
 #include "MinHook.h"
+#include "../modloader/ModLoader.h"
+#include "../signatures/Signatures.h"
 #include "../system/Logger.h"
 
-namespace msml::core::Hooks {
-    void Install(void* target, void *detour, void** original) {
-        if (target == nullptr) {
+namespace Msml::Core::Hooks {
+    void Install(void* pTarget, void * pDetour, void** ppOriginal) {
+        if (pTarget == nullptr) {
             MSML_LOG_ERROR("Failed to install hook");
+            Signatures::CleanSignatureCache();
+            ModLoader::MessageAndExit("Failed to install hook, deleting signature cache");
         }
 
-        if (MH_CreateHook(target, detour, original) != MH_OK) {
+        if (MH_CreateHook(pTarget, pDetour, ppOriginal) != MH_OK) {
             MSML_LOG_ERROR("Failed to install hook");
+            Signatures::CleanSignatureCache();
+            ModLoader::MessageAndExit("Failed to install hook, deleting signature cache");
         }
     }
 

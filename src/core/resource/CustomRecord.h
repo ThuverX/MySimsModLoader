@@ -7,15 +7,15 @@
 
 #include "../../EA/ResourceMan/IRecord.h"
 
-namespace msml::core::resource {
+namespace Msml::Core::Resource {
     class CustomRecord : public EA::ResourceMan::IRecord {
     public:
-        EA::ResourceMan::Key key;
+        EA::ResourceMan::Key mKey;
 
-        EA::IO::IStream *stream;
-        EA::ResourceMan::IDatabase *database;
+        EA::IO::IStream *mStream;
+        EA::ResourceMan::IDatabase *mDatabase;
 
-        CustomRecord(EA::ResourceMan::Key key, EA::IO::IStream *stream, EA::ResourceMan::IDatabase *database);
+        CustomRecord(EA::ResourceMan::Key key, EA::IO::IStream *pStream, EA::ResourceMan::IDatabase *pDatabase);
 
         EA::ResourceMan::Key &GetKey() override;
 

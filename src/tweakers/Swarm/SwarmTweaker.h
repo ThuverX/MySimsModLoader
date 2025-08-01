@@ -9,12 +9,13 @@
 
 // Allows for adding new effects to the game.
 class SwarmTweaker final : public Tweaker {
-public:
-    std::vector<msml::core::assets::Asset*> swarmsToAdd;
-    bool OnLoad(msml::core::resource::CustomRecord &asset) override;
-    bool OnRegister(msml::core::assets::Asset &asset) override;
-};
+    std::vector<Msml::Core::Asset *> mSwarmsToAdd;
 
+public:
+    bool OnLoad(Msml::Core::Resource::CustomRecord &asset) override;
+
+    bool OnRegister(Msml::Core::Asset &asset) override;
+};
 
 
 #endif //SWARMTWEAKER_H

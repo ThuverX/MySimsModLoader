@@ -12,31 +12,27 @@
 class Tweaker {
 public:
     Tweaker() {
-        getRegistry().push_back(this);
+        GetRegistry().push_back(this);
     }
 
-    virtual bool OnLoad(msml::core::resource::CustomRecord& asset) = 0;
-    virtual bool OnRegister(msml::core::assets::Asset& asset) = 0;
+    virtual bool OnLoad(Msml::Core::Resource::CustomRecord& asset) = 0;
+    virtual bool OnRegister(Msml::Core::Asset& asset) = 0;
     virtual ~Tweaker() = default;
 
-    static std::vector<Tweaker*>& getRegistry() {
+    static std::vector<Tweaker*>& GetRegistry() {
         static std::vector<Tweaker*> registry;
         return registry;
     }
 
-    static void RegistryOnLoad(msml::core::resource::CustomRecord* asset) {
-        for (const auto &tweaker: getRegistry()) {
-            if (tweaker->OnLoad(*asset)) {
-                break;
-            }
+    static void RegistryOnLoad(Msml::Core::Resource::CustomRecord* pAsset) {
+        for (const auto &tweaker: GetRegistry()) {
+            tweaker->OnLoad(*pAsset);
         }
     }
 
-    static void RegistryOnRegister(msml::core::assets::Asset* asset) {
-        for (const auto &tweaker: getRegistry()) {
-            if (tweaker->OnRegister(*asset)) {
-                break;
-            }
+    static void RegistryOnRegister(Msml::Core::Asset* pAsset) {
+        for (const auto &tweaker: GetRegistry()) {
+            tweaker->OnRegister(*pAsset);
         }
     }
 };

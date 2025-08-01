@@ -5,7 +5,7 @@
 #ifndef ARGSCRIPTHOOK_H
 #define ARGSCRIPTHOOK_H
 
-namespace msml::core::hooks {
+namespace Msml::Core::Hooks {
     class ArgscriptHook {
     public:
         static void Install();

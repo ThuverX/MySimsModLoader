@@ -1,89 +1,88 @@
 #include "Material.h"
 
-void Material::Read(Material &instance, EA::IO::IStream* stream) {
+void Material::Read(Material &instance, EA::IO::IStream *pStream) {
+    SKIP(pStream, 4); // 1
+    SKIP(pStream, 4); // 1
+    SKIP(pStream, 4); // 0
+    SKIP(pStream, 4); // 0
+    SKIP(pStream, 4); // 1
 
-    SKIP(stream, 4); // 1
-    SKIP(stream, 4); // 1
-    SKIP(stream, 4); // 0
-    SKIP(stream, 4); // 0
-    SKIP(stream, 4); // 1
+    EA::ResourceMan::Key::Read(instance.mSelf, pStream);
 
-    EA::ResourceMan::Key::Read(instance.self, stream);
+    SKIP(pStream, 4); // Header Size
+    SKIP(pStream, 4); // Total Size
 
-    READ(stream, instance.headerSize);
-    READ(stream, instance.totalSize);
+    SKIP(pStream, 4); // MATD
+    SKIP(pStream, 4); // MATD version
 
-    SKIP(stream, 4); // MATD
-    SKIP(stream, 4); // MATD version
+    READ(pStream, instance.mMaterialId);
+    READ(pStream, instance.mShaderId);
 
-    READ(stream, instance.materialId);
-    READ(stream, instance.shaderId);
+    SKIP(pStream, 4); // MTRL size
 
-    READ(stream, instance.mtrlSize);
+    const size_t kMtrlOffset = OFFSET(pStream);
 
-    const size_t mtrlOffset = OFFSET(stream);
+    SKIP(pStream, 4); // MTRL
+    SKIP(pStream, 4); // MTRL version
 
-    SKIP(stream, 4); // MTRL
-    SKIP(stream, 4); // MTRL version
+    SKIP(pStream, 4); // Data size
+    READ_VALUE(pStream, uint32_t, numParams);
 
-    READ(stream, instance.dataSize);
-    READ(stream, instance.numParams);
-
-    for (uint32_t i = 0; i < instance.numParams; i++) {
+    for (uint32_t i = 0; i < numParams; i++) {
         MaterialParameter parameter{};
-        MaterialParameter::Read(parameter, mtrlOffset, stream);
+        MaterialParameter::Read(parameter, kMtrlOffset, pStream);
 
-        instance.parameters.push_back(parameter);
+        instance.mParameters.push_back(parameter);
     }
 }
 
-void Material::Write(EA::IO::IStream *stream) {
-    WRITE_VALUE(stream, uint32_t, 1);
-    WRITE_VALUE(stream, uint32_t, 1);
-    WRITE_VALUE(stream, uint32_t, 0);
-    WRITE_VALUE(stream, uint32_t, 0);
-    WRITE_VALUE(stream, uint32_t, 1);
+void Material::Write(EA::IO::IStream *pStream) {
+    WRITE_VALUE(pStream, uint32_t, 1);
+    WRITE_VALUE(pStream, uint32_t, 1);
+    WRITE_VALUE(pStream, uint32_t, 0);
+    WRITE_VALUE(pStream, uint32_t, 0);
+    WRITE_VALUE(pStream, uint32_t, 1);
 
-    self.Write(stream);
+    mSelf.Write(pStream);
 
-    WRITE_VALUE(stream, uint32_t, OFFSET(stream) + 8);
-    CREATE_HOLE(stream, totalSize, uint32_t);
-    const size_t totalOffset = OFFSET(stream);
+    WRITE_VALUE(pStream, uint32_t, OFFSET(pStream) + 8);
+    CREATE_HOLE(pStream, totalSize, uint32_t);
+    const size_t kTotalOffset = OFFSET(pStream);
 
-    WRITE_STRING(stream, "MATD");
-    WRITE_VALUE(stream, uint32_t, 1);
+    WRITE_STRING(pStream, "MATD");
+    WRITE_VALUE(pStream, uint32_t, 1);
 
-    WRITE(stream, materialId);
-    WRITE(stream, shaderId);
+    WRITE(pStream, mMaterialId);
+    WRITE(pStream, mShaderId);
 
-    CREATE_HOLE(stream, mtrlSize, uint32_t);
-    const size_t mtrlOffset = OFFSET(stream);
+    CREATE_HOLE(pStream, mtrlSize, uint32_t);
+    const size_t kMtrlOffset = OFFSET(pStream);
 
-    WRITE_STRING(stream, "MTRL");
-    WRITE_VALUE(stream, uint32_t, 0);
+    WRITE_STRING(pStream, "MTRL");
+    WRITE_VALUE(pStream, uint32_t, 0);
 
-    CREATE_HOLE(stream, dataSize, uint32_t);
+    CREATE_HOLE(pStream, dataSize, uint32_t);
 
-    numParams = parameters.size();
-    WRITE_VALUE(stream, uint32_t, numParams);
+    const uint32_t kNumParams = mParameters.size();
+    WRITE_VALUE(pStream, uint32_t, kNumParams);
 
-    uint32_t rolling_offset = OFFSET(stream) + 16 * numParams - mtrlOffset;
+    uint32_t rollingOffset = OFFSET(pStream) + 16 * kNumParams - kMtrlOffset;
 
-    for (auto & parameter : parameters) {
-        parameter.offset = rolling_offset;
-        rolling_offset += parameter.GetBodySize();
-        parameter.WriteHeader(stream);
+    for (auto &parameter: mParameters) {
+        parameter.mOffset = rollingOffset;
+        rollingOffset += parameter.GetBodySize();
+        parameter.WriteHeader(pStream);
     }
 
-    const size_t dataOffset = OFFSET(stream);
+    const size_t kDataOffset = OFFSET(pStream);
 
-    for (auto & parameter : parameters) {
-        parameter.WriteBody(stream);
+    for (auto &parameter: mParameters) {
+        parameter.WriteBody(pStream);
     }
 
-    const size_t endOffset = OFFSET(stream);
+    const size_t kEndOffset = OFFSET(pStream);
 
-    FILL_HOLE(stream, dataSize, endOffset - dataOffset);
-    FILL_HOLE(stream, totalSize, endOffset - totalOffset);
-    FILL_HOLE(stream, mtrlSize, endOffset - mtrlOffset);
+    FILL_HOLE(pStream, dataSize, kEndOffset - kDataOffset);
+    FILL_HOLE(pStream, totalSize, kEndOffset - kTotalOffset);
+    FILL_HOLE(pStream, mtrlSize, kEndOffset - kMtrlOffset);
 }

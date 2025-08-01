@@ -14,11 +14,15 @@
 
 namespace EA::IO {
     class FileStream final : public IStream {
-        std::filesystem::path path;
-        HANDLE hFile = INVALID_HANDLE_VALUE;
+        std::filesystem::path mPath;
+        HANDLE mFileHandle = INVALID_HANDLE_VALUE;
+        CD mCd = CD::kDefault;
+        AccessFlags mAccessFlags = AccessFlags::kNone;
+        FileError mFileError = FileError::kSuccess;
 
     public:
-        static constexpr uint32_t Type = 0xb7faadfe;
+        static constexpr uint32_t kType = 0xb7faadfe;
+        FileStream(const std::filesystem::path &path, AccessFlags kAccessFlags, CD kCreationDisposition);
         explicit FileStream(const std::filesystem::path &path);
 
         [[nodiscard]] uint32_t GetType() const override;
@@ -35,7 +39,7 @@ namespace EA::IO {
 
         [[nodiscard]] size_t GetPosition(PositionType positionType) const override;
 
-        bool SetPosition(int distance, PositionType positionType) override;
+        bool SetPosition(int kDistance, PositionType positionType) override;
 
         [[nodiscard]] size_t GetAvailable() const override;
 

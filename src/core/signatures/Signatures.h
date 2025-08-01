@@ -8,8 +8,7 @@
 #include <sigmatch/sigmatch.hpp>
 #include <unordered_map>
 
-
-namespace msml::core {
+namespace Msml::Core {
     class SigSearchBase {
     public:
         virtual ~SigSearchBase() = default;
@@ -20,24 +19,26 @@ namespace msml::core {
 
         [[nodiscard]] virtual void *GetAddress() const = 0;
 
-        virtual void ApplyAddress(void *addr) const = 0;
+        virtual void ApplyAddress(void *pAddr) const = 0;
     };
 
     class Signatures {
     public:
         static Signatures& GetInstance();
-        bool Search(const sigmatch::signature &sig, void*& address, uint32_t offset, bool first) const;
+        bool Search(const sigmatch::signature &sig, void*& pAddress, uint32_t kOffset, bool kbFirst) const;
         bool SearchAll();
-        void Append(std::string name, SigSearchBase* sig);
-        std::array<uint8_t, 32U> GetCheckSum();
+
+        static void CleanSignatureCache();
+        void Append(const std::string& name, SigSearchBase* pSig);
+        static std::array<uint8_t, 32U> GetCheckSum();
 
     private:
         Signatures();
-        std::unordered_map<std::string, SigSearchBase*> signatures;
-        sigmatch::search_context context;
+        std::unordered_map<std::string, SigSearchBase*> mSignatures;
+        sigmatch::search_context mContext;
 
         bool LoadDatabase();
-        void SaveDatabase();
+        void SaveDatabase() const;
     };
 }
 

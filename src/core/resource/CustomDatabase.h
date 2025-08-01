@@ -12,16 +12,16 @@
 #include "../signatures/sigdef.h"
 #include "EASTL/vector.h"
 
-namespace msml::core::resource {
+namespace Msml::Core::Resource {
     class CustomDatabase : public EA::ResourceMan::IDatabase {
-        EA::ResourceMan::Manager::Manager *manager = nullptr;
+        EA::ResourceMan::Manager::Manager *mManager = nullptr;
 
     public:
-        std::unordered_map<EA::ResourceMan::Key, assets::Asset *> assets;
+        std::unordered_map<EA::ResourceMan::Key, Asset *> mAssets;
 
         ~CustomDatabase() override = default;
 
-        IDatabase *AsInterface(uint32_t id) override;
+        IDatabase *AsInterface(uint32_t typeID) override;
 
         bool Init() override;
 
@@ -31,7 +31,7 @@ namespace msml::core::resource {
 
         void Lock(bool toLock) override;
 
-        void Open(EA::IO::AccessFlags access_flags, EA::IO::CD creation_disposition, bool, bool) override;
+        void Open(EA::IO::AccessFlags accessFlags, EA::IO::CD creationDisposition, bool, bool) override;
 
         void Close() override;
 
@@ -41,7 +41,7 @@ namespace msml::core::resource {
 
         const wchar_t *GetLocation() override;
 
-        void SetLocation(wchar_t *) override;
+        void SetLocation(wchar_t *location) override;
 
         size_t GetKeyList(eastl::vector<EA::ResourceMan::Key, eastl::dummy_allocator> &,
                           EA::ResourceMan::IKeyFilter *) override;
@@ -51,30 +51,31 @@ namespace msml::core::resource {
 
         void GetRecordInfoList(
             eastl::vector<eastl::pair<EA::ResourceMan::Key, EA::ResourceMan::RecordInfo>, eastl::dummy_allocator> *
-            output_list, const eastl::vector<EA::ResourceMan::Key, eastl::dummy_allocator> *in_keys) override;
+            outputList, const eastl::vector<EA::ResourceMan::Key, eastl::dummy_allocator> *inKeys) override;
 
         void GetRecordInfoListSortedByPosition(
             eastl::vector<eastl::pair<EA::ResourceMan::Key, EA::ResourceMan::RecordInfo>, eastl::dummy_allocator> *
-            output_list, const eastl::vector<EA::ResourceMan::Key, eastl::dummy_allocator> *in_keys) override;
+            outputList, const eastl::vector<EA::ResourceMan::Key, eastl::dummy_allocator> *inKeys) override;
 
         bool OpenRecord1(const EA::ResourceMan::Key &key, EA::ResourceMan::IRecord **pDstRecord,
-                         EA::IO::AccessFlags accessFlags, EA::IO::CD cd, int, EA::ResourceMan::RecordInfo *) override;
+                         EA::IO::AccessFlags accessFlags, EA::IO::CD creationDisposition, int unknown,
+                         EA::ResourceMan::RecordInfo *) override;
 
         bool OpenRecord2(const EA::ResourceMan::Key &key, EA::ResourceMan::IRecord **pDstRecord,
-                         EA::IO::AccessFlags accessFlags, EA::IO::CD cd, int, EA::ResourceMan::RecordInfo *) override;
+                         EA::IO::AccessFlags accessFlags, EA::IO::CD creationDisposition, int unknown,
+                         EA::ResourceMan::RecordInfo *) override;
 
         uint32_t GetOpenCount() override;
 
-        void CloseRecord(EA::ResourceMan::IRecord *) override;
+        void CloseRecord(EA::ResourceMan::IRecord *record) override;
 
-        void DeleteRecord(EA::ResourceMan::IRecord *) override;
+        void DeleteRecord(EA::ResourceMan::IRecord *record) override;
 
         uint64_t GetModificationTime() override;
 
         bool Attach(bool, EA::ResourceMan::Manager::Manager *pResourceMan, bool) override;
 
-        void AddAsset(assets::Asset *pAsset);
-        void GetKeys(std::vector<EA::ResourceMan::Key> &keys);
+        void AddAsset(Asset *pAsset);
     };
 }
 

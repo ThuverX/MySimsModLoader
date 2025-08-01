@@ -9,18 +9,15 @@
 
 
 class MaterialSetBuilder {
-    MaterialSet matSet{};
+    MaterialSet mMaterialSet{};
+
 public:
-    MaterialSetBuilder& withMaterial(const Material& mat);
-    MaterialSetBuilder& withMTSTName(uint32_t name);
-    MaterialSetBuilder& withMTSTIndex(uint32_t index);
-    MaterialSetBuilder& withMTSTDefaultIndex();
-    MaterialSetBuilder& withMaterial(EA::ResourceMan::Key key);
-    MaterialSetBuilder& withKey(EA::ResourceMan::Key key);
+    MaterialSetBuilder &WithMaterial(const Material &kMaterial);
 
-    MaterialSet build();
+    MaterialSetBuilder &WithMaterial(EA::ResourceMan::Key kKey);
+
+    MaterialSet Build();
 };
-
 
 
 #endif //MATERIALSETBUILDER_H

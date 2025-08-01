@@ -7,19 +7,18 @@
 
 #pragma pack(push, 2)
 
-// Taken from spore, size might not be right for this game...
 namespace EA::ResourceMan {
     struct RecordInfo {
         /// The offset, in bytes, of the file data inside the package file.
-        size_t chunkOffset;
+        size_t mChunkOffset;
         /// The size, in bytes, that this file occupies inside the package file.
-        size_t compressedSize;
+        size_t mCompressedSize;
         /// The size, in bytes, that this file occupies in memory, once uncompressed.
-        size_t memorySize;
+        size_t mMemorySize;
         /// 0 -> no compression, -1 -> compressed
-        uint16_t flags;  // 0xFFFF for compressed
+        uint16_t mFlags; // 0xFFFF for compressed
         /// Whether this item has been saved and written into the package.
-        bool isSaved;
+        bool mIsSaved;
     };
 }
 

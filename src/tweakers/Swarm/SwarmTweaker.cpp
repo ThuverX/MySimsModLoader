@@ -10,39 +10,40 @@
 #include "../../EA/IO/FileStream.h"
 #include "../../EA/IO/MemoryStream.h"
 
-EA::ResourceMan::Key MasterSwarmKey32 = {
-    .instance = msml::hash::fnv::FromString64("MySims"),
-    .type = msml::core::assets::DDFFileType::SWM,
-    .group = 0,
+const EA::ResourceMan::Key kMasterSwarmKey32 = {
+    .mInstance = Msml::Hash::FNV::FromString64("MySims"),
+    .mType = static_cast<uint32_t>(Msml::Core::FileType::SWM),
+    .mGroup = 0,
 };
 
-EA::ResourceMan::Key MasterSwarmKey64 = {
-    .instance = 0xb63f54437ba837ff,
-    .type = msml::core::assets::DDFFileType::SWM,
-    .group = 0,
+const EA::ResourceMan::Key kMasterSwarmKey64 = {
+    .mInstance = 0xb63f54437ba837ff,
+    .mType = static_cast<uint32_t>(Msml::Core::FileType::SWM),
+    .mGroup = 0,
 };
 
-bool SwarmTweaker::OnLoad(msml::core::resource::CustomRecord &asset) {
-    if (asset.GetKey() == MasterSwarmKey32 || asset.GetKey() == MasterSwarmKey64) {
-        const size_t count = swarmsToAdd.size();
+bool SwarmTweaker::OnLoad(Msml::Core::Resource::CustomRecord &asset) {
+    if (asset.GetKey() == kMasterSwarmKey32 || asset.GetKey() == kMasterSwarmKey64) {
+        const size_t kCount = mSwarmsToAdd.size();
 
-        if (count == 0) return false;
-
-        MSML_LOG_INFO("Patching Master Swarm with %d file(s)", count);
-
-        std::string data = msml::core::util::StreamUtil::ReadString(asset.GetStream());
-
-        for (const auto & swarm_to_add : swarmsToAdd) {
-
-            const auto stream = new EA::IO::FileStream(swarm_to_add->path);
-            std::string string_to_add = msml::core::util::StreamUtil::ReadString(stream);
-
-            data += "\n" + string_to_add;
+        if (kCount == 0) {
+            return false;
         }
 
-        const auto stream = new EA::IO::MemoryStream(data.data(), data.size());
+        MSML_LOG_INFO("Patching Master Swarm with %d file(s)", kCount);
 
-        asset.SetStream(stream);
+        std::string data = Msml::Core::Util::StreamUtil::ReadString(asset.GetStream());
+
+        for (const auto &swarmToAdd: mSwarmsToAdd) {
+            auto *const kStream = new EA::IO::FileStream(swarmToAdd->mPath);
+            std::string stringToAdd = Msml::Core::Util::StreamUtil::ReadString(kStream);
+
+            data += "\n" + stringToAdd;
+        }
+
+        auto *const kStream = new EA::IO::MemoryStream(data.data(), data.size());
+
+        asset.SetStream(kStream);
 
         return true;
     }
@@ -50,9 +51,9 @@ bool SwarmTweaker::OnLoad(msml::core::resource::CustomRecord &asset) {
     return false;
 }
 
-bool SwarmTweaker::OnRegister(msml::core::assets::Asset &asset) {
-    if (asset.key.type == msml::core::assets::DDFFileType::SWM) {
-        swarmsToAdd.push_back(&asset);
+bool SwarmTweaker::OnRegister(Msml::Core::Asset &asset) {
+    if (asset.mKey.mType == static_cast<uint32_t>(Msml::Core::FileType::SWM)) {
+        mSwarmsToAdd.push_back(&asset);
         return true;
     }
 

@@ -4,44 +4,18 @@
 
 #include "MaterialSetBuilder.h"
 
-MaterialSetBuilder & MaterialSetBuilder::withMaterial(const Material &mat) {
-    matSet.mtst.indices.emplace_back(matSet.mtst.index + matSet.mtst.indices.size());
-
-    matSet.materials.emplace_back(mat.self);
+MaterialSetBuilder &MaterialSetBuilder::WithMaterial(const Material &kMaterial) {
+    mMaterialSet.mMaterials.push_back(kMaterial.mSelf);
 
     return *this;
 }
 
-MaterialSetBuilder & MaterialSetBuilder::withMTSTName(uint32_t name) {
-    matSet.mtst.name = name;
+MaterialSetBuilder &MaterialSetBuilder::WithMaterial(const EA::ResourceMan::Key kKey) {
+    mMaterialSet.mMaterials.push_back(kKey);
 
     return *this;
 }
 
-MaterialSetBuilder & MaterialSetBuilder::withMTSTIndex(uint32_t index) {
-    matSet.mtst.index = index;
-
-    return *this;
-}
-
-MaterialSetBuilder & MaterialSetBuilder::withMTSTDefaultIndex() {
-    matSet.mtst.index = 805306369;
-
-    return *this;
-}
-
-MaterialSetBuilder & MaterialSetBuilder::withMaterial(const EA::ResourceMan::Key key) {
-    matSet.materials.push_back(key);
-
-    return *this;
-}
-
-MaterialSetBuilder & MaterialSetBuilder::withKey(EA::ResourceMan::Key key) {
-    matSet.self = key;
-
-    return *this;
-}
-
-MaterialSet MaterialSetBuilder::build() {
-    return matSet;
+MaterialSet MaterialSetBuilder::Build() {
+    return mMaterialSet;
 }

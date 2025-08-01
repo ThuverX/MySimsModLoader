@@ -4,26 +4,25 @@
 
 #include <windows.h>
 
-
 #define SIG_DEFINE
 #include "core/signatures/sigdef.h"
 #undef SIG_DEFINE
 
 #include "core/modloader/ModLoader.h"
 #include "core/system/CrashHandler.h"
-#include "EASTL/allocator.h"
 #include "EASTL/internal/config.h"
-#include "tweakers/Tweakers.h" // registers tweakers
 
-#ifdef _WIN64
+#ifdef PLATFORM_WIN64
 #include "platform/w64/wsock.h"
-#else
+#endif
+
+#ifdef PLATFORM_WIN32
 #include "platform/w32/dsound.h"
 #endif
 
 // unused but required to build eastl
 namespace eastl {
-    typedef void (*EASTL_AssertionFailureFunction)(const char *pExpression, void *pContext);
+    using EASTL_AssertionFailureFunction = void (*)(const char *pExpression, void *pContext);
 
     EASTL_API void SetAssertionFailureFunction(EASTL_AssertionFailureFunction pFunction, void *pContext) {
     }
@@ -35,25 +34,28 @@ namespace eastl {
     }
 }
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved) {
-    if (reason == DLL_PROCESS_ATTACH) {
-        AddVectoredExceptionHandler(1, msml::core::system::VectoredCrashHandler);
+BOOL APIENTRY DllMain(HMODULE hModule, const DWORD kReason, LPVOID lpReserved) {
+    if (kReason == DLL_PROCESS_ATTACH) {
+        AddVectoredExceptionHandler(1, Msml::Core::System::VectoredCrashHandler);
 
-        char bufd[200];
-        GetSystemDirectoryA(bufd, 200);
-#ifdef _WIN64
-        strcat_s(bufd, "\\WSOCK32.dll");
-#else
-        strcat_s(bufd, "\\dsound.dll");
+        char lpBuffer[MAX_PATH];
+        GetSystemDirectoryA(lpBuffer, MAX_PATH);
+#ifdef PLATFORM_WIN64
+        strcat_s(lpBuffer, "\\WSOCK32.dll");
 #endif
 
-        msml::core::ModLoader::GetInstance().Initialize();
+#ifdef PLATFORM_WIN32
+        strcat_s(lpBuffer, "\\dsound.dll");
+#endif
 
-        const HMODULE hL = LoadLibraryA(bufd);
-        if (!hL)
-            return false;
+        Msml::Core::ModLoader::GetInstance().Initialize();
 
-        exports(hL);
+        const HMODULE kHL = LoadLibraryA(lpBuffer);
+        if (kHL == nullptr) {
+            return FALSE;
+        }
+
+        exports(kHL);
     }
 
     return TRUE;

@@ -5,15 +5,15 @@
 #include "MaterialBuilder.h"
 
 ShaderType GetShaderType(const std::string &type) {
-    if (const auto it = stringToEnum.find(type); it != stringToEnum.end()) {
-        return it->second;
+    if (const auto kIterator = kStringToEnum.find(type); kIterator != kStringToEnum.end()) {
+        return kIterator->second;
     }
     return ShaderType::lambert;
 }
 
-std::string GetShaderName(const uint32_t value) {
-    for (const auto &[name, enumValue]: stringToEnum) {
-        if (static_cast<uint32_t>(enumValue) == value) {
+std::string GetShaderName(const uint32_t kValue) {
+    for (const auto &[name, enumValue]: kStringToEnum) {
+        if (static_cast<uint32_t>(enumValue) == kValue) {
             return name;
         }
     }
@@ -21,53 +21,52 @@ std::string GetShaderName(const uint32_t value) {
     return "unknown";
 }
 
-MaterialBuilder & MaterialBuilder::withShader(ShaderType type) {
-    mat.shaderId = static_cast<uint32_t>(type);
+MaterialBuilder &MaterialBuilder::WithShader(ShaderType type) {
+    mMaterial.mShaderId = static_cast<uint32_t>(type);
 
     return *this;
 }
 
-MaterialBuilder & MaterialBuilder::withKey(const EA::ResourceMan::Key &key) {
-    mat.self.instance = key.instance;
-    mat.self.type = key.type;
-    mat.self.group = key.group;
-    mat.materialId = static_cast<uint32_t>(key.instance & 0xFFFFFFFF);
+MaterialBuilder &MaterialBuilder::WithKey(const EA::ResourceMan::Key &key) {
+    mMaterial.mSelf = key;
+    mMaterial.mMaterialId = static_cast<uint32_t>(key.mInstance & 0xFFFFFFFF);
     return *this;
 }
 
-MaterialBuilder & MaterialBuilder::withColorParameter(const uint32_t name, const float x, const float y, const float z, const float w) {
+MaterialBuilder &MaterialBuilder::WithColorParameter(const uint32_t kName, const float x, const float y, const float z,
+                                                     const float w) {
     MaterialParameter param{};
-    param.name = name;
-    param.type = Color;
-    param.valueFieldCount = 4;
-    param.colorValue = {x, y, z, w};
-    mat.parameters.push_back(param);
+    param.mName = kName;
+    param.mType = ValueType::kColor;
+    param.mValueFieldCount = 4;
+    param.mColorValue = {.x = x, .y = y, .z = z, .w = w};
+    mMaterial.mParameters.push_back(param);
 
     return *this;
 }
 
-MaterialBuilder & MaterialBuilder::withValueParameter(const uint32_t name, const int value) {
+MaterialBuilder &MaterialBuilder::WithValueParameter(const uint32_t kName, const uint32_t kValue) {
     MaterialParameter param{};
-    param.name = name;
-    param.type = Value;
-    param.valueFieldCount = 1;
-    param.intValue = value;
-    mat.parameters.push_back(param);
+    param.mName = kName;
+    param.mType = ValueType::kValue;
+    param.mValueFieldCount = 1;
+    param.mIntValue = kValue;
+    mMaterial.mParameters.push_back(param);
 
     return *this;
 }
 
-MaterialBuilder & MaterialBuilder::withKeyParameter(const uint32_t name, const EA::ResourceMan::Key key) {
+MaterialBuilder &MaterialBuilder::WithKeyParameter(const uint32_t kName, const EA::ResourceMan::Key kKey) {
     MaterialParameter param{};
-    param.name = name;
-    param.type = Key;
-    param.valueFieldCount = 4;
-    param.keyValue = key;
-    mat.parameters.push_back(param);
+    param.mName = kName;
+    param.mType = ValueType::kKey;
+    param.mValueFieldCount = 4;
+    param.mKeyValue = kKey;
+    mMaterial.mParameters.push_back(param);
 
     return *this;
 }
 
-Material MaterialBuilder::build() {
-    return mat;
+Material MaterialBuilder::Build() {
+    return mMaterial;
 }

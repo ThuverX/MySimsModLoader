@@ -9,33 +9,21 @@
 
 #include "../system/Console.h"
 
-#define MODS_PATH "mods/"
-#define W_MODS_PATH L"mods/"
-
-#ifdef _WIN64
-#define DATA_PATH "data"
-#define W_DATA_PATH L"data"
-#else
-#define DATA_PATH "../SimsRevData"
-#define W_DATA_PATH L"../SimsRevData"
-#endif
-
-namespace msml::core {
+namespace Msml::Core {
     class ModLoader {
+        ModLoader();
+
+        System::Console mConsole;
     public:
         static ModLoader &GetInstance();
 
         void Initialize();
 
         // Root game folder path
-        std::filesystem::path modulePath;
+        std::filesystem::path mModulePath;
 
-        static void SoftCrash();
-
-    private:
-        ModLoader();
-
-        system::Console console;
+        static void Message(const std::string& message);
+        static void MessageAndExit(const std::string& message);
     };
 }
 

@@ -18,9 +18,9 @@
 #include "../modloader/ModLoader.h"
 
 
-namespace msml::core::resource {
-    EA::ResourceMan::IDatabase *CustomDatabase::AsInterface(const uint32_t id) {
-        if (id == 0x7fa120bb) {
+namespace Msml::Core::Resource {
+    EA::ResourceMan::IDatabase *CustomDatabase::AsInterface(const uint32_t typeID) {
+        if (typeID == 0x7fa120bb) {
             return this;
         }
 
@@ -28,12 +28,12 @@ namespace msml::core::resource {
     }
 
     bool CustomDatabase::Init() {
-        isReady = true;
+        mIsReady = true;
         return true;
     }
 
     bool CustomDatabase::Shutdown() {
-        isReady = false;
+        mIsReady = false;
         return true;
     }
 
@@ -42,40 +42,40 @@ namespace msml::core::resource {
     }
 
     bool CustomDatabase::OpenRecord2(const EA::ResourceMan::Key &key, EA::ResourceMan::IRecord **pDstRecord,
-                                     EA::IO::AccessFlags accessFlags, EA::IO::CD cd, int,
-                                     EA::ResourceMan::RecordInfo *record_info) {
+                                     EA::IO::AccessFlags accessFlags, EA::IO::CD creationDisposition, int,
+                                     EA::ResourceMan::RecordInfo *recordInfo) {
         bool result = false;
         // TODO: this is a bit inefficient, so we should early exist based on custom, ddf or dbpf
-        if (Assets::GetInstance().ddf_paths.contains(key)) {
-            const auto path = Assets::GetInstance().ddf_paths[key];
-            const auto record = new CustomRecord(key, new EA::IO::FileStream(path), this);
+        if (Assets::GetInstance().mDDFPaths.contains(key)) {
+            const auto kPath = Assets::GetInstance().mDDFPaths[key];
+            auto *const kRecord = new CustomRecord(key, new EA::IO::FileStream(kPath), this);
 
-            if (record_info != nullptr) {
-                record_info->flags = 0;
-                record_info->chunkOffset = 0;
-                record_info->compressedSize = record->stream->GetSize();
-                record_info->memorySize = record->stream->GetSize();
+            if (recordInfo != nullptr) {
+                recordInfo->mFlags = 0;
+                recordInfo->mChunkOffset = 0;
+                recordInfo->mCompressedSize = kRecord->mStream->GetSize();
+                recordInfo->mMemorySize = kRecord->mStream->GetSize();
             }
 
             if (pDstRecord != nullptr) {
-                *pDstRecord = record;
+                *pDstRecord = kRecord;
 
-                Tweaker::RegistryOnLoad(record);
+                Tweaker::RegistryOnLoad(kRecord);
             }
 
             result = true;
-        } else if (Assets::GetInstance().dbpf_items.contains(key)) {
-            const auto item = Assets::GetInstance().dbpf_items[key];
+        } else if (Assets::GetInstance().mDBPFItems.contains(key)) {
+            const auto kItem = Assets::GetInstance().mDBPFItems[key];
 
-            if (record_info != nullptr) {
-                record_info->flags = item.record.flags;
-                record_info->chunkOffset = item.record.chunkOffset;
-                record_info->compressedSize = item.record.compressedSize;
-                record_info->memorySize = item.record.memorySize;
-                record_info->isSaved = item.record.isSaved;
+            if (recordInfo != nullptr) {
+                recordInfo->mFlags = kItem.mRecord.mFlags;
+                recordInfo->mChunkOffset = kItem.mRecord.mChunkOffset;
+                recordInfo->mCompressedSize = kItem.mRecord.mCompressedSize;
+                recordInfo->mMemorySize = kItem.mRecord.mMemorySize;
+                recordInfo->mIsSaved = kItem.mRecord.mIsSaved;
             }
 
-            if (item.record.flags == static_cast<uint16_t>(-1)) {
+            if (kItem.mRecord.mFlags == static_cast<uint16_t>(-1)) {
                 // we don't deal with these and that seems to work.
                 return false;
                 // const auto stream = new EA::IO::SubFileStream(item.path, item.record.chunkOffset, item.record.compressedSize);
@@ -108,62 +108,62 @@ namespace msml::core::resource {
             }
 
             if (pDstRecord != nullptr) {
-                const auto record = new CustomRecord(
-                    key, new EA::IO::SubFileStream(item.path, item.record.chunkOffset, item.record.compressedSize),
-                    this);
+                auto* const kRecord = new CustomRecord(key, new EA::IO::SubFileStream(kItem.mPath, kItem.mRecord.mChunkOffset, kItem.mRecord.mCompressedSize), this);
 
-                *pDstRecord = record;
+                *pDstRecord = kRecord;
 
-                Tweaker::RegistryOnLoad(record);
+                Tweaker::RegistryOnLoad(kRecord);
             }
 
             result = true;
         }
 
-        if (assets.contains(key)) {
-            const auto asset = assets[key];
-            const auto record = new CustomRecord(key, asset->GetStream(), this);
+        if (mAssets.contains(key)) {
+            auto* const kAsset = mAssets[key];
+            auto* const kRecord = new CustomRecord(key, kAsset->GetStream(), this);
 
-            if (record_info != nullptr) {
-                record_info->flags = 0;
-                record_info->chunkOffset = 0;
-                record_info->compressedSize = record->stream->GetSize();
-                record_info->memorySize = record->stream->GetSize();
+            if (recordInfo != nullptr) {
+                recordInfo->mFlags = 0;
+                recordInfo->mChunkOffset = 0;
+                recordInfo->mCompressedSize = kRecord->mStream->GetSize();
+                recordInfo->mMemorySize = kRecord->mStream->GetSize();
             }
 
             if (pDstRecord != nullptr) {
-                *pDstRecord = record;
+                *pDstRecord = kRecord;
 
-                Tweaker::RegistryOnLoad(record);
+                Tweaker::RegistryOnLoad(kRecord);
             }
 
             return true;
         }
 
-        if (result == false) {
-            uint64_t instance = hash::fnv::FromString64("fallback");
-            if (key.type == assets::DDS) instance = hash::fnv::FromString32("fallback");
+        if (!result) {
+            uint64_t instance = Hash::FNV::FromString64("fallback");
+            if (key.mType == static_cast<uint32_t>(FileType::DDS)) {
+                instance = Hash::FNV::FromString32("fallback");
+            }
 
-            const EA::ResourceMan::Key fallbackKey = {
-                .instance = instance,
-                .type = key.type,
-                .group = 0
+            const EA::ResourceMan::Key kFallbackKey = {
+                .mInstance = instance,
+                .mType = key.mType,
+                .mGroup = 0
             };
 
-            if (assets.contains(fallbackKey) && key != fallbackKey) {
+            if (mAssets.contains(kFallbackKey) && key != kFallbackKey) {
                 // MSML_LOG_WARNING("Using fallback for %s -> %s", IdResolver::ToHumanReadable(key).c_str(), IdResolver::ToHumanReadable(fallbackKey).c_str());
-                const auto asset = assets[fallbackKey];
-                const auto record = new CustomRecord(key, asset->GetStream(), this);
+                auto *const kAsset = mAssets[kFallbackKey];
+                auto *const kRecord = new CustomRecord(key, kAsset->GetStream(), this);
 
-                if (record_info != nullptr) {
-                    record_info->flags = 0;
-                    record_info->chunkOffset = 0;
-                    record_info->compressedSize = record->stream->GetSize();
-                    record_info->memorySize = record->stream->GetSize();
+                if (recordInfo != nullptr) {
+                    recordInfo->mFlags = 0;
+                    recordInfo->mChunkOffset = 0;
+                    recordInfo->mCompressedSize = kRecord->mStream->GetSize();
+                    recordInfo->mMemorySize = kRecord->mStream->GetSize();
                 }
 
                 if (pDstRecord != nullptr) {
-                    *pDstRecord = record;
+                    *pDstRecord = kRecord;
                 }
             }
         }
@@ -171,11 +171,10 @@ namespace msml::core::resource {
         return result;
     }
 
-    // TODO: These don't actually check all values...
     size_t CustomDatabase::GetKeyList(eastl::vector<EA::ResourceMan::Key, EASTLDummyAllocatorType> &pDst,
-                                      EA::ResourceMan::IKeyFilter *filter) {
-        for (const auto &key: assets | std::views::keys) {
-            if (!filter || filter->IsValid(key)) {
+                                      EA::ResourceMan::IKeyFilter *pFilter) {
+        for (const auto &key: mAssets | std::views::keys) {
+            if (pFilter->IsValid(key)) {
                 pDst.push_back(key);
             }
         }
@@ -185,9 +184,9 @@ namespace msml::core::resource {
 
     size_t CustomDatabase::GetKeyListSortedByPosition(
         eastl::vector<EA::ResourceMan::Key, EASTLDummyAllocatorType> &pDst,
-        EA::ResourceMan::IKeyFilter *filter) {
-        for (const auto &key: assets | std::views::keys) {
-            if (filter->IsValid(key)) {
+        EA::ResourceMan::IKeyFilter *pFilter) {
+        for (const auto &key: mAssets | std::views::keys) {
+            if (pFilter->IsValid(key)) {
                 pDst.push_back(key);
             }
         }
@@ -197,14 +196,14 @@ namespace msml::core::resource {
 
     void CustomDatabase::GetRecordInfoList(
         eastl::vector<eastl::pair<EA::ResourceMan::Key, EA::ResourceMan::RecordInfo>, EASTLDummyAllocatorType> *
-        output_list,
-        const eastl::vector<EA::ResourceMan::Key, EASTLDummyAllocatorType> *in_keys) {
+        pOutputList,
+        const eastl::vector<EA::ResourceMan::Key, EASTLDummyAllocatorType> *pInKeys) {
     }
 
     void CustomDatabase::GetRecordInfoListSortedByPosition(
         eastl::vector<eastl::pair<EA::ResourceMan::Key, EA::ResourceMan::RecordInfo>, EASTLDummyAllocatorType> *
-        output_list,
-        const eastl::vector<EA::ResourceMan::Key, EASTLDummyAllocatorType> *in_keys) {
+        pOutputList,
+        const eastl::vector<EA::ResourceMan::Key, EASTLDummyAllocatorType> *pInKeys) {
         // leaving this unimplemented for now
         // for (auto in_key : *in_keys) {
         //     for (const auto &asset: assets) {
@@ -224,7 +223,9 @@ namespace msml::core::resource {
 
 
     bool CustomDatabase::Attach(bool a, EA::ResourceMan::Manager::Manager *pResourceMan, bool b) {
-        if (pResourceMan == nullptr) return false;
+        if (pResourceMan == nullptr) {
+            return false;
+        }
 
         // just calls EA::ResourceMan::Manager::SetTypename to update the manager on which typenames we use.
         // and "attaches" itself to this instance (Sets this->manager to pResourceMan)
@@ -270,47 +271,20 @@ namespace msml::core::resource {
         EA::ResourceMan::Manager::SetTypename(pResourceMan, 0xfd72d418, L"ttf");
         EA::ResourceMan::Manager::SetTypename(pResourceMan, 0x35ebb959, L"ttc");
 
-        this->manager = pResourceMan;
+        this->mManager = pResourceMan;
 
         return true;
     }
 
-    void CustomDatabase::AddAsset(assets::Asset *pAsset) {
-        if (pAsset->type == assets::BUFFER) {
-            MSML_LOG_INFO("Registering %s: <buffer>", IdResolver::ToFilename(pAsset->key).c_str());
-        } else if (pAsset->type == assets::PATH) {
-            MSML_LOG_INFO("Registering %s: \"%s\"", IdResolver::ToFilename(pAsset->key).c_str(),
-                          pAsset->path.filename().string().c_str());
-        } else if (pAsset->type == assets::REDIRECT) {
-            MSML_LOG_INFO("Registering %s: -> %s", IdResolver::ToFilename(pAsset->key).c_str(),
-                          IdResolver::ToFilename(pAsset->key_redirect).c_str());
+    void CustomDatabase::AddAsset(Asset *pAsset) {
+        if (pAsset->mType == AssetType::kBuffer) {
+            MSML_LOG_DEBUG("Registering %s: <buffer>", IdResolver::ToFilename(pAsset->mKey).c_str());
+        } else if (pAsset->mType == AssetType::kPath) {
+            MSML_LOG_DEBUG("Registering %s: \"%s\"", IdResolver::ToFilename(pAsset->mKey).c_str(), pAsset->mPath.filename().string().c_str());
+        } else if (pAsset->mType == AssetType::kRedirect) {
+            MSML_LOG_DEBUG("Registering %s: -> %s", IdResolver::ToFilename(pAsset->mKey).c_str(), IdResolver::ToFilename(pAsset->mKeyRedirect).c_str());
         }
-        assets[pAsset->key] = pAsset;
-    }
-
-    void CustomDatabase::GetKeys(std::vector<EA::ResourceMan::Key> &keys) {
-        keys.clear();
-
-        for (const auto &
-             key: assets | std::views::keys) {
-            if (std::ranges::find(keys, key) == keys.end()) {
-                keys.push_back(key);
-            }
-        }
-
-        for (const auto &
-             key: Assets::GetInstance().ddf_paths | std::views::keys) {
-            if (std::ranges::find(keys, key) == keys.end()) {
-                keys.push_back(key);
-            }
-        }
-
-        for (const auto &
-             key: Assets::GetInstance().ddf_paths | std::views::keys) {
-            if (std::ranges::find(keys, key) == keys.end()) {
-                keys.push_back(key);
-            }
-        }
+        mAssets[pAsset->mKey] = pAsset;
     }
 
 #pragma region Unused
@@ -333,7 +307,7 @@ namespace msml::core::resource {
     // unused
     EA::IO::AccessFlags CustomDatabase::GetAccessFlags() {
         MSML_LOG_ERROR("UNUSED: CustomDatabase::GetAccessFlags");
-        return EA::IO::AccessFlags::Read;
+        return EA::IO::AccessFlags::kRead;
     }
 
     // unused
@@ -353,8 +327,8 @@ namespace msml::core::resource {
     }
 
     // unused
-    bool CustomDatabase::OpenRecord1(const EA::ResourceMan::Key &key, EA::ResourceMan::IRecord **pDstRecord,
-                                     EA::IO::AccessFlags accessFlags, EA::IO::CD cd, int,
+    bool CustomDatabase::OpenRecord1(const EA::ResourceMan::Key &key, EA::ResourceMan::IRecord **ppDstRecord,
+                                     EA::IO::AccessFlags accessFlags, EA::IO::CD creationDisposition, int,
                                      EA::ResourceMan::RecordInfo *) {
         MSML_LOG_ERROR("UNUSED: CustomDatabase::OpenRecordUnused");
         return false;

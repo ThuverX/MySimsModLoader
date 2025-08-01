@@ -106,6 +106,8 @@ set(SOURCES
         src/core/util/StreamUtil.h
         src/tweakers/Clothing/SkintoneVariantGenerator.cpp
         src/tweakers/Clothing/SkintoneVariantGenerator.h
+        src/EA/IO/File.cpp
+        src/EA/IO/File.h
         src/core/debug/DebugUI.cpp
         src/core/debug/DebugUI.h
         src/core/debug/ImGuiHook.cpp
@@ -167,13 +169,11 @@ target_link_libraries(MySimsModLoader PRIVATE
 )
 
 set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "dsound")
+target_compile_options(MySimsModLoader PRIVATE /FI${CMAKE_SOURCE_DIR}/src/Config.h)
 
 if (CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
-    target_compile_definitions(MySimsModLoader PRIVATE VERSION_COZY_BUNDLE)
     set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "WSOCK32")
-else ()
-    target_compile_definitions(MySimsModLoader PRIVATE VERSION_TACO_BELL)
-endif()
+endif ()
 
 if (BUILD_TESTS)
     # For Windows: Prevent overriding the parent project's compiler/linker settings

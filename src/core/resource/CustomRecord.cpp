@@ -4,25 +4,25 @@
 
 #include "CustomRecord.h"
 
-namespace msml::core::resource {
+namespace Msml::Core::Resource  {
     CustomRecord::CustomRecord(const EA::ResourceMan::Key key, EA::IO::IStream *stream,
-                               EA::ResourceMan::IDatabase *database): key(key), stream(stream), database(database) {
+                               EA::ResourceMan::IDatabase *database): mKey(key), mStream(stream), mDatabase(database) {
     }
 
     EA::ResourceMan::Key &CustomRecord::GetKey() {
-        return key;
+        return mKey;
     }
 
     void CustomRecord::SetKey(const EA::ResourceMan::Key &key) {
-        this->key = key;
+        this->mKey = key;
     }
 
     EA::IO::IStream *CustomRecord::GetStream() {
-        return stream;
+        return mStream;
     }
 
     EA::ResourceMan::IDatabase *CustomRecord::GetDatabase() {
-        return database;
+        return mDatabase;
     }
 
     void CustomRecord::Close() {
@@ -32,6 +32,6 @@ namespace msml::core::resource {
     }
 
     void CustomRecord::SetStream(EA::IO::IStream *stream) {
-        this->stream = stream;
+        this->mStream = stream;
     }
 }
