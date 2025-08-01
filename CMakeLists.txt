@@ -55,7 +55,6 @@ set(SOURCES
         src/include/hash_sha256.h
         src/core/resource/IdResolver.cpp
         src/core/resource/IdResolver.h
-        src/core/hooks/Config.h
         src/formats/materials/Material.h
         src/formats/materials/Material.cpp
         src/formats/xml/CharacterDef.h
@@ -112,9 +111,9 @@ set(SOURCES
         src/core/debug/DebugUI.h
         src/core/debug/ImGuiHook.cpp
         src/core/debug/ImGuiHook.h
-
-        libs/imgui_hex_editor/imgui_hex.h
-        libs/imgui_hex_editor/imgui_hex.cpp
+#
+#        libs/imgui_hex_editor/imgui_hex.h
+#        libs/imgui_hex_editor/imgui_hex.cpp
 )
 
 if (CMAKE_GENERATOR_PLATFORM STREQUAL "x64")

@@ -22,8 +22,8 @@ class ClothingTweaker final : public Tweaker {
 public:
     std::vector<OutfitEntry*> outfitsToAdd;
 
-    bool OnLoad(msml::core::resource::CustomRecord &asset) override;
-    bool OnRegister(msml::core::assets::Asset &asset) override;
+    bool OnLoad(Msml::Core::Resource::CustomRecord &asset) override;
+    bool OnRegister(Msml::Core::Asset &asset) override;
 
 private:
     static void CreateEyesMaterials(const std::string& name, const std::string &base_texture);

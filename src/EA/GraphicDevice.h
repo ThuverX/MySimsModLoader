@@ -1,11 +1,12 @@
 ﻿#pragma once
 #include "Graphics/Interfaces/IGraphics.h"
 
-typedef char undefined;
+using undefined = char;
 
 #pragma pack(push, 1)
 
-struct Surface {};
+struct Surface {
+};
 
 struct GraphicDevice {
     undefined _pad0[328];

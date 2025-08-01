@@ -361,6 +361,31 @@ namespace EA {
     }
 }
 
+CREATE_NORMAL_CALLABLE_SIGNATURE(SetCursorLock, UI, void, "", "40 53 48 83 EC 20 0F B6 D9 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 88 1D FA 69 6C 00 48 83 C4 20 5B", 0, bool state)
+
+#pragma region TheForge
+
+struct Queue;
+struct QueuePresentDesc;
+struct GraphicDevice;
+
+namespace TSS::Graphics {
+
+    CREATE_NORMAL_CALLABLE_SIGNATURE(GetDevice, Graphics, GraphicDevice*, "",
+                      "48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? B8 1C 02 00 00 48 83 C4 28 C3",
+                      0);
+}
+
+
+CREATE_NORMAL_CALLABLE_SIGNATURE(d3d12_queuePresent, TheForge, void, "",
+                                             "40 53 48 83 EC 20 48 8B 1A 48 85 DB 0F 84 B3 00 00 00 8B 53 10 44 8B C2",
+                                             0, Queue* pQueue, const QueuePresentDesc* pDesc);
+CREATE_NORMAL_CALLABLE_SIGNATURE(WriteLog, TheForge, void, "",
+                                             "4C 89 4C 24 20 48 83 EC 38 48 8D 44 24 60 48 89 44 24 20",
+                                             0, uint32_t level, const char* filename, int line_number, const char* message, ...);
+#pragma endregion TheForge
+
+
 #pragma region lua functions
 
 // These are correct, but very hard to find...

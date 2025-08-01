@@ -29,16 +29,16 @@ struct xml_string_writer: pugi::xml_writer
 };
 
 EA::ResourceMan::Key MasterInventoryKey = {
-    .instance = msml::hash::fnv::FromString64("CAS.inventory"),
-    .type = msml::core::assets::DDFFileType::XML,
-    .group = 0,
+    .mInstance = Msml::Hash::FNV::FromString64("CAS.inventory"),
+    .mType = static_cast<uint32_t>(Msml::Core::FileType::XML),
+    .mGroup = 0,
 };
 
-bool ClothingTweaker::OnLoad(msml::core::resource::CustomRecord &asset) {
-    if (asset.key == MasterInventoryKey) {
+bool ClothingTweaker::OnLoad(Msml::Core::Resource::CustomRecord &asset) {
+    if (asset.mKey == MasterInventoryKey) {
         MSML_LOG_INFO("Patching Master Inventory");
 
-        const std::string xml_string = msml::core::util::StreamUtil::ReadString(asset.GetStream());
+        const std::string xml_string = Msml::Core::Util::StreamUtil::ReadString(asset.GetStream());
 
         pugi::xml_document doc;
 
@@ -89,47 +89,47 @@ void ClothingTweaker::CreateBodyMaterial(const uint32_t group, const std::string
     const std::string file_name_with_skin = name + "_s" + std::to_string(skin_id);
 
     const EA::ResourceMan::Key material_key = {
-        .instance = msml::hash::fnv::FromString32(file_name_with_skin.c_str()),
-        .type = msml::core::assets::DDFFileType::MATERIAL,
-        .group = group,
+        .mInstance = Msml::Hash::FNV::FromString32(file_name_with_skin.c_str()),
+        .mType = static_cast<uint32_t>(Msml::Core::FileType::MATERIAL),
+        .mGroup = group,
     };
 
-    const auto material_asset = new msml::core::assets::Asset(material_key, msml::core::assets::BUFFER);
+    const auto material_asset = new Msml::Core::Asset(material_key, Msml::Core::AssetType::kBuffer);
     const auto material_stream = new EA::IO::MemoryStream();
     material_stream->AddRef();
 
     auto material = MaterialBuilder()
-        .withShader(ShaderType::lambert)
-        .withKey(material_key)
-        .withColorParameter(0xDAA9532D, 0, 0, 0, 0)
-        .withColorParameter(0x3BD441A0,0,0,0,0)
-        .withColorParameter(0x988403F9,0,0,0,0)
-        .withColorParameter(0x5D22FD3,1,1,1,1)
-        .withValueParameter(0xF46B90AE, 0)
-        .withColorParameter(0x29BCDD1F,1,1,1,1)
-        .withColorParameter(0x73C9923E, 1,1,1,1)
-        .withColorParameter(0x4A5DAA3,0,0,0,0)
-        .withValueParameter(0x76F88689, 1)
-        .withColorParameter(0x7FEE2D1A,1,1,1,1)
-        .withKeyParameter(0x6CC0FD85, {
-            .instance = msml::hash::fnv::FromString32(texture.c_str()),
-            .type = msml::core::assets::DDFFileType::DDS,
-            .group = 0,
-        }).build();
+        .WithShader(ShaderType::lambert)
+        .WithKey(material_key)
+        .WithColorParameter(0xDAA9532D, 0, 0, 0, 0)
+        .WithColorParameter(0x3BD441A0,0,0,0,0)
+        .WithColorParameter(0x988403F9,0,0,0,0)
+        .WithColorParameter(0x5D22FD3,1,1,1,1)
+        .WithValueParameter(0xF46B90AE, 0)
+        .WithColorParameter(0x29BCDD1F,1,1,1,1)
+        .WithColorParameter(0x73C9923E, 1,1,1,1)
+        .WithColorParameter(0x4A5DAA3,0,0,0,0)
+        .WithValueParameter(0x76F88689, 1)
+        .WithColorParameter(0x7FEE2D1A,1,1,1,1)
+        .WithKeyParameter(0x6CC0FD85, {
+            .mInstance = Msml::Hash::FNV::FromString32(texture.c_str()),
+            .mType = static_cast<uint32_t>(Msml::Core::FileType::DDS),
+            .mGroup = 0,
+        }).Build();
 
     material.Write(material_stream);
-    material_asset->buffer = msml::core::util::StreamUtil::ReadBytes(material_stream);
+    material_asset->mBuffer = Msml::Core::Util::StreamUtil::ReadBytes(material_stream);
     material_stream->Close();
     material_stream->Release();
 
     const EA::ResourceMan::Key setKey {
-        .instance = group,
-        .type = msml::core::assets::DDFFileType::MATERIALSET,
-        .group = msml::hash::fnv::FromString32(type.c_str()),
+        .mInstance = group,
+        .mType = static_cast<uint32_t>(Msml::Core::FileType::MATERIALSET),
+        .mGroup = Msml::Hash::FNV::FromString32(type.c_str()),
     };
 
     material_tweaker.AddMaterial(setKey, material_key);
-    msml::core::Assets::GetInstance().RegisterAsset(material_asset);
+    Msml::Core::Assets::GetInstance().RegisterAsset(material_asset);
 }
 
 /*
@@ -147,79 +147,79 @@ void ClothingTweaker::CreateBodyMaterial(const uint32_t group, const std::string
 
 void ClothingTweaker::CreateEyesMaterials(const std::string& name, const std::string &base_texture) {
     const EA::ResourceMan::Key material_set_key = {
-        .instance = msml::hash::fnv::FromString32(name.c_str()),
-        .type = msml::core::assets::DDFFileType::MATERIALSET,
-        .group = msml::hash::fnv::FromString32("Eyes")
+        .mInstance = Msml::Hash::FNV::FromString32(name.c_str()),
+        .mType = static_cast<uint32_t>(Msml::Core::FileType::MATERIALSET),
+        .mGroup = Msml::Hash::FNV::FromString32("Eyes")
     };
 
     auto material_set = MaterialSetBuilder()
-        .withKey(material_set_key)
-        .withMTSTName(msml::hash::fnv::FromString32(name.c_str()))
-        .withMTSTDefaultIndex();
+        .WithKey(material_set_key)
+        .WithMTSTName(Msml::Hash::FNV::FromString32(name.c_str()))
+        .WithMTSTDefaultIndex();
 
     for (int i = 0; i <= 8; i++) {
         std::string key_name = name + std::to_string(i);
         std::string texture_name = base_texture + std::to_string(i);
 
         const EA::ResourceMan::Key material_key = {
-            .instance = msml::hash::fnv::FromString32(key_name.c_str()),
-            .type = msml::core::assets::DDFFileType::MATERIAL,
-            .group = msml::hash::fnv::FromString32(name.c_str())
+            .mInstance = Msml::Hash::FNV::FromString32(key_name.c_str()),
+            .mType = static_cast<uint32_t>(Msml::Core::FileType::MATERIAL),
+            .mGroup = Msml::Hash::FNV::FromString32(name.c_str())
         };
 
-        const auto material_asset = new msml::core::assets::Asset(material_key, msml::core::assets::BUFFER);
+        const auto material_asset = new Msml::Core::Asset(material_key, Msml::Core::AssetType::kBuffer);
         const auto material_stream = new EA::IO::MemoryStream();
         material_stream->AddRef();
 
         const EA::ResourceMan::Key texture_key = {
-            .instance = msml::hash::fnv::FromString32(texture_name.c_str()),
-            .type = msml::core::assets::DDFFileType::DDS,
-            .group = 0,
+            .mInstance = Msml::Hash::FNV::FromString32(texture_name.c_str()),
+            .mType = static_cast<uint32_t>(Msml::Core::FileType::DDS),
+            .mGroup = 0,
         };
 
         auto material = MaterialBuilder()
-            .withShader(ShaderType::lambert)
-            .withKey(material_key)
-            .withColorParameter(0xDAA9532D, 0, 0, 0, 0)
-            .withColorParameter(0x3BD441A0,0,0,0,0)
-            .withColorParameter(0x5D22FD3,1,1,1,1)
-            .withValueParameter(0xF46B90AE, 0)
-            .withColorParameter(0x29BCDD1F,1,1,1,1)
-            .withKeyParameter(0xC3FAAC4F, texture_key)
-            .withColorParameter(0x73C9923E, 1,1,1,1)
-            .withColorParameter(0x4A5DAA3,0,0,0,0)
-            .withValueParameter(0x76F88689, 1)
-            .withColorParameter(0x7FEE2D1A,1,1,1,1)
-            .withKeyParameter(0x6CC0FD85, texture_key).build();
+            .WithShader(ShaderType::lambert)
+            .WithKey(material_key)
+            .WithColorParameter(0xDAA9532D, 0, 0, 0, 0)
+            .WithColorParameter(0x3BD441A0,0,0,0,0)
+            .WithColorParameter(0x5D22FD3,1,1,1,1)
+            .WithValueParameter(0xF46B90AE, 0)
+            .WithColorParameter(0x29BCDD1F,1,1,1,1)
+            .WithKeyParameter(0xC3FAAC4F, texture_key)
+            .WithColorParameter(0x73C9923E, 1,1,1,1)
+            .WithColorParameter(0x4A5DAA3,0,0,0,0)
+            .WithValueParameter(0x76F88689, 1)
+            .WithColorParameter(0x7FEE2D1A,1,1,1,1)
+            .WithKeyParameter(0x6CC0FD85, texture_key).Build();
 
-        material_set.withMaterial(material);
+        material_set.WithMaterial(material);
 
         material.Write(material_stream);
-        material_asset->buffer = msml::core::util::StreamUtil::ReadBytes(material_stream);
+        material_asset->mBuffer = Msml::Core::Util::StreamUtil::ReadBytes(material_stream);
         material_stream->Close();
         material_stream->Release();
 
-        msml::core::Assets::GetInstance().RegisterAsset(material_asset);
+        Msml::Core::Assets::GetInstance().RegisterAsset(material_asset);
     }
 
-    const auto material_set_asset = new msml::core::assets::Asset(material_set_key, msml::core::assets::BUFFER);
+    const auto material_set_asset = new Msml::Core::Asset(material_set_key, Msml::Core::AssetType::kBuffer);
     const auto material_set_stream = new EA::IO::MemoryStream();
     material_set_stream->AddRef();
 
-    material_set.build().Write(material_set_stream);
-    material_set_asset->buffer = msml::core::util::StreamUtil::ReadBytes(material_set_stream);
+    material_set.Build().Write(material_set_stream);
+    material_set_asset->mBuffer = Msml::Core::Util::StreamUtil::ReadBytes(material_set_stream);
     material_set_stream->Close();
     material_set_stream->Release();
 
-    msml::core::Assets::GetInstance().RegisterAsset(material_set_asset);
+    Msml::Core::Assets::GetInstance().RegisterAsset(material_set_asset);
 }
 
-bool ClothingTweaker::OnRegister(msml::core::assets::Asset &asset) {
-    if (asset.path.string().ends_with(".clothing.xml")) {
-        MSML_LOG_INFO("Registering clothing: %s", asset.path.string().c_str());
+bool ClothingTweaker::OnRegister(Msml::Core::Asset &asset) {
+    if (asset.mPath.string().ends_with(".clothing.xml")) {
+        MSML_LOG_INFO("Registering clothing: %s", asset.mPath.string().c_str());
         pugi::xml_document doc;
 
-        if (const pugi::xml_parse_result result = doc.load_file(asset.path.c_str()); !result)
+        if (const pugi::xml_parse_result result = doc.load_file(asset.mPath.c_str()); !result)
             return false;
 
         const pugi::xml_node outfitNode = doc.child("Clothing");
@@ -250,7 +250,7 @@ bool ClothingTweaker::OnRegister(msml::core::assets::Asset &asset) {
             std::string file_name = model + design_mode;
             std::string mask_name = file_name + "_mask";
 
-            uint32_t model_instance = msml::hash::fnv::FromString32(model.c_str());
+            uint32_t model_instance = Msml::Hash::FNV::FromString32(model.c_str());
 
 #ifdef VERSION_TACO_BELL
             MSML_LOG_ERROR("Clothing tweaking is not yet supported for your game version");

@@ -16,6 +16,14 @@ public:
 
     MaterialSetBuilder &WithMaterial(EA::ResourceMan::Key kKey);
 
+    MaterialSetBuilder &WithKey(EA::ResourceMan::Key kKey);
+
+    MaterialSetBuilder &WithMTSTName(uint32_t kName);
+
+    MaterialSetBuilder &WithMTSTDefaultIndex();
+
+    MaterialSetBuilder &WithMTSTIndex(uint32_t index);
+
     MaterialSet Build();
 };
 
