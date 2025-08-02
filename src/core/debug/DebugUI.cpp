@@ -4,12 +4,10 @@
 
 #include "DebugUI.h"
 
-#include <ranges>
-
-#include "ImGuiHook.h"
-
-#include "../resource/IdResolver.h"
+#include "imgui.h"
+#include "../../EA/ResourceMan/KeyFilter.h"
 #include "../util/StreamUtil.h"
+#include "../signatures/sigdef.h"
 
 
 namespace Msml::Core {
@@ -24,7 +22,21 @@ namespace Msml::Core {
     }
 
     void DebugUI::Draw() {
+
+        if (GetAsyncKeyState(VK_F10) & 1) mIsVisible = !mIsVisible;
+
+        SetCursorLock(mIsVisible);
+        ImGui::GetIO().MouseDrawCursor = mIsVisible;
+
+        if (!mIsVisible) return;
+
+
         ImGui::ShowDemoWindow();
+
+        for (const auto & mWindow : mWindows) {
+            mWindow();
+        }
+
         // DrawAssets();
         // // DrawDatabase();
         //
@@ -171,8 +183,5 @@ namespace Msml::Core {
     //                         buffer.data());
     // }
 
-    void DebugUI::Install() {
-        // WriteLogHook.Install(&writeLogHooked);
-        d3d12_queuePresentHook.Install(&hkPresent);
-    }
+
 }

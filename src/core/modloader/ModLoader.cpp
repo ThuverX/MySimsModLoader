@@ -9,8 +9,8 @@
 #include "Mods.h"
 #include "../../Version.h"
 #include "../assets/Assets.h"
-#ifndef NDEBUG
-#include "../debug/DebugUI.h"
+#ifdef BUILD_DEBUG
+#include "../debug/ImGuiHook.h"
 #endif
 #include "../hooks/Hooks.h"
 
@@ -68,9 +68,9 @@ namespace Msml::Core {
         Resource::IdResolver::GetInstance().Load("./hashes.bin");
         Mods::GetInstance().Find();
         Assets::Install();
-#ifndef NDEBUG
+#ifdef BUILD_DEBUG
         if (debugEnabled) {
-            DebugUI::Install();
+            ImGuiHook::Install();
         }
 #endif
         Assets::GetInstance().CreateDatabase();

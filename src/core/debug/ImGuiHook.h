@@ -5,8 +5,12 @@
 #ifndef IMGUIHOOK_H
 #define IMGUIHOOK_H
 
+namespace Msml::Core {
+    class ImGuiHook {
+    public:
+
+        static void Install();
+    };
+}
+
 #endif //IMGUIHOOK_H
-
-#include "../signatures/sigdef.h"
-
-void hkPresent(Queue* pQueue, const QueuePresentDesc* pDesc);

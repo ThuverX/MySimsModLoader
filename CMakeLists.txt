@@ -111,7 +111,8 @@ set(SOURCES
         src/core/debug/DebugUI.h
         src/core/debug/ImGuiHook.cpp
         src/core/debug/ImGuiHook.h
-#
+        src/core/debug/windows/AssetWindow.h
+        #
 #        libs/imgui_hex_editor/imgui_hex.h
 #        libs/imgui_hex_editor/imgui_hex.cpp
 )

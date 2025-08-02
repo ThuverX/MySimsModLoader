@@ -5,30 +5,25 @@
 #ifndef DEBUGUI_H
 #define DEBUGUI_H
 
-#include "imgui_hex.h"
-#include "../assets/Assets.h"
+#include <vector>
+#include "windows/AssetWindow.h"
+
+using window_func = void (*)();
 
 namespace Msml::Core {
     class DebugUI {
-        // ImGuiHexEditorState hex_state = {};
-        // std::vector<uint8_t> hex_buffer = {};
-        // EA::ResourceMan::Key active_key = {};
-        // bool use_hex_buffer = false;
-        // Assets* assets = nullptr;
-        // std::vector<EA::ResourceMan::Key> keys{};
-        // std::vector<EA::ResourceMan::Key> filtered_keys{};
-        // char search_string[256] = {};
-        //
-        // void DrawAssets();
-        // void DrawDatabase();
+        std::vector<window_func> mWindows = {
+            AssetWindow,
+        };
 
     public:
-        static DebugUI& GetInstance();
+        static DebugUI &GetInstance();
+
+        bool mIsVisible = false;
 
         void Init();
-        void Draw();
 
-        static void Install();
+        void Draw();
     };
 }
 

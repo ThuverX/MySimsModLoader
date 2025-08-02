@@ -368,6 +368,13 @@ CREATE_NORMAL_CALLABLE_SIGNATURE(SetCursorLock, UI, void, "", "40 53 48 83 EC 20
 struct Queue;
 struct QueuePresentDesc;
 struct GraphicDevice;
+struct Renderer;
+struct QueueDesc;
+struct CmdDesc;
+struct Cmd;
+struct CmdPoolDesc;
+struct CmdPool;
+struct BindRenderTargetsDesc;
 
 namespace TSS::Graphics {
 
@@ -376,10 +383,36 @@ namespace TSS::Graphics {
                       0);
 }
 
-
-CREATE_NORMAL_CALLABLE_SIGNATURE(d3d12_queuePresent, TheForge, void, "",
+CREATE_NORMAL_CALLABLE_SIGNATURE(addCmd, TheForge, void, "",
+                                             "48 89 5C 24 08 48 89 74 24 10 48 89 7C 24 18 41 56 48 83 EC 40 48 8B F2 48 8B F9 BA 40 00 00 00",
+                                             0, Renderer* pRenderer, const CmdDesc* pDesc, Cmd** ppCmd);
+CREATE_NORMAL_CALLABLE_SIGNATURE(addCmdPool, TheForge, void, "",
+                                             "48 89 5C 24 08 48 89 74 24 10 48 89 7C 24 18 41 56 48 83 EC 30 48 8B F2 48 8B D9 BA 10 00 00 00",
+                                             0, Renderer* pRenderer, const CmdPoolDesc* pDesc, CmdPool** ppCmdPool);
+CREATE_NORMAL_CALLABLE_SIGNATURE(resetCmdPool, TheForge, void, "",
+                                             "48 83 EC 38 48 8B 0A 48 8B 01 FF 50 40",
+                                             0, Renderer* pRenderer, CmdPool* pCmdPool);
+CREATE_NORMAL_CALLABLE_SIGNATURE(beginCmd, TheForge, void, "",
+                                             "40 53 48 83 EC 40 48 8B D9 45 33 C0 48 8B 09 48 8B 53 60",
+                                             0, Cmd* pCmd);
+CREATE_NORMAL_CALLABLE_SIGNATURE(cmdBindRenderTargets, TheForge, void, "",
+                                             "48 85 D2 0F 84 F2 02 00 00 53 41 56",
+                                             0, Cmd* pCmd, const BindRenderTargetsDesc* pDesc);
+CREATE_NORMAL_CALLABLE_SIGNATURE(cmdSetViewport, TheForge, void, "",
+                                             "48 83 EC 48 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 44 24 38 F3 0F 10 44 24 70 4C 8D 44 24 20 48 8B 09",
+                                             0, Cmd* pCmd, float x, float y, float width, float height, float minDepth, float maxDepth);
+CREATE_NORMAL_CALLABLE_SIGNATURE(cmdSetScissor, TheForge, void, "",
+                                             "48 83 EC 48 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 44 24 30 4C 8B D1 89 54 24 20 8B 4C 24 70",
+                                             0, Cmd* pCmd, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+CREATE_NORMAL_CALLABLE_SIGNATURE(endCmd, TheForge, void, "",
+                                             "48 83 EC 38 48 8B 09 48 8B 01 FF 50 48 85 C0",
+                                             0, Cmd* pCmd);
+CREATE_NORMAL_CALLABLE_SIGNATURE(queuePresent, TheForge, void, "",
                                              "40 53 48 83 EC 20 48 8B 1A 48 85 DB 0F 84 B3 00 00 00 8B 53 10 44 8B C2",
                                              0, Queue* pQueue, const QueuePresentDesc* pDesc);
+CREATE_NORMAL_CALLABLE_SIGNATURE(addQueue, TheForge, void, "",
+                                             "40 53 55 56 57 41 56 48 81 EC F0 00 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4",
+                                             0, Renderer* pRenderer, QueueDesc* pDesc, Queue** ppQueue);
 CREATE_NORMAL_CALLABLE_SIGNATURE(WriteLog, TheForge, void, "",
                                              "4C 89 4C 24 20 48 83 EC 38 48 8D 44 24 60 48 89 44 24 20",
                                              0, uint32_t level, const char* filename, int line_number, const char* message, ...);
