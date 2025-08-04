@@ -115,6 +115,7 @@ namespace Msml::Core {
         DebugUI::GetInstance().Draw();
 
         ImGui::Render();
+        ImGui::UpdatePlatformWindows();
 
         resetCmdPool(pRenderer, pCmdPool);
         beginCmd(pCmd);

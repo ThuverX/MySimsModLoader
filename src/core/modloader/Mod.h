@@ -24,6 +24,7 @@ namespace Msml::Core {
 
         std::vector<std::string> mPostHooks;
         std::vector<std::string> mPreHooks;
+        std::vector<std::string> mAllHooks;
 
         static Mod *FromXML(const std::filesystem::path &path);
     };

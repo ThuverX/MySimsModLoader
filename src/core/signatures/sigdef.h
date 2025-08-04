@@ -421,7 +421,6 @@ CREATE_NORMAL_CALLABLE_SIGNATURE(WriteLog, TheForge, void, "",
 
 #pragma region lua functions
 
-// These are correct, but very hard to find...
 CREATE_NORMAL_CALLABLE_SIGNATURE(lua_pushvalue, lua, void,
                                  "8B 44 24 08 56 8B 74 24 08 50 56 ?? ?? ?? ?? ?? 8B 4E 08 8B 10 89 11 8B 40 04 83",
                                  "48 89 5C 24 08 57 48 83 EC 20 48 8B F9 8B DA 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B D3 48 8B CF E8 ?? ?? ?? ?? 4C 8B 47 10 48 8B 5C 24 30 48 8B 10 49 89 10",
@@ -492,10 +491,32 @@ CREATE_NORMAL_CALLABLE_SIGNATURE(luaB_loadstring, lua, int,
                                  "51 56 8B 74 24 0C 57 8D 44 24 08 50 6A 01 56 ?? ?? ?? ?? ?? 6A 00 8B F8 57 6A 02 56",
                                  "48 89 5C 24 08 57 48 83 EC 20 48 8B F9 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 4C 8D 44 24 38 BA 01 00 00 00 48 8B CF",
                                  0, lua_State *L);
-CREATE_NORMAL_CALLABLE_SIGNATURE(luaL_loadbuffer, void, int,
+CREATE_NORMAL_CALLABLE_SIGNATURE(luaL_loadbuffer, lua, int,
                                  "83 EC 08 8B 44 24 10 8B 54 24 18 8B 4C 24 14 52 89 44 24 04 8D 44 24 04 50 89 4C 24 0C 8B 4C 24 14",
                                  "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57 48 83 EC 30 48 8B E9 49 8B F1 48 8D 0D ?? ?? ?? ?? 49 8B F8 48 8B DA E8 ?? ?? ?? ??",
                                  0, lua_State * L, const char * buff, size_t sz, const char * name);
+// TODO: x86
+CREATE_NORMAL_CALLABLE_SIGNATURE(lua_type, lua, int,
+                                 "",
+                                 "48 89 5C 24 08 57 48 83 EC 20 48 8B F9 8B DA 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B D3 48 8B CF E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 3B C1 75 10 B8 FF FF FF FF 48 8B 5C 24 30",
+                                 0, lua_State * L, int index);
+CREATE_NORMAL_CALLABLE_SIGNATURE(lua_toboolean, lua, bool,
+                                 "",
+                                 "48 89 5C 24 08 57 48 83 EC 20 48 8B F9 8B DA 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B D3 48 8B CF E8 ?? ?? ?? ?? 8B 48 08 85 C9 74 1A 83 F9 01",
+                                 0, lua_State * L, int index);
+CREATE_NORMAL_CALLABLE_SIGNATURE(lua_tonumber, lua, double,
+                                 "",
+                                 "48 89 5C 24 08 57 48 83 EC 30 48 8B F9 8B DA 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B D3 48 8B CF E8 ?? ?? ?? ?? 83 78 08 03 74 20 48 8D 54 24 20 48 8B C8",
+                                 0, lua_State * L, int index);
+CREATE_NORMAL_CALLABLE_SIGNATURE(lua_pushnil, lua, void,
+                                 "",
+                                 "40 53 48 83 EC 20 48 8B D9 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 43 10 C7 40 08 00 00 00 00 48 83 43 10 10 48 83 C4 20",
+                                 0, lua_State * L);
+CREATE_NORMAL_CALLABLE_SIGNATURE(lua_next, lua, int,
+                                 "",
+                                 "48 89 5C 24 08 57 48 83 EC 20 48 8B F9 8B DA 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B D3 48 8B CF E8 ?? ?? ?? ?? 4C 8B 47 10 48 8B CF 49 83 E8 10 48 8B 10",
+                                 0, lua_State * L, int index);
+
 
 #pragma endregion
 

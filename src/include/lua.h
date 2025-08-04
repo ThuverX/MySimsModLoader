@@ -15,8 +15,8 @@ typedef int (*lua_CFunction)(lua_State *L);
 typedef void * (*lua_Alloc)(void *ud, void *ptr, size_t osize, size_t nsize);
 
 typedef struct luaL_Reg {
-	const char *name;
-	lua_CFunction func;
+    const char *name;
+    lua_CFunction func;
 } luaL_Reg;
 
 // From src/lua.h
@@ -84,5 +84,7 @@ typedef struct luaL_Reg {
 
 #define luaL_opt(L,f,n,d)       (lua_isnoneornil(L,(n)) ? (d) : f(L,(n)))
 #define luaL_typename(L,i)      lua_typename(L, lua_type(L,(i)))
+#define lua_absindex(L, i)         ((i) > 0 || (i) <= LUA_REGISTRYINDEX ? (i) : \
+    lua_gettop(L) + (i) + 1)
 
 #endif //LUA_H

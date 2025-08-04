@@ -8,6 +8,7 @@
 #include "Mod.h"
 
 #include "../assets/Asset.h"
+#include "../hash/FNV.h"
 #include "../hooks/LuaHook.h"
 #include "../system/Logger.h"
 
@@ -62,6 +63,8 @@ namespace Msml::Core {
                 std::string fullpath = absolute(path / hookPath).string();
 
                 kMod->mPostHooks.push_back(fullpath);
+                kMod->mAllHooks.push_back(fullpath);
+
                 hookCount++;
             }
 
@@ -70,6 +73,7 @@ namespace Msml::Core {
                 std::string fullpath = std::filesystem::absolute(std::filesystem::path(path) / std::filesystem::path(hookPath)).string();
 
                 kMod->mPreHooks.push_back(fullpath);
+                kMod->mAllHooks.push_back(fullpath);
                 hookCount++;
             }
         }

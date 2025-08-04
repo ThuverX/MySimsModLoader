@@ -47,7 +47,8 @@ namespace Msml::Core {
         EA::ResourceMan::DatabaseDirectoryFiles::DatabaseDirectoryFiles *thisPtr CATCH_EDX,
         const EA::ResourceMan::Key &key,
         EA::ResourceMan::IRecord **ppDstRecord,
-        EA::IO::AccessFlags accessFlags, EA::IO::CD creationDisposition, int _a, EA::ResourceMan::RecordInfo * pRecordInfo) {
+        EA::IO::AccessFlags accessFlags, EA::IO::CD creationDisposition, int _a,
+        EA::ResourceMan::RecordInfo *pRecordInfo) {
         return false;
     }
 
@@ -55,7 +56,8 @@ namespace Msml::Core {
         EA::ResourceMan::DatabasePackedFile::DatabasePackedFile *thisPtr CATCH_EDX,
         const EA::ResourceMan::Key &key,
         EA::ResourceMan::IRecord **ppDstRecord,
-        EA::IO::AccessFlags accessFlags, EA::IO::CD creationDisposition, int _a, EA::ResourceMan::RecordInfo *pRecordInfo) {
+        EA::IO::AccessFlags accessFlags, EA::IO::CD creationDisposition, int _a,
+        EA::ResourceMan::RecordInfo *pRecordInfo) {
         return false;
     }
 
@@ -130,7 +132,8 @@ namespace Msml::Core {
         const auto kKey = Asset::GetKey(pFilename);
 
         if (!bIsGameFile || kKey.mType == static_cast<uint32_t>(FileType::UNKNOWN)) {
-            return Revo::App::ReadXMLFromPathHook.Original(pXmlInstance, pFilename, document, pRootType, bIsGameFile, _e,
+            return Revo::App::ReadXMLFromPathHook.Original(pXmlInstance, pFilename, document, pRootType, bIsGameFile,
+                                                           _e,
                                                            pFolder);
         }
 
@@ -157,7 +160,7 @@ namespace Msml::Core {
     }
 
 #ifdef PLATFORM_WIN64
-    void *LoadBody(void * _a, char *dynamicSkinName, void * _c, EA::ResourceMan::IResource *materialResource,
+    void *LoadBody(void *_a, char *dynamicSkinName, void *_c, EA::ResourceMan::IResource *materialResource,
                    EA::ResourceMan::IResource *textureResource, EA::ResourceMan::IResource *maskResource) {
         auto *const kManager = EA::ResourceMan::Manager::GetManager();
 
@@ -251,7 +254,6 @@ namespace Msml::Core {
 
         if (mDatabase != nullptr) {
             mDatabase->AddAsset(pAsset);
-
         }
     }
 
@@ -259,8 +261,9 @@ namespace Msml::Core {
         if (GetInstance().mDatabase == nullptr) {
             return false;
         }
-        return GetInstance().mDatabase->OpenRecord2(key, ppRecord, EA::IO::AccessFlags::kRead, EA::IO::CD::kLoadAllFiles, 0,
-                                                   nullptr);
+        return GetInstance().mDatabase->OpenRecord2(key, ppRecord, EA::IO::AccessFlags::kRead,
+                                                    EA::IO::CD::kLoadAllFiles, 0,
+                                                    nullptr);
     }
 
     bool Assets::GetAsset(const std::string &name, EA::ResourceMan::IRecord **ppRecord) {
@@ -268,7 +271,7 @@ namespace Msml::Core {
             return false;
         }
         return GetInstance().mDatabase->OpenRecord2(Asset::GetKey(name), ppRecord, EA::IO::AccessFlags::kRead,
-                                                   EA::IO::CD::kLoadAllFiles, 0, nullptr);
+                                                    EA::IO::CD::kLoadAllFiles, 0, nullptr);
     }
 
     void Assets::CreateDatabase() {
@@ -294,5 +297,20 @@ namespace Msml::Core {
         }
 
         MSML_LOG_INFO("Database created");
+    }
+
+    void Assets::GetKeys(std::vector<EA::ResourceMan::Key> &keys) {
+        keys.clear();
+        for (const auto &key: mDDFPaths | std::views::keys) {
+            keys.emplace_back(key);
+        }
+
+        for (const auto &key: mDBPFItems | std::views::keys) {
+            keys.emplace_back(key);
+        }
+
+        for (const auto &key: mDatabase->mAssets | std::views::keys) {
+            keys.emplace_back(key);
+        }
     }
 }

@@ -14,6 +14,7 @@ namespace Msml::Core::Hooks {
         static lua_State* sGlobalState;
 
         static void Require(const std::string& kPath);
+        static bool RunString(const std::string& kCode);
         static void Install();
     };
 }

@@ -15,6 +15,7 @@
 #include "../../tweakers/Tweaker.h"
 #include "../assets/Assets.h"
 #include "../hash/FNV.h"
+#include "../hooks/LuaHook.h"
 #include "../modloader/ModLoader.h"
 
 
@@ -43,102 +44,41 @@ namespace Msml::Core::Resource {
 
     bool CustomDatabase::OpenRecord2(const EA::ResourceMan::Key &key, EA::ResourceMan::IRecord **pDstRecord,
                                      EA::IO::AccessFlags accessFlags, EA::IO::CD creationDisposition, int,
-                                     EA::ResourceMan::RecordInfo *recordInfo) {
-        bool result = false;
-        // TODO: this is a bit inefficient, so we should early exist based on custom, ddf or dbpf
-        if (Assets::GetInstance().mDDFPaths.contains(key)) {
+                                     EA::ResourceMan::RecordInfo *pRecordInfo) {
+        // The order should be Asset, DDF, DBPF
+
+        CustomRecord *record = nullptr;
+        EA::ResourceMan::RecordInfo recordInfo = {};
+
+        if (mAssets.contains(key)) {
+            auto *const kAsset = mAssets[key];
+            record = new CustomRecord(key, kAsset->GetStream(), this);
+
+            recordInfo.mCompressedSize = record->mStream->GetSize();
+            recordInfo.mMemorySize = record->mStream->GetSize();
+        } else if (Assets::GetInstance().mDDFPaths.contains(key)) {
             const auto kPath = Assets::GetInstance().mDDFPaths[key];
-            auto *const kRecord = new CustomRecord(key, new EA::IO::FileStream(kPath), this);
+            record = new CustomRecord(key, new EA::IO::FileStream(kPath), this);
 
-            if (recordInfo != nullptr) {
-                recordInfo->mFlags = 0;
-                recordInfo->mChunkOffset = 0;
-                recordInfo->mCompressedSize = kRecord->mStream->GetSize();
-                recordInfo->mMemorySize = kRecord->mStream->GetSize();
-            }
-
-            if (pDstRecord != nullptr) {
-                *pDstRecord = kRecord;
-
-                Tweaker::RegistryOnLoad(kRecord);
-            }
-
-            result = true;
+            recordInfo.mCompressedSize = record->mStream->GetSize();
+            recordInfo.mMemorySize = record->mStream->GetSize();
         } else if (Assets::GetInstance().mDBPFItems.contains(key)) {
             const auto kItem = Assets::GetInstance().mDBPFItems[key];
 
-            if (recordInfo != nullptr) {
-                recordInfo->mFlags = kItem.mRecord.mFlags;
-                recordInfo->mChunkOffset = kItem.mRecord.mChunkOffset;
-                recordInfo->mCompressedSize = kItem.mRecord.mCompressedSize;
-                recordInfo->mMemorySize = kItem.mRecord.mMemorySize;
-                recordInfo->mIsSaved = kItem.mRecord.mIsSaved;
-            }
+            recordInfo.mFlags = kItem.mRecord.mFlags;
+            recordInfo.mChunkOffset = kItem.mRecord.mChunkOffset;
+            recordInfo.mCompressedSize = kItem.mRecord.mCompressedSize;
+            recordInfo.mMemorySize = kItem.mRecord.mMemorySize;
+            recordInfo.mIsSaved = kItem.mRecord.mIsSaved;
 
             if (kItem.mRecord.mFlags == static_cast<uint16_t>(-1)) {
-                // we don't deal with these and that seems to work.
                 return false;
-                // const auto stream = new EA::IO::SubFileStream(item.path, item.record.chunkOffset, item.record.compressedSize);
-                // stream->AddRef();
-                //
-                // std::vector<uint8_t> in_buffer(item.record.compressedSize);
-                //
-                // stream->Read(in_buffer.data(), in_buffer.size());
-                // stream->Close();
-                // stream->Release();
-                //
-                // std::vector<uint8_t> out_buffer(item.record.memorySize);
-                //
-                // if (const auto decompress_result = refpack_decompress_safe(in_buffer.data(), in_buffer.size(), nullptr, out_buffer.data(), out_buffer.size(), nullptr, nullptr, nullptr); decompress_result != 0) {
-                //     MSML_LOG_ERROR("Failed to decompress RefPack %s %s: %d", item.path.string().c_str(), IdResolver::ToFilename(key).c_str(), decompress_result);
-                //     return false;
-                // }
-                //
-                // if (pDstRecord != nullptr) {
-                //     const auto record = new CustomRecord(key, new EA::IO::MemoryStream(out_buffer.data(), out_buffer.size()), this);
-                //
-                //     *pDstRecord = record;
-                //
-                //     for (const auto &tweaker: Tweaker::getRegistry()) {
-                //         if (tweaker->OnLoad(*record)) {
-                //             break;
-                //         }
-                //     }
-                // }
             }
 
-            if (pDstRecord != nullptr) {
-                auto* const kRecord = new CustomRecord(key, new EA::IO::SubFileStream(kItem.mPath, kItem.mRecord.mChunkOffset, kItem.mRecord.mCompressedSize), this);
-
-                *pDstRecord = kRecord;
-
-                Tweaker::RegistryOnLoad(kRecord);
-            }
-
-            result = true;
-        }
-
-        if (mAssets.contains(key)) {
-            auto* const kAsset = mAssets[key];
-            auto* const kRecord = new CustomRecord(key, kAsset->GetStream(), this);
-
-            if (recordInfo != nullptr) {
-                recordInfo->mFlags = 0;
-                recordInfo->mChunkOffset = 0;
-                recordInfo->mCompressedSize = kRecord->mStream->GetSize();
-                recordInfo->mMemorySize = kRecord->mStream->GetSize();
-            }
-
-            if (pDstRecord != nullptr) {
-                *pDstRecord = kRecord;
-
-                Tweaker::RegistryOnLoad(kRecord);
-            }
-
-            return true;
-        }
-
-        if (!result) {
+            record = new CustomRecord(
+                    key, new EA::IO::SubFileStream(kItem.mPath, kItem.mRecord.mChunkOffset,
+                                                   kItem.mRecord.mCompressedSize), this);
+        } else {
             uint64_t instance = Hash::FNV::FromString64("fallback");
             if (key.mType == static_cast<uint32_t>(FileType::DDS)) {
                 instance = Hash::FNV::FromString32("fallback");
@@ -151,24 +91,28 @@ namespace Msml::Core::Resource {
             };
 
             if (mAssets.contains(kFallbackKey) && key != kFallbackKey) {
-                // MSML_LOG_WARNING("Using fallback for %s -> %s", IdResolver::ToHumanReadable(key).c_str(), IdResolver::ToHumanReadable(fallbackKey).c_str());
                 auto *const kAsset = mAssets[kFallbackKey];
-                auto *const kRecord = new CustomRecord(key, kAsset->GetStream(), this);
+                record = new CustomRecord(key, kAsset->GetStream(), this);
 
-                if (recordInfo != nullptr) {
-                    recordInfo->mFlags = 0;
-                    recordInfo->mChunkOffset = 0;
-                    recordInfo->mCompressedSize = kRecord->mStream->GetSize();
-                    recordInfo->mMemorySize = kRecord->mStream->GetSize();
-                }
-
-                if (pDstRecord != nullptr) {
-                    *pDstRecord = kRecord;
-                }
+                recordInfo.mCompressedSize = record->mStream->GetSize();
+                recordInfo.mMemorySize = record->mStream->GetSize();
             }
         }
 
-        return result;
+        if (record != nullptr) {
+            if (pRecordInfo != nullptr) {
+                *pRecordInfo = recordInfo;
+            }
+
+            if (pDstRecord != nullptr) {
+                *pDstRecord = record;
+                Tweaker::RegistryOnLoad(record);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     size_t CustomDatabase::GetKeyList(eastl::vector<EA::ResourceMan::Key, EASTLDummyAllocatorType> &pDst,
@@ -280,9 +224,11 @@ namespace Msml::Core::Resource {
         if (pAsset->mType == AssetType::kBuffer) {
             MSML_LOG_DEBUG("Registering %s: <buffer>", IdResolver::ToFilename(pAsset->mKey).c_str());
         } else if (pAsset->mType == AssetType::kPath) {
-            MSML_LOG_DEBUG("Registering %s: \"%s\"", IdResolver::ToFilename(pAsset->mKey).c_str(), pAsset->mPath.filename().string().c_str());
+            MSML_LOG_DEBUG("Registering %s: \"%s\"", IdResolver::ToFilename(pAsset->mKey).c_str(),
+                           pAsset->mPath.filename().string().c_str());
         } else if (pAsset->mType == AssetType::kRedirect) {
-            MSML_LOG_DEBUG("Registering %s: -> %s", IdResolver::ToFilename(pAsset->mKey).c_str(), IdResolver::ToFilename(pAsset->mKeyRedirect).c_str());
+            MSML_LOG_DEBUG("Registering %s: -> %s", IdResolver::ToFilename(pAsset->mKey).c_str(),
+                           IdResolver::ToFilename(pAsset->mKeyRedirect).c_str());
         }
         mAssets[pAsset->mKey] = pAsset;
     }

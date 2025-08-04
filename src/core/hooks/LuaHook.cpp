@@ -92,6 +92,25 @@ namespace Msml::Core::Hooks {
         }
     }
 
+    bool LuaHook::RunString(const std::string &kCode) {
+        lua_State* L = sGlobalState;
+
+        if (luaL_loadbuffer(L, kCode.data(), kCode.size(), "_chunk") != LUA_OK) {
+            MSML_LOG_ERROR("Lua Error at _chunk: %s", lua_tostring(L, -1));
+            lua_pop(L, 1);
+
+            return false;
+        }
+
+        if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
+            MSML_LOG_ERROR("Lua Error at _chunk: %s", lua_tostring(L, -1));
+            lua_pop(L, 1);
+
+            return false;
+        }
+        return true;
+    }
+
     void LuaHook::Install() {
         EA::ScriptOs::LuaScriptingSystem::StartupHook.Install(&LuaScriptingSystemStartupHooked);
     }

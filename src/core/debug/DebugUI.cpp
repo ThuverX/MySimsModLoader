@@ -4,11 +4,14 @@
 
 #include "DebugUI.h"
 
+#include <ranges>
+
 #include "imgui.h"
 #include "../../EA/ResourceMan/KeyFilter.h"
-#include "../util/StreamUtil.h"
 #include "../signatures/sigdef.h"
-
+#include "windows/AssetWindow.h"
+#include "windows/HexWindow.h"
+#include "windows/LuaWindow.h"
 
 namespace Msml::Core {
     DebugUI &DebugUI::GetInstance() {
@@ -17,128 +20,88 @@ namespace Msml::Core {
     }
 
     void DebugUI::Init() {
-        // assets = &Assets::GetInstance();
-        // hex_state.ReadOnly = true;
+        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        mWindows["assets"] = new AssetWindow;
+        mWindows["hexviewer"] = new HexWindow;
+        mWindows["lua"] = new LuaWindow;
+    }
+
+    template<typename T>
+    T* DebugUI::GetWindow(const std::string& name) {
+        if (mWindows.contains(name)) {
+            return dynamic_cast<T*>(mWindows[name]);
+        }
+        return nullptr;
+    }
+
+    void SetupDockspace()
+    {
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoTitleBar
+            | ImGuiWindowFlags_NoCollapse
+            | ImGuiWindowFlags_NoResize
+            | ImGuiWindowFlags_NoMove
+            | ImGuiWindowFlags_NoBringToFrontOnFocus
+            | ImGuiWindowFlags_NoNavFocus
+            | ImGuiWindowFlags_NoBackground;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, 0.0f});
+        ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, {0.0f, 0.0f});
+
+        ImGui::Begin("DockSpace", nullptr, windowFlags);
+
+        ImGui::PopStyleVar(5);
+
+        ImGui::DockSpace(ImGui::GetID("DockSpace"), ImVec2(0, 0), ImGuiDockNodeFlags_PassthruCentralNode);
+
+        ImGui::End();
     }
 
     void DebugUI::Draw() {
-
-        if (GetAsyncKeyState(VK_F10) & 1) mIsVisible = !mIsVisible;
+        if ((GetAsyncKeyState(VK_F10) & 1) != 0) {
+            mIsVisible = !mIsVisible;
+        }
 
         SetCursorLock(mIsVisible);
         ImGui::GetIO().MouseDrawCursor = mIsVisible;
 
-        if (!mIsVisible) return;
-
-
-        ImGui::ShowDemoWindow();
-
-        for (const auto & mWindow : mWindows) {
-            mWindow();
+        if (!mIsVisible) {
+            return;
         }
 
-        // DrawAssets();
-        // // DrawDatabase();
-        //
-        // if (use_hex_buffer) {
-        //     ImGui::Begin("Hex Buffer");
-        //     ImGui::Text("%s", resource::IdResolver::ToFilename(active_key).c_str());
-        //     ImGui::BeginHexEditor("##HexEditor", &hex_state);
-        //     ImGui::EndHexEditor();
-        //     ImGui::End();
-        // }
+        SetupDockspace();
+
+        if (ImGui::BeginMainMenuBar()) {
+            for (DebugWindow *mWindow: mWindows | std::views::values) {
+                mWindow->drawMenu();
+            }
+
+            if (ImGui::BeginMenu("Window")) {
+                for (DebugWindow *mWindow: mWindows | std::views::values) {
+                    if (ImGui::MenuItem(mWindow->getName().c_str())) {
+                        mWindow->mIsVisible = !mWindow->mIsVisible;
+                    }
+                }
+
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMainMenuBar();
+        }
+
+        for (DebugWindow *mWindow: mWindows | std::views::values) {
+            mWindow->draw();
+        }
     }
-    //
-    // void DebugUI::DrawAssets() {
-    //     ImGui::Begin("Assets");
-    //
-    //     int id = 0;
-    //     for (const auto &asset: assets->database->assets | std::views::values) {
-    //         ImGui::PushID(id); {
-    //             ImGui::LabelText("Name", resource::IdResolver::ToHumanReadable(asset->key).c_str());
-    //             switch (asset->type) {
-    //                 default:
-    //                 case assets::PATH:
-    //                     ImGui::LabelText("Type", "PATH");
-    //                     ImGui::LabelText("Path", asset->path.string().c_str());
-    //                     break;
-    //                 case assets::BUFFER:
-    //                     ImGui::LabelText("Type", "BUFFER");
-    //
-    //                     break;
-    //                 case assets::REDIRECT:
-    //                     ImGui::LabelText("Type", "BUFFER");
-    //                     ImGui::LabelText("Redirect", resource::IdResolver::ToHumanReadable(asset->key_redirect).c_str());
-    //                     break;
-    //             }
-    //
-    //             if (ImGui::Button("Open")) {
-    //                 active_key = asset->key;
-    //                 hex_buffer = util::StreamUtil::ReadBytes(asset->GetStream());
-    //                 hex_state.Bytes = (void *) hex_buffer.data();
-    //                 hex_state.MaxBytes = hex_buffer.size();
-    //                 use_hex_buffer = true;
-    //             }
-    //
-    //             ImGui::Separator();
-    //         }
-    //         ImGui::PopID();
-    //
-    //         id++;
-    //     }
-    //
-    //     ImGui::End();
-    // }
-    //
-    // void DebugUI::DrawDatabase() {
-    //     ImGui::Begin("Database");
-    //     if (ImGui::Button("Refresh")) {
-    //         keys.clear();
-    //         assets->database->GetKeys(keys);
-    //         filtered_keys = keys;
-    //     }
-    //
-    //     // if (ImGui::InputText("Search", search_string, IM_ARRAYSIZE(search_string))) {
-    //     //     filtered_keys.clear();
-    //     //     const auto [instance, type, group] = assets::Asset::GetKey(search_string);
-    //     //     EA::ResourceMan::Key filter_key = {
-    //     //         .instance = instance != 0 ? instance : uint64_t(-1),
-    //     //         .type = type != 0 ? type : uint32_t(-1) ,
-    //     //         .group =  group != 0 ? group : uint32_t(-1)
-    //     //     };
-    //     //     std::ranges::copy_if(keys, std::back_inserter(filtered_keys), [filter_key](const EA::ResourceMan::Key& k) {
-    //     //         return (filter_key.instance == uint64_t(-1) || k.instance == filter_key.instance) &&
-    //     //                (filter_key.type    == uint32_t(-1) || k.type    == filter_key.type) &&
-    //     //                (filter_key.group   == uint32_t(-1) || k.group   == filter_key.group);
-    //     //     });
-    //     // }
-    //
-    //     ImGui::Text("%d Keys", filtered_keys.size());
-    //
-    //     ImGuiListClipper clipper;
-    //     clipper.Begin(static_cast<int>(filtered_keys.size()));
-    //     while (clipper.Step()) {
-    //         for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i) {
-    //             if (auto key = filtered_keys[i]; ImGui::Selectable(resource::IdResolver::ToHumanReadable(key).c_str())) {
-    //                 EA::ResourceMan::IRecord *record;
-    //                 if (assets->database->OpenRecord2(key, &record, EA::IO::AccessFlags::Read, EA::IO::CD::LoadAllFiles,
-    //                                                   0, nullptr)) {
-    //                     const auto stream = record->GetStream();
-    //                     stream->AddRef();
-    //                     active_key = key;
-    //                     hex_buffer = util::StreamUtil::ReadBytes(stream);
-    //                     hex_state.Bytes = static_cast<void *>(hex_buffer.data());
-    //                     hex_state.MaxBytes = hex_buffer.size();
-    //                     use_hex_buffer = true;
-    //                     stream->Release();
-    //                 }
-    //             }
-    //         }
-    //     }
-    //
-    //     ImGui::End();
-    // }
-    //
+
     // // Should this be here? We really don't have another place for the forge functions
     // void writeLogHooked(uint32_t level, const char *filename, int line_number, const char *message, ...) {
     //     va_list args;
@@ -182,6 +145,4 @@ namespace Msml::Core {
     //                         "%s",
     //                         buffer.data());
     // }
-
-
 }
