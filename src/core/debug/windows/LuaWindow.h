@@ -41,7 +41,7 @@ struct LuaObject {
     std::map<std::string, std::shared_ptr<LuaObject> > mChildren;
 
     std::string mStringValue;
-    float mNumberValue = 0;
+    double mNumberValue = 0;
     bool mBooleanValue = false;
     int mIndex = 0;
     int mLuaRef = LUA_NOREF;
@@ -51,7 +51,7 @@ struct LuaObject {
 inline std::string LuaObjectToString(LuaObject *object) {
     switch (object->mType) {
         case LuaObjectType::kString:
-            return object->mStringValue;
+            return "\"" + object->mStringValue + "\"";
         case LuaObjectType::kNumber:
             return std::to_string(object->mNumberValue);
         case LuaObjectType::kBoolean:
@@ -63,7 +63,7 @@ inline std::string LuaObjectToString(LuaObject *object) {
         case LuaObjectType::kUserdata:
             return "{}";
         case LuaObjectType::kTable:
-            return "{}";
+            return "{...}";
     }
     return "nil";
 }
@@ -87,7 +87,7 @@ inline void LuaToObject(lua_State *L, LuaObject *object, int index = -1) {
 
         case LUA_TNUMBER:
             object->mType = LuaObjectType::kNumber;
-            object->mNumberValue = static_cast<float>(lua_tonumber(L, index));
+            object->mNumberValue = lua_tonumber(L, index);
             break;
 
         case LUA_TBOOLEAN:
@@ -177,7 +177,7 @@ public:
                 break;
 
             case LuaObjectType::kNumber:
-                ImGui::Text("%f", object->mNumberValue);
+                ImGui::Text("%d", object->mNumberValue);
                 break;
 
             case LuaObjectType::kBoolean:

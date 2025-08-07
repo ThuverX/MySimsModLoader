@@ -70,6 +70,7 @@ namespace Msml::Core {
             mIsVisible = !mIsVisible;
         }
 
+        // TODO: set input lock
         SetCursorLock(mIsVisible);
         ImGui::GetIO().MouseDrawCursor = mIsVisible;
 
