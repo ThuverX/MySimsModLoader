@@ -56,10 +56,11 @@ namespace Msml::Core::Hooks {
     }
 
     void ArgscriptHook::Install() {
-#ifdef PLATFORM_WIN64
+#ifdef VERSION_MYSIMS_COZYBUNDLE
         EA::ArgScript::ErrorOutputHook.Install(&ArgScriptErrorOutputHookedWin64);
         EA::ArgScript::OutputHook.Install(&ArgScriptOutputHookedWin64);
-#else
+#endif
+#ifdef VERSION_MYSIMS_ORIGINAL
         EA::ArgScript::ErrorOutputHook.Install(&ArgScriptErrorOutputHookedWin32);
         EA::ArgScript::OutputHook.Install(&ArgScriptOutputHookedWin32);
 #endif

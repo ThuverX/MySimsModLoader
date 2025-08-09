@@ -12,12 +12,11 @@
 #include "core/system/CrashHandler.h"
 #include "EASTL/internal/config.h"
 
-#ifdef PLATFORM_WIN64
-#include "platform/w64/wsock.h"
-#endif
 
-#ifdef PLATFORM_WIN32
+#ifdef VERSION_MYSIMS_ORIGINAL
 #include "platform/w32/dsound.h"
+#else
+#include "platform/w64/wsock.h"
 #endif
 
 // unused but required to build eastl
@@ -40,12 +39,11 @@ BOOL APIENTRY DllMain(HMODULE hModule, const DWORD kReason, LPVOID lpReserved) {
 
         char lpBuffer[MAX_PATH];
         GetSystemDirectoryA(lpBuffer, MAX_PATH);
-#ifdef PLATFORM_WIN64
-        strcat_s(lpBuffer, "\\WSOCK32.dll");
-#endif
 
-#ifdef PLATFORM_WIN32
+#ifdef VERSION_MYSIMS_ORIGINAL
         strcat_s(lpBuffer, "\\dsound.dll");
+#else
+        strcat_s(lpBuffer, "\\WSOCK32.dll");
 #endif
 
         Msml::Core::ModLoader::GetInstance().Initialize();

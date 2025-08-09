@@ -101,9 +101,15 @@ namespace Msml::Core {
         EA::IO::File::Remove(ModLoader::GetInstance().mModulePath / "signatures.db");
     }
 
+#if defined(VERSION_MYSIMS_COZYBUNDLE) || defined(VERSION_MYSIMS_ORIGINAL)
+    constexpr auto kModuleName = "MySims.exe";
+#else
+    constexpr auto kModuleName = "MySimsKingdom.exe";
+#endif
+
     Signatures::Signatures() {
         const sigmatch::this_process_target kTarget;
-        mContext = kTarget.in_module("MySims.exe");
+        mContext = kTarget.in_module(kModuleName);
     }
 
     bool Signatures::LoadDatabase() {

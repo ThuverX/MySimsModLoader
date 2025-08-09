@@ -60,7 +60,7 @@ namespace Msml::Core::System {
 
                         uintptr_t offset = addr - kBase;
 
-                        if (strcmp(modName, "MySims.exe") == 0) {
+                        if (strcmp(modName, "MySims.exe") == 0 || strcmp(modName, "MySimsKingdom.exe") == 0) {
                             offset += kBasePtr;
                         }
 
@@ -84,7 +84,16 @@ namespace Msml::Core::System {
         SymInitialize(process, nullptr, TRUE);
 
         STACKFRAME64 stackFrame = {};
-#ifdef PLATFORM_WIN64
+
+#ifdef VERSION_MYSIMS_ORIGINAL
+        DWORD machineType = IMAGE_FILE_MACHINE_I386;
+        stackFrame.AddrPC.Offset    = context->Eip;
+        stackFrame.AddrPC.Mode      = AddrModeFlat;
+        stackFrame.AddrFrame.Offset = context->Ebp;
+        stackFrame.AddrFrame.Mode   = AddrModeFlat;
+        stackFrame.AddrStack.Offset = context->Esp;
+        stackFrame.AddrStack.Mode   = AddrModeFlat;
+#else
         DWORD machineType = IMAGE_FILE_MACHINE_AMD64;
 
         stackFrame.AddrPC.Offset = context->Rip;
@@ -93,15 +102,6 @@ namespace Msml::Core::System {
         stackFrame.AddrFrame.Mode = AddrModeFlat;
         stackFrame.AddrStack.Offset = context->Rsp;
         stackFrame.AddrStack.Mode = AddrModeFlat;
-#endif
-#ifdef PLATFORM_WIN32
-        DWORD machineType = IMAGE_FILE_MACHINE_I386;
-        stackFrame.AddrPC.Offset    = context->Eip;
-        stackFrame.AddrPC.Mode      = AddrModeFlat;
-        stackFrame.AddrFrame.Offset = context->Ebp;
-        stackFrame.AddrFrame.Mode   = AddrModeFlat;
-        stackFrame.AddrStack.Offset = context->Esp;
-        stackFrame.AddrStack.Mode   = AddrModeFlat;
 #endif
 
         for (int i = 0; i < 32; ++i) {

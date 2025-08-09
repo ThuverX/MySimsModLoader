@@ -107,7 +107,7 @@ namespace Msml::Core {
 
         return kDidOpen;
     }
-
+#if defined(VERSION_MYSIMS_COZYBUNDLE) || defined(VERSION_MYSIMS_ORIGINAL)
     wchar_t *CharToWChar(const char *input) {
         if (input == nullptr) {
             return nullptr;
@@ -150,13 +150,13 @@ namespace Msml::Core {
 
         auto *const kRet = Revo::App::ReadXMLFromStream(pFilename, kRecord->mStream, document, pRootType, _e);
 
-        pXmlInstance->tinyXmlImplementation = kRet->tinyXmlImplementation;
-        pXmlInstance->tiXmlElement = kRet->tiXmlElement;
+        pXmlInstance->mTinyXmlImplementation = kRet->mTinyXmlImplementation;
+        pXmlInstance->mTiXmlElement = kRet->mTiXmlElement;
 
         return kRet;
     }
-
-#ifdef PLATFORM_WIN64
+#endif
+#ifdef VERSION_MYSIMS_COZYBUNDLE
     void *LoadBody(void * _a, char *dynamicSkinName, void * _c, EA::ResourceMan::IResource *materialResource,
                    EA::ResourceMan::IResource *textureResource, EA::ResourceMan::IResource *maskResource) {
         auto *const kManager = EA::ResourceMan::Manager::GetManager();
@@ -198,6 +198,7 @@ namespace Msml::Core {
                                             maskResource);
     }
 #endif
+
     void Assets::Install() {
         EA::ResourceMan::DatabaseDirectoryFiles::OpenRecordHook.Install(&DatabaseDirectoryFilesOpenRecordHooked);
         EA::ResourceMan::DatabaseDirectoryFiles::AddFileHook.Install(&AddFileHooked);
@@ -205,8 +206,10 @@ namespace Msml::Core {
         EA::ResourceMan::DatabasePackedFile::OpenHook.Install(&DatabasePackedFileOpenHooked);
 
         Revo::ResourceSystem::InitHook.Install(&ResourceSystemInitHooked);
+#if defined(VERSION_MYSIMS_COZYBUNDLE) || defined(VERSION_MYSIMS_ORIGINAL)
         Revo::App::ReadXMLFromPathHook.Install(&ReadXMLFromPathHooked);
-#ifdef PLATFORM_WIN64
+#endif
+#ifdef VERSION_MYSIMS_COZYBUNDLE
         Revo::load_bodyHook.Install(&LoadBody);
 #endif
     }

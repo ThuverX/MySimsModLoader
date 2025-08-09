@@ -37,7 +37,6 @@ set(SOURCES
         src/core/hash/FNV.cpp
         src/core/hash/FNV.h
         src/include/lua.h
-        src/core/signatures/sigdef.h
         src/core/hooks/LuaHook.cpp
         src/core/hooks/LuaHook.h
         src/include/hash_sha256.h
@@ -95,6 +94,12 @@ set(SOURCES
         src/tweakers/Clothing/SkintoneVariantGenerator.h
         src/EA/IO/File.cpp
         src/EA/IO/File.h
+        src/core/signatures/sigdef.h
+        src/core/signatures/signatures_macros.h
+        src/core/signatures/version/signatures_mysims64.h
+        src/core/signatures/version/signatures_engine64.h
+        src/core/signatures/version/signatures_mysims32.h
+        src/core/signatures/version/signatures_kingdom64.h
 )
 
 if (CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
@@ -143,6 +148,16 @@ target_link_libraries(MySimsModLoader PRIVATE pugixml-static)
 
 set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "dsound")
 target_compile_options(MySimsModLoader PRIVATE /FI${CMAKE_SOURCE_DIR}/src/Config.h)
+
+if(VERSION_MYSIMSKINGDOM_COZYBUNDLE)
+    target_compile_definitions(MySimsModLoader PRIVATE VERSION_MYSIMSKINGDOM_COZYBUNDLE)
+elseif(VERSION_MYSIMS_ORIGINAL)
+    target_compile_definitions(MySimsModLoader PRIVATE VERSION_MYSIMS_ORIGINAL)
+elseif(VERSION_MYSIMS_COZYBUNDLE)
+    target_compile_definitions(MySimsModLoader PRIVATE VERSION_MYSIMS_COZYBUNDLE)
+else()
+    target_compile_definitions(MySimsModLoader PRIVATE VERSION_MYSIMS_COZYBUNDLE)
+endif()
 
 if (CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
     set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "WSOCK32")
