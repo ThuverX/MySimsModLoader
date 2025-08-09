@@ -35,5 +35,17 @@
 #define SIG_luaB_loadstring "48 89 5C 24 08 57 48 83 EC 20 48 8B F9 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 4C 8D 44 24 38 BA 01 00 00 00 48 8B CF"
 #define SIG_luaL_loadbuffer "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57 48 83 EC 30 48 8B E9 49 8B F1 48 8D 0D ?? ?? ?? ?? 49 8B F8 48 8B DA E8 ?? ?? ?? ?? 4C 8B"
 
+// the forge
+#define SIG_addCmd "48 89 5C 24 08 48 89 74 24 10 48 89 7C 24 18 41 56 48 83 EC 40 48 8B F2 48 8B F9 BA 40 00 00 00"
+#define SIG_addCmdPool "48 89 5C 24 08 48 89 74 24 10 48 89 7C 24 18 41 56 48 83 EC 30 48 8B F2 48 8B D9 BA 10 00 00 00"
+#define SIG_resetCmdPool "48 83 EC 38 48 8B 0A 48 8B 01 FF 50 40"
+#define SIG_beginCmd "40 53 48 83 EC 40 48 8B D9 45 33 C0 48 8B 09 48 8B 53 60"
+#define SIG_cmdBindRenderTargets "48 85 D2 0F 84 F2 02 00 00 53 41 56"
+#define SIG_cmdSetViewport "48 83 EC 48 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 44 24 38 F3 0F 10 44 24 70 4C 8D 44 24 20 48 8B 09"
+#define SIG_cmdSetScissor "48 83 EC 48 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 44 24 30 4C 8B D1 89 54 24 20 8B 4C 24 70"
+#define SIG_endCmd "48 83 EC 38 48 8B 09 48 8B 01 FF 50 48 85 C0"
+#define SIG_queuePresent "40 53 48 83 EC 20 48 8B 1A 48 85 DB 0F 84 B3 00 00 00 8B 53 10 44 8B C2"
+#define SIG_addQueue "40 53 55 56 57 41 56 48 81 EC F0 00 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4"
+#define SIG_tfWriteLog "4C 89 4C 24 20 48 83 EC 38 48 8D 44 24 60 48 89 44 24 20"
 
 #endif //SIGNATURES_ENGINE64_H

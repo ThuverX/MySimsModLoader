@@ -72,7 +72,6 @@ namespace EA {
 
         VIRTUAL(void, ArgScript, ErrorOutput, const char* pFormat, ...)
 #endif
-
     }
 
     namespace ResourceMan {
@@ -145,41 +144,57 @@ namespace EA {
     }
 }
 
+#if defined(VERSION_MYSIMS_COZYBUNDLE) || defined(VERSION_MYSIMSKINGDOM_COZYBUNDLE)
+
+#pragma region tf
+
+struct Queue;
+struct QueuePresentDesc;
+struct GraphicDevice;
+struct Renderer;
+struct QueueDesc;
+struct CmdDesc;
+struct Cmd;
+struct CmdPoolDesc;
+struct CmdPool;
+struct BindRenderTargetsDesc;
+
+GLOBAL(void, addCmd, Renderer* pRenderer, const CmdDesc* pDesc, Cmd** ppCmd);
+GLOBAL(void, addCmdPool, Renderer* pRenderer, const CmdPoolDesc* pDesc, CmdPool** ppCmdPool);
+GLOBAL(void, resetCmdPool, Renderer* pRenderer, CmdPool* pCmdPool);
+GLOBAL(void, beginCmd, Cmd* pCmd);
+GLOBAL(void, cmdBindRenderTargets, Cmd* pCmd, const BindRenderTargetsDesc* pDesc);
+GLOBAL(void, cmdSetViewport, Cmd* pCmd, float x, float y, float width, float height, float minDepth, float maxDepth);
+GLOBAL(void, cmdSetScissor, Cmd* pCmd, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+GLOBAL(void, endCmd, Cmd* pCmd);
+GLOBAL(void, queuePresent, Queue* pQueue, const QueuePresentDesc* pDesc);
+GLOBAL(void, addQueue, Renderer* pRenderer, QueueDesc* pDesc, Queue** ppQueue);
+GLOBAL(void, tfWriteLog, uint32_t level, const char* filename, int line_number, const char* message, ...);
+
+#pragma endregion tf
+#endif
+
+#pragma region lua
+
 GLOBAL(void, lua_pushvalue, lua_State *L, int index);
-
 GLOBAL(int, lua_getfield, lua_State *L, int index, const char *k);
-
 GLOBAL(void, lua_pushcclosure, lua_State *L, lua_CFunction fn, int n);
-
 GLOBAL(void, lua_setfield, lua_State *L, int index, const char *k);
-
 GLOBAL(void, lua_settop, lua_State *L, int index);
-
 GLOBAL(int, lua_gettop, lua_State *L);
-
 GLOBAL(const char*, lua_tolstring, lua_State *L, int index, size_t *len);
-
 GLOBAL(lua_State*, lua_newstate, lua_Alloc f, void* ud);
-
 GLOBAL(int, luaL_ref, lua_State *L, int t);
-
 GLOBAL(int, luaL_loadfile, lua_State *L, const char* filename);
-
 GLOBAL(void, lua_remove, lua_State *L, int index);
-
 GLOBAL(void, lua_insert, lua_State *L, int index);
-
 GLOBAL(int, lua_pcall, lua_State *L, int nargs, int nresults, int errfunc);
-
 GLOBAL(void, lua_rawgeti, lua_State *L, int index, int n);
-
 GLOBAL(const char*, luaL_checklstring, lua_State *L, int narg, size_t *l);
-
 GLOBAL(void, lua_pushstring, lua_State *L, const char *s);
-
 GLOBAL(int, luaB_loadstring, lua_State *L);
-
 GLOBAL(int, luaL_loadbuffer, lua_State * L, const char * buff, size_t sz, const char * name);
 
+#pragma endregion lua
 
 #endif //SIGDEF_H
