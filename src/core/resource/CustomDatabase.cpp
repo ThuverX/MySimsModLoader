@@ -44,6 +44,10 @@ namespace Msml::Core::Resource {
     bool CustomDatabase::OpenRecord2(const EA::ResourceMan::Key &key, EA::ResourceMan::IRecord **pDstRecord,
                                      EA::IO::AccessFlags accessFlags, EA::IO::CD creationDisposition, int,
                                      EA::ResourceMan::RecordInfo *recordInfo) {
+
+        // TODO: Figure this out
+        if (key.mType == 0x6B20C4F3) return false;
+
         bool result = false;
         // TODO: this is a bit inefficient, so we should early exist based on custom, ddf or dbpf
         if (Assets::GetInstance().mDDFPaths.contains(key)) {
@@ -151,7 +155,7 @@ namespace Msml::Core::Resource {
             };
 
             if (mAssets.contains(kFallbackKey) && key != kFallbackKey) {
-                // MSML_LOG_WARNING("Using fallback for %s -> %s", IdResolver::ToHumanReadable(key).c_str(), IdResolver::ToHumanReadable(fallbackKey).c_str());
+                // MSML_LOG_WARNING("Using fallback for %s -> %s", IdResolver::ToHumanReadable(key).c_str(), IdResolver::ToHumanReadable(kFallbackKey).c_str());
                 auto *const kAsset = mAssets[kFallbackKey];
                 auto *const kRecord = new CustomRecord(key, kAsset->GetStream(), this);
 

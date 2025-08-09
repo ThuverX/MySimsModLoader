@@ -48,6 +48,9 @@ namespace Msml::Core {
         const EA::ResourceMan::Key &key,
         EA::ResourceMan::IRecord **ppDstRecord,
         EA::IO::AccessFlags accessFlags, EA::IO::CD creationDisposition, int _a, EA::ResourceMan::RecordInfo * pRecordInfo) {
+        if (key.mType == 0x6B20C4F3) {
+            return EA::ResourceMan::DatabaseDirectoryFiles::OpenRecordHook.Original(thisPtr, key, ppDstRecord, accessFlags, creationDisposition, _a, pRecordInfo);
+        }
         return false;
     }
 
