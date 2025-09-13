@@ -1,4 +1,5 @@
-﻿//
+﻿
+//
 // Created by exozg on 25/01/2025.
 //
 
@@ -65,10 +66,13 @@ typedef struct luaL_Reg {
 #define lua_isboolean(L,n)	(lua_type(L, (n)) == LUA_TBOOLEAN)
 #define lua_isthread(L,n)	(lua_type(L, (n)) == LUA_TTHREAD)
 #define lua_isnone(L,n)		(lua_type(L, (n)) == LUA_TNONE)
+#define lua_isstring(L,n)	(lua_type(L, (n)) == LUA_TSTRING)
 #define lua_isnoneornil(L, n)	(lua_type(L, (n)) <= 0)
 #define lua_getglobal(L,s)	lua_getfield(L, LUA_GLOBALSINDEX, (s))
 #define lua_setglobal(L,s)	lua_setfield(L, LUA_GLOBALSINDEX, (s))
 #define lua_tostring(L,i)	lua_tolstring(L, (i), NULL)
+#define lua_pushcfunction(L,f)	lua_pushcclosure(L, (f), 0)
+
 
 #define luaL_getmetatable(L,n)		(lua_getfield(L, LUA_REGISTRYINDEX, (n)))
 
@@ -84,5 +88,7 @@ typedef struct luaL_Reg {
 
 #define luaL_opt(L,f,n,d)       (lua_isnoneornil(L,(n)) ? (d) : f(L,(n)))
 #define luaL_typename(L,i)      lua_typename(L, lua_type(L,(i)))
+#define lua_absindex(L, i)         ((i) > 0 || (i) <= LUA_REGISTRYINDEX ? (i) : \
+	lua_gettop(L) + (i) + 1)
 
 #endif //LUA_H

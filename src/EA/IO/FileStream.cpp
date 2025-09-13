@@ -85,6 +85,7 @@ namespace EA::IO {
                 break;
         }
 
+        // TODO: I think keeping the handle is fine, but we still want to be able to replace it during runtime, i.e. not holding the file hostage
         mFileHandle = CreateFileW(
             path.c_str(),
             wAccess,

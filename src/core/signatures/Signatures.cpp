@@ -102,14 +102,14 @@ namespace Msml::Core {
     }
 
 #if defined(VERSION_MYSIMS_COZYBUNDLE) || defined(VERSION_MYSIMS_ORIGINAL)
-    constexpr auto kModuleName = "MySims.exe";
+    #define MODULE_NAME "MySims.exe"
 #else
-    constexpr auto kModuleName = "MySimsKingdom.exe";
+    #define MODULE_NAME "MySimsKingdom.exe"
 #endif
 
     Signatures::Signatures() {
         const sigmatch::this_process_target kTarget;
-        mContext = kTarget.in_module(kModuleName);
+        mContext = kTarget.in_module(MODULE_NAME);
     }
 
     bool Signatures::LoadDatabase() {

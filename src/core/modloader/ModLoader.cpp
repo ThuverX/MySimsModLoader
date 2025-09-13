@@ -8,7 +8,10 @@
 
 #include "Mods.h"
 #include "../../Version.h"
+#include "../../EA/IO/File.h"
 #include "../assets/Assets.h"
+#include "../debug/DebugUI.h"
+#include "../debug/ImGuiHook.h"
 #include "../hooks/Hooks.h"
 
 #include "../hooks/LuaHook.h"
@@ -24,13 +27,16 @@ namespace Msml::Core {
     }
 
     void ModLoader::Initialize() {
-        System::Logger::sModule = mModulePath;
 
         bool consoleEnabled = false;
 
 #ifdef BUILD_DEBUG
         consoleEnabled = true;
 #endif
+
+        if (EA::IO::File::Exists(mModulePath / MODS_PATH / DEVELOPER_TXT)) {
+            consoleEnabled = true;
+        }
 
         if (IsDebuggerPresent() != 0) {
             consoleEnabled = false;
@@ -39,6 +45,8 @@ namespace Msml::Core {
         if (consoleEnabled) {
             mConsole.Enable();
         }
+
+        System::Logger::Enable();
 
         MSML_LOG_INFO("MSML Version: %s", MSML_VERSION);
 
@@ -63,16 +71,22 @@ namespace Msml::Core {
         Mods::GetInstance().Find();
         Assets::Install();
         Assets::GetInstance().CreateDatabase();
+        DebugUI::Install();
+        ImGuiHook::Install();
         Hooks::ArgscriptHook::Install();
         Hooks::LuaHook::Install();
         Hooks::Enable();
     }
 
     void ModLoader::Message(const std::string &message) {
+        System::Logger::Flush();
+
         MessageBox(nullptr, message.c_str(), "MySims ModLoader", 0);
     }
 
     void ModLoader::MessageAndExit(const std::string &message) {
+        System::Logger::Flush();
+
         MessageBox(nullptr, message.c_str(), "MySims ModLoader", 1);
         exit(1);
     }

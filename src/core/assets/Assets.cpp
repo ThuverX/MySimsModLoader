@@ -299,4 +299,19 @@ namespace Msml::Core {
 
         MSML_LOG_INFO("Database created");
     }
+
+    void Assets::GetKeys(std::vector<EA::ResourceMan::Key> &keys) {
+        keys.clear();
+        for (const auto &key: mDDFPaths | std::views::keys) {
+            keys.emplace_back(key);
+        }
+
+        for (const auto &key: mDBPFItems | std::views::keys) {
+            keys.emplace_back(key);
+        }
+
+        for (const auto &key: mDatabase->mAssets | std::views::keys) {
+            keys.emplace_back(key);
+        }
+    }
 }

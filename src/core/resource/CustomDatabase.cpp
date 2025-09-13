@@ -78,26 +78,26 @@ namespace Msml::Core::Resource {
             record = new CustomRecord(
                     key, new EA::IO::SubFileStream(kItem.mPath, kItem.mRecord.mChunkOffset,
                                                    kItem.mRecord.mCompressedSize), this);
-        } else {
-            uint64_t instance = Hash::FNV::FromString64("fallback");
-            if (key.mType == static_cast<uint32_t>(FileType::DDS)) {
-                instance = Hash::FNV::FromString32("fallback");
-            }
-
-            const EA::ResourceMan::Key kFallbackKey = {
-                .mInstance = instance,
-                .mType = key.mType,
-                .mGroup = 0
-            };
-
-            if (mAssets.contains(kFallbackKey) && key != kFallbackKey) {
-                auto *const kAsset = mAssets[kFallbackKey];
-                record = new CustomRecord(key, kAsset->GetStream(), this);
-
-                recordInfo.mCompressedSize = record->mStream->GetSize();
-                recordInfo.mMemorySize = record->mStream->GetSize();
-            }
-        }
+        }// } else {
+        //     uint64_t instance = Hash::FNV::FromString64("fallback");
+        //     if (key.mType == static_cast<uint32_t>(FileType::DDS)) {
+        //         instance = Hash::FNV::FromString32("fallback");
+        //     }
+        //
+        //     const EA::ResourceMan::Key kFallbackKey = {
+        //         .mInstance = instance,
+        //         .mType = key.mType,
+        //         .mGroup = 0
+        //     };
+        //
+        //     if (mAssets.contains(kFallbackKey) && key != kFallbackKey) {
+        //         auto *const kAsset = mAssets[kFallbackKey];
+        //         record = new CustomRecord(key, kAsset->GetStream(), this);
+        //
+        //         recordInfo.mCompressedSize = record->mStream->GetSize();
+        //         recordInfo.mMemorySize = record->mStream->GetSize();
+        //     }
+        // }
 
         if (record != nullptr) {
             if (pRecordInfo != nullptr) {

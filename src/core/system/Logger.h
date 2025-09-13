@@ -4,11 +4,16 @@
 
 #ifndef LOGGER_H
 #define LOGGER_H
-#include <filesystem>
+
+#include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/sinks/daily_file_sink.h"
 
 namespace Msml::Core::System {
     class Logger {
     public:
+        static std::shared_ptr<spdlog::logger> sLogger;
+        static std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> sStdoutSink;
+        static std::shared_ptr<spdlog::sinks::daily_file_sink_mt> sBasicSink;
         enum class LogLevel: uint8_t {
             kInfo,
             kWarning,
@@ -17,10 +22,11 @@ namespace Msml::Core::System {
             kDebug
         };
         static void Log(LogLevel kLevel, bool kbDoCout, const char *pFile, int kLine, const char* pFormat, ...);
-        static std::filesystem::path sModule;
+        static void Flush();
 
-    private:
-        static const char* LogLevelToString(LogLevel kLevel);
+        static spdlog::level::level_enum LogLevelToSpdLog(LogLevel kLevel);
+
+        static void Enable();
     };
 }
 

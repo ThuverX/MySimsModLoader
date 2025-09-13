@@ -56,6 +56,10 @@ namespace Msml::Core {
         RUNTIMESETTINGS_XML = 0x6D3E3FB4,
         FX = 0x6B772503,
         UNKNOWN = 0x00000000,
+#ifdef VERSION_MYSIMSKINGDOM_COZYBUNDLE
+        FOOTPRINTSET2 = 0x8101a6ea,
+        BUILDABLEREGION_BIN = 0xc84acd30
+#endif
     };
 
     static const std::unordered_map<std::string, FileType> kStringToEnum = {
@@ -100,7 +104,11 @@ namespace Msml::Core {
         {"ttf", FileType::TTF},
         {"ttc", FileType::TTC},
         {"runtimesettings_xml", FileType::RUNTIMESETTINGS_XML},
-        {"fx", FileType::FX}
+        {"fx", FileType::FX},
+#ifdef VERSION_MYSIMSKINGDOM_COZYBUNDLE
+        {"footprintset2", FileType::FOOTPRINTSET2},
+        {"buildableregion_bin", FileType::BUILDABLEREGION_BIN}
+#endif
     };
 
     enum class AssetType : uint8_t {

@@ -34,6 +34,16 @@
 #define SIG_lua_pushstring "48 89 6C 24 18 56 48 83 EC 20 48 8B F1 48 8B EA 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 ED 75 17 48 8B 46 10 89 68 08"
 #define SIG_luaB_loadstring "48 89 5C 24 08 57 48 83 EC 20 48 8B F9 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 4C 8D 44 24 38 BA 01 00 00 00 48 8B CF"
 #define SIG_luaL_loadbuffer "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57 48 83 EC 30 48 8B E9 49 8B F1 48 8D 0D ?? ?? ?? ?? 49 8B F8 48 8B DA E8 ?? ?? ?? ?? 4C 8B"
+#define SIG_lua_type "48 89 5C 24 08 57 48 83 EC 20 48 8B F9 8B DA 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B D3 48 8B CF E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 3B C1 75 10 B8 FF FF FF FF 48 8B 5C 24 30"
+#define SIG_lua_toboolean "48 89 5C 24 08 57 48 83 EC 20 48 8B F9 8B DA 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B D3 48 8B CF E8 ?? ?? ?? ?? 8B 48 08 85 C9 74 1A 83 F9 01"
+#define SIG_lua_tonumber "48 89 5C 24 08 57 48 83 EC 30 48 8B F9 8B DA 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B D3 48 8B CF E8 ?? ?? ?? ?? 83 78 08 03 74 20 48 8D 54 24 20 48 8B C8"
+#define SIG_lua_pushnil "40 53 48 83 EC 20 48 8B D9 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 43 10 C7 40 08 00 00 00 00 48 83 43 10 10 48 83 C4 20"
+#define SIG_lua_next "48 89 5C 24 08 57 48 83 EC 20 48 8B F9 8B DA 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B D3 48 8B CF E8 ?? ?? ?? ?? 4C 8B 47 10 48 8B CF 49 83 E8 10 48 8B 10"
+#define SIG_lua_createtable "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57 48 83 EC 20 48 8B F9 41 8B F0 48 8D 0D ?? ?? ?? ?? 8B EA E8 ?? ?? ?? ?? 4C 8B 4F 20 49 8B 41 70 49 39 41 78"
+#define SIG_luaL_error "48 89 54 24 10 4C 89 44 24 18 4C 89 4C 24 20 53 57 48 81 EC B8 00 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4"
+#define SIG_lua_pushboolean "48 89 5C 24 08 57 48 83 EC 20 48 8B F9 8B DA 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 4C 8B 47 10 33 C0 85 DB 48 8B 5C 24 30"
+#define SIG_lua_pushinteger "48 89 5C 24 08 57 48 83 EC 20 48 8B F9 48 8B DA 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 47 10 0F 57 C0 F3 48 0F 2A C3 48 8B 5C 24 30"
+#define SIG_lua_tointeger "48 89 5C 24 08 57 48 83 EC 30 48 8B F9 8B DA 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B D3 48 8B CF E8 ?? ?? ?? ?? 83 78 08 03 74 1D 48 8D 54 24 20 48 8B C8 E8 ?? ?? ?? ?? 48 85 C0 75 0B 48 8B 5C 24 40 48 83 C4 30 5F C3 F3 48 0F 2C 00 48 8B 5C 24 40 48 83 C4 30"
 
 // the forge
 #define SIG_addCmd "48 89 5C 24 08 48 89 74 24 10 48 89 7C 24 18 41 56 48 83 EC 40 48 8B F2 48 8B F9 BA 40 00 00 00"
@@ -46,6 +56,9 @@
 #define SIG_endCmd "48 83 EC 38 48 8B 09 48 8B 01 FF 50 48 85 C0"
 #define SIG_queuePresent "40 53 48 83 EC 20 48 8B 1A 48 85 DB 0F 84 B3 00 00 00 8B 53 10 44 8B C2"
 #define SIG_addQueue "40 53 55 56 57 41 56 48 81 EC F0 00 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4"
+#define SIG_queueSubmit "40 55 41 54 41 55 41 56 41 57 48 83 EC 50 48 8D 6C 24 30 48 89 5D 50 48 89 75 58 48 89 7D 60 48 8B 05 ?? ?? ?? ??"
+#define SIG_waitForFences "8B CA 49 8B D0 E9 26 FF FF FF 48 89 5C 24 08 57"
+#define SIG_internal_waitForFences "85 C9 74 74 53 48 83 EC 20 48 89 74 24 30"
 #define SIG_tfWriteLog "4C 89 4C 24 20 48 83 EC 38 48 8D 44 24 60 48 89 44 24 20"
 
 #endif //SIGNATURES_ENGINE64_H

@@ -6,13 +6,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(BUILD_TESTS "Build tests" ON)
 
+if (MSVC)
+    add_compile_options(/wd4267 /wd4828)
+endif()
+
 # Disable sigmatch tests to speed up compilation
 set(SIGMATCH_BUILD_TESTS OFF CACHE BOOL "Disable sigmatch tests" FORCE)
 
+add_subdirectory(libs/imgui-cmake)
 add_subdirectory(libs/directxtex)
 add_subdirectory(libs/minhook)
 add_subdirectory(libs/sigmatch)
 add_subdirectory(libs/pugixml)
+add_subdirectory(libs/spdlog)
 
 set(SOURCES
         src/Main.cpp
@@ -36,7 +42,6 @@ set(SOURCES
         src/core/assets/Asset.h
         src/core/hash/FNV.cpp
         src/core/hash/FNV.h
-        src/include/lua.h
         src/core/hooks/LuaHook.cpp
         src/core/hooks/LuaHook.h
         src/include/hash_sha256.h
@@ -100,6 +105,20 @@ set(SOURCES
         src/core/signatures/version/signatures_engine64.h
         src/core/signatures/version/signatures_mysims32.h
         src/core/signatures/version/signatures_kingdom64.h
+        src/EA/GraphicDevice.h
+        src/include/theforge.h
+        src/core/debug/DebugUI.cpp
+        src/core/debug/DebugUI.h
+        src/core/debug/ImGuiHook.cpp
+        src/core/debug/ImGuiHook.h
+        src/core/debug/windows/AssetWindow.h
+        src/core/debug/windows/HexWindow.h
+        src/core/debug/windows/LuaWindow.h
+        src/core/debug/windows/LuaWindowInstance.h
+
+        libs/imgui_hex_editor/imgui_hex.h
+        libs/imgui_hex_editor/imgui_hex.cpp
+        src/core/debug/lua_imgui.h
 )
 
 if (CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
@@ -141,10 +160,17 @@ target_include_directories(MySimsModLoader PRIVATE libs/pugixml/src)
 target_include_directories(MySimsModLoader PRIVATE libs/minhook/include)
 target_include_directories(MySimsModLoader PRIVATE libs/sigmatch/include)
 target_include_directories(MySimsModLoader PRIVATE libs/directxtex)
+target_include_directories(MySimsModLoader PRIVATE libs/imgui_hex_editor)
 
-target_link_libraries(MySimsModLoader PRIVATE DirectXTex)
-target_link_libraries(MySimsModLoader PRIVATE minhook)
-target_link_libraries(MySimsModLoader PRIVATE pugixml-static)
+target_link_libraries(MySimsModLoader PRIVATE
+        imgui
+        DirectXTex
+        minhook
+        spdlog
+        pugixml-static
+        d3d12
+        dxguid
+)
 
 set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "dsound")
 target_compile_options(MySimsModLoader PRIVATE /FI${CMAKE_SOURCE_DIR}/src/Config.h)

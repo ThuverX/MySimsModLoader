@@ -190,6 +190,8 @@ namespace Msml::Core::System {
         log << "\n\n\n";
 
         log.close();
+
+        Logger::Flush();
         return EXCEPTION_CONTINUE_SEARCH;
     }
 }

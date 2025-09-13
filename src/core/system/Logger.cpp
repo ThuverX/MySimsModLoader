@@ -4,73 +4,68 @@
 
 #include "Logger.h"
 
-#include <iostream>
-#include <fstream>
-#include <ctime>
 #include <cstdarg>
-#include <string>
-#include <iomanip>
-#include <sstream>
-#include <windows.h>
+
+#include "spdlog/logger.h"
+#include "spdlog/sinks/daily_file_sink.h"
+
 
 namespace Msml::Core::System {
-    std::filesystem::path Logger::sModule = "";
+    std::shared_ptr<spdlog::logger> Logger::sLogger = nullptr;
+    std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> Logger::sStdoutSink = nullptr;
+    std::shared_ptr<spdlog::sinks::daily_file_sink_mt> Logger::sBasicSink = nullptr;
 
-    // TODO: Logging should probably be on its own thread
     void Logger::Log(const LogLevel kLevel, const bool kbDoCout, const char *pFile, const int kLine,
                      const char *pFormat, ...) {
-        const std::time_t kNow = std::time(nullptr);
-        std::tm timeInfo{};
-        if (localtime_s(&timeInfo, &kNow) != 0) {
-            std::cerr << "Failed to get local time\n";
+        if (!sLogger) {
             return;
         }
 
-        char timeBuffer[20];
-        std::strftime(timeBuffer, sizeof(timeBuffer), "%Y-%m-%d %H:%M:%S", &timeInfo);
-
-#ifndef UNIT_TESTING
-        char dateBuffer[11];
-        std::strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d", &timeInfo);
-        const auto kLogFileName = sModule / (std::string("log_") + dateBuffer + ".log");
-
-        std::ofstream logFile(kLogFileName, std::ios::app);
-        if (!logFile) {
-            std::cerr << "Failed to open log file: " << kLogFileName << "\n";
+        if (kbDoCout) {
+            sStdoutSink->set_level(spdlog::level::trace);
+        } else {
+            sStdoutSink->set_level(spdlog::level::off);
         }
-#endif // UNIT_TESTING
 
-        char logMessage[1024];
+        std::array<char, 2048> buffer{};
         va_list args = nullptr;
         va_start(args, pFormat);
-        std::vsnprintf(logMessage, sizeof(logMessage), pFormat, args);
+        std::vsnprintf(buffer.data(), buffer.size(), pFormat, args);
         va_end(args);
 
-        const std::string kRelativeFile = std::string(pFile).substr(strlen(PROJECT_ROOT) + 1);
+        const auto kMsg = fmt::format("[{}:{}] {}", pFile, kLine, buffer.data());
 
-        const std::string kLogEntry = "[" + std::string(timeBuffer) + "] [" + LogLevelToString(kLevel) + "] (" +
-                                      kRelativeFile + ":" + std::to_string(kLine) + ") " + logMessage + "\n";
-
-#ifndef UNIT_TESTING
-        if (kbDoCout) {
-            std::cout << kLogEntry;
-        }
-        if (logFile) {
-            logFile << kLogEntry;
-        }
-#else
-        std::cout << kLogEntry;
-#endif // UNIT_TESTING
+        sLogger->log(LogLevelToSpdLog(kLevel), kMsg);
     }
 
-    const char *Logger::LogLevelToString(const LogLevel kLevel) {
+    void Logger::Flush() {
+        sBasicSink->flush();
+        sStdoutSink->flush();
+        sLogger->flush();
+    }
+
+    spdlog::level::level_enum Logger::LogLevelToSpdLog(const LogLevel kLevel) {
         switch (kLevel) {
-            case LogLevel::kWarning: return "WARNING";
-            case LogLevel::kError: return "ERROR";
-            case LogLevel::kDebug: return "DEBUG";
-            case LogLevel::kLua: return "LUA";
             case LogLevel::kInfo:
-            default: return "INFO";
+                return spdlog::level::info;
+            case LogLevel::kWarning:
+                return spdlog::level::warn;
+            case LogLevel::kError:
+                return spdlog::level::err;
+            case LogLevel::kLua:
+                return spdlog::level::info;
+            case LogLevel::kDebug:
+                return spdlog::level::debug;
         }
+        return spdlog::level::info;
+    }
+
+    void Logger::Enable() {
+        sStdoutSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+        sBasicSink = std::make_shared<spdlog::sinks::daily_file_sink_mt>("logs/msml.log", 0, 0);
+        sBasicSink->set_level(spdlog::level::trace);
+        sStdoutSink->set_level(spdlog::level::trace);
+        std::vector<spdlog::sink_ptr> sinks{sStdoutSink, sBasicSink};
+        sLogger = std::make_shared<spdlog::logger>("", sinks.begin(), sinks.end());
     }
 }

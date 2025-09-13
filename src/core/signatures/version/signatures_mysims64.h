@@ -30,6 +30,17 @@
 
 // lua scripting system
 #define SIG_LuaScriptingSystem_Startup "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 48 89 7C 24 20 41 56 48 81 EC C0 00 00 00 48 8B E9 48 8D 0D ?? ?? ?? ??"
+#define SIG_LuaScriptingSystem_LoadAllLuaScripts "48 89 4C 24 08 55 53 56 57 41 54 41 55 41 56 41 57 48 8D 6C 24 E1 48 81 EC E8 00 00 00 48 8B F9 48 8D 0D ?? ?? ?? ??"
 
+// graphics
+#define SIG_Graphics_GetDevice "48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? B8 1C 02 00 00 48 83 C4 28 C3"
+
+// the forge
+#define SIG_addFence "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 30 48 8B F2 48 8B D9 BA 10 00 00 00 8D 4A 08 FF 15 9D 99 8D 00 0F 57 C0 4C 8D 0D EB 4D 99 00"
+
+#define SIG_StateMachine_RequestState "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 8B D9 41 0F B6 F0 48 8D 0D ?? ?? ?? ?? 8B FA E8 ?? ?? ?? ?? 3B 7B 10 75 27 40 84 F6"
+
+// ui
+#define SIG_UI_SetCursorLock "40 53 48 83 EC 20 0F B6 D9 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 88 1D FA 69 6C 00 48 83 C4 20 5B"
 
 #endif //SIGNATURES_MYSIMS64_H

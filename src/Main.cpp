@@ -54,6 +54,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, const DWORD kReason, LPVOID lpReserved) {
         }
 
         exports(kHL);
+    } else if (kReason == DLL_PROCESS_DETACH) {
+        Msml::Core::System::Logger::Flush();
     }
 
     return TRUE;

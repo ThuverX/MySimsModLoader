@@ -7,6 +7,7 @@
 
 #define MODS_PATH "mods/"
 #define W_MODS_PATH L"mods/"
+#define DEVELOPER_TXT "developer.txt"
 
 #ifdef _WIN64
 

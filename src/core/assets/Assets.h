@@ -32,6 +32,7 @@ namespace Msml::Core {
         static bool GetAsset(const EA::ResourceMan::Key& key, EA::ResourceMan::IRecord ** ppRecord);
         static bool GetAsset(const std::string& name, EA::ResourceMan::IRecord ** ppRecord);
         void CreateDatabaseEntries(const std::filesystem::path &path) const;
+        void GetKeys(std::vector<EA::ResourceMan::Key> &keys);
     };
 }
 

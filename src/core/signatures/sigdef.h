@@ -5,7 +5,6 @@
 #ifndef SIGDEF_H
 #define SIGDEF_H
 
-#include "../../include/lua.h"
 #include "../../EA/IO/Constants.h"
 #include "../../EA/ResourceMan/IResource.h"
 #include "../../EA/ResourceMan/RecordInfo.h"
@@ -13,6 +12,7 @@
 
 #include <sigmatch/sigmatch.hpp>
 
+#include "../../include/lua.h"
 #include "signatures_macros.h"
 #include "EASTL/hash_map.h"
 
@@ -34,6 +34,12 @@ namespace Revo {
         };
 
         VIRTUAL(void, ResourceSystem, Init);
+    }
+
+    namespace StateMachine {
+        struct StateMachine {};
+
+        VIRTUAL(void, StateMachine, RequestState, int, bool);
     }
 
 #ifdef VERSION_MYSIMS_COZYBUNDLE
@@ -141,16 +147,30 @@ namespace EA {
         };
 
         VIRTUAL(void, LuaScriptingSystem, Startup);
+        // VIRTUAL(bool, LuaScriptingSystem, LoadAllLuaScripts);
     }
 }
 
+namespace UI {
+#ifdef VERSION_MYSIMS_COZYBUNDLE
+    STATIC(void, UI, SetCursorLock, bool state);
+#else
+    inline void SetCursorLock(bool state){};
+#endif
+}
+
 #if defined(VERSION_MYSIMS_COZYBUNDLE) || defined(VERSION_MYSIMSKINGDOM_COZYBUNDLE)
+
+struct GraphicDevice;
+
+namespace TSS::Graphics {
+    STATIC(GraphicDevice*, Graphics, GetDevice);
+}
 
 #pragma region tf
 
 struct Queue;
 struct QueuePresentDesc;
-struct GraphicDevice;
 struct Renderer;
 struct QueueDesc;
 struct CmdDesc;
@@ -158,6 +178,8 @@ struct Cmd;
 struct CmdPoolDesc;
 struct CmdPool;
 struct BindRenderTargetsDesc;
+struct QueueSubmitDesc;
+struct Fence;
 
 GLOBAL(void, addCmd, Renderer* pRenderer, const CmdDesc* pDesc, Cmd** ppCmd);
 GLOBAL(void, addCmdPool, Renderer* pRenderer, const CmdPoolDesc* pDesc, CmdPool** ppCmdPool);
@@ -169,6 +191,10 @@ GLOBAL(void, cmdSetScissor, Cmd* pCmd, uint32_t x, uint32_t y, uint32_t width, u
 GLOBAL(void, endCmd, Cmd* pCmd);
 GLOBAL(void, queuePresent, Queue* pQueue, const QueuePresentDesc* pDesc);
 GLOBAL(void, addQueue, Renderer* pRenderer, QueueDesc* pDesc, Queue** ppQueue);
+GLOBAL(void, addFence, Renderer* pRenderer, Fence** ppFence);
+GLOBAL(void, queueSubmit, Queue* pQueue, const QueueSubmitDesc* pDesc)
+// GLOBAL(void, waitForFences, Renderer* pRenderer, uint32_t fenceCount, Fence** ppFences); // tiny function, hard to find, use the one below
+GLOBAL(void, internal_waitForFences, uint32_t fenceCount, Fence** ppFences);
 GLOBAL(void, tfWriteLog, uint32_t level, const char* filename, int line_number, const char* message, ...);
 
 #pragma endregion tf
@@ -194,6 +220,16 @@ GLOBAL(const char*, luaL_checklstring, lua_State *L, int narg, size_t *l);
 GLOBAL(void, lua_pushstring, lua_State *L, const char *s);
 GLOBAL(int, luaB_loadstring, lua_State *L);
 GLOBAL(int, luaL_loadbuffer, lua_State * L, const char * buff, size_t sz, const char * name);
+GLOBAL(int, lua_type, lua_State * L, int index);
+GLOBAL(bool, lua_toboolean, lua_State *L, int index);
+GLOBAL(double, lua_tonumber, lua_State *L, int index);
+GLOBAL(void, lua_pushnil, lua_State *L);
+GLOBAL(int, lua_next, lua_State * L, int index);
+GLOBAL(void, lua_createtable, lua_State *L, int narray, int nrec);
+GLOBAL(int, luaL_error, lua_State *L, const char *fmt, ...);
+GLOBAL(void, lua_pushboolean, lua_State *L, int b);
+GLOBAL(void, lua_pushinteger, lua_State *L, int i);
+GLOBAL(int, lua_tointeger, lua_State *L, int idx);
 
 #pragma endregion lua
 
