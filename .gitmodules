@@ -16,6 +16,7 @@
 [submodule "libs/imgui"]
 	path = libs/imgui
 	url = https://github.com/ocornut/imgui.git
+	branch = docking
 [submodule "libs/imgui_hex_editor"]
 	path = libs/imgui_hex_editor
 	url = https://github.com/Teselka/imgui_hex_editor.git

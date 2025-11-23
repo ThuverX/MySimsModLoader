@@ -161,6 +161,7 @@ target_include_directories(MySimsModLoader PRIVATE libs/minhook/include)
 target_include_directories(MySimsModLoader PRIVATE libs/sigmatch/include)
 target_include_directories(MySimsModLoader PRIVATE libs/directxtex)
 target_include_directories(MySimsModLoader PRIVATE libs/imgui_hex_editor)
+target_include_directories(MySimsModLoader PRIVATE libs/spdlog/include)
 
 target_link_libraries(MySimsModLoader PRIVATE
         imgui
@@ -224,6 +225,8 @@ if (BUILD_TESTS)
     target_include_directories(Tests PRIVATE
             libs/eastl/include
             libs/eastl/test/packages/EABase/include/Common
+            # Needed for Logger.h which is included in unit tests
+            libs/spdlog/include
     )
 
     # Set a define to indicate that we are running unit tests
