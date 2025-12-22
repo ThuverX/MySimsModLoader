@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(BUILD_TESTS "Build tests" ON)
+option(VERSION_MYSIMSKINGDOM_COZYBUNDLE "MySims Kingdom Cozy Bundle" OFF)
+option(VERSION_MYSIMS_ORIGINAL "MySims Original" OFF)
+option(VERSION_MYSIMS_COZYBUNDLE "MySims Cozy Bundle" OFF)
 
 if (MSVC)
     add_compile_options(/wd4267 /wd4828 /utf-8)
@@ -183,12 +186,14 @@ elseif(VERSION_MYSIMS_ORIGINAL)
 elseif(VERSION_MYSIMS_COZYBUNDLE)
     target_compile_definitions(MySimsModLoader PRIVATE VERSION_MYSIMS_COZYBUNDLE)
 else()
-    target_compile_definitions(MySimsModLoader PRIVATE VERSION_MYSIMS_COZYBUNDLE)
+    message(FATAL_ERROR "No version defined. Define exactly one VERSION_* option.")
 endif()
 
 if (CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
     set_target_properties(MySimsModLoader PROPERTIES OUTPUT_NAME "WSOCK32")
 endif ()
+
+
 
 if (BUILD_TESTS)
     # For Windows: Prevent overriding the parent project's compiler/linker settings

@@ -39,7 +39,7 @@ namespace Revo {
     namespace StateMachine {
         struct StateMachine {};
 
-        VIRTUAL(void, StateMachine, RequestState, int, bool);
+        // VIRTUAL(void, StateMachine, RequestState, int, bool);
     }
 
 #ifdef VERSION_MYSIMS_COZYBUNDLE
