@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(BUILD_TESTS "Build tests" ON)
 
 if (MSVC)
-    add_compile_options(/wd4267 /wd4828)
+    add_compile_options(/wd4267 /wd4828 /utf-8)
 endif()
 
 # Disable sigmatch tests to speed up compilation
