@@ -13,8 +13,8 @@ if (MSVC)
     add_compile_options(/wd4267 /wd4828 /utf-8)
 endif()
 
-# Disable sigmatch tests to speed up compilation
 set(SIGMATCH_BUILD_TESTS OFF CACHE BOOL "Disable sigmatch tests" FORCE)
+set(BUILD_TOOLS OFF CACHE BOOL "Disable DirectX tools" FORCE)
 
 add_subdirectory(libs/imgui-cmake)
 add_subdirectory(libs/directxtex)
