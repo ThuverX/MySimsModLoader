@@ -9,9 +9,11 @@
 #include "../../EA/ResourceMan/IResource.h"
 #include "../../EA/ResourceMan/RecordInfo.h"
 #include "../../EA/ResourceMan/ResourceKey.h"
+#include "../../EA/Math.h"
 
 #include <sigmatch/sigmatch.hpp>
 
+#include "sigdef.h"
 #include "../../include/lua.h"
 #include "signatures_macros.h"
 #include "EASTL/hash_map.h"
@@ -28,20 +30,79 @@
 #include "version/signatures_kingdom64.h"
 #endif
 
-namespace Revo {
-    namespace ResourceSystem {
-        struct ResourceSystem {
+namespace Revo
+{
+    namespace ResourceSystem
+    {
+        struct ResourceSystem
+        {
         };
 
         VIRTUAL(void, ResourceSystem, Init);
     }
+#ifdef VERSION_MYSIMS_COZYBUNDLE
+    namespace StateMachine
+    {
+        struct StateMachine
+        {
+        };
 
-    namespace StateMachine {
-        struct StateMachine {};
 
         // VIRTUAL(void, StateMachine, RequestState, int, bool);
+        VIRTUAL(void*, StateMachine, GetWorld);
     }
 
+    namespace GameObject
+    {
+        struct GameObject
+        {
+        };
+
+        VIRTUAL(void, GameObject, GetTransform, EA::Math::Transform*);
+        VIRTUAL(void, GameObject, SetTransform, EA::Math::Transform*);
+    }
+
+    namespace Simulator
+    {
+        struct Simulator
+        {
+        };
+
+        CONSTANT(Revo::Simulator::Simulator, gSimulator);
+    }
+
+    namespace BlockWorld
+    {
+        struct BlockWorld
+        {
+            char ukn[0xa0];
+            StateMachine::StateMachine mStateMachine;
+        };
+
+        CONSTANT(Revo::BlockWorld::BlockWorld*, gBlockWorld);
+    };
+
+    namespace World
+    {
+        struct World {};
+
+        CONSTANT(Revo::World::World, gWorld);
+        VIRTUAL(void*, World, AddObject, Revo::GameObject::GameObject*);
+    }
+
+    namespace GameObjectFactory
+    {
+        struct GameObjectFactory
+        {
+        };
+
+        SINGLETON_INSTANCE(GameObjectFactory, 0x410);
+
+        STATIC(Revo::GameObject::GameObject*, GameObjectFactory, Spawn,
+               Revo::GameObjectFactory::GameObjectFactory* object_category, uint64_t type, const char* name,
+               const char* def_file, EA::Math::Vector3* position, EA::Math::Vector3* rotation, const char* script);
+    }
+#endif
 #ifdef VERSION_MYSIMS_COZYBUNDLE
     GLOBAL(void*, load_body,
            void *_a, char *pDynamicSkinName, void *_c,
@@ -49,10 +110,12 @@ namespace Revo {
            EA::ResourceMan::IResource *pTextureResource,
            EA::ResourceMan::IResource *pMaskResource);
 #endif
-    namespace App {
-        struct TinyXmlInstance {
-            void *mTinyXmlImplementation;
-            void *mTiXmlElement;
+    namespace App
+    {
+        struct TinyXmlInstance
+        {
+            void* mTinyXmlImplementation;
+            void* mTiXmlElement;
         };
 
 #if defined(VERSION_MYSIMS_COZYBUNDLE) || defined(VERSION_MYSIMS_ORIGINAL)
@@ -68,9 +131,12 @@ namespace Revo {
 }
 
 
-namespace EA {
-    namespace ArgScript {
-        struct ArgScript {
+namespace EA
+{
+    namespace ArgScript
+    {
+        struct ArgScript
+        {
         };
 
 #if defined(VERSION_MYSIMS_COZYBUNDLE) || defined(VERSION_MYSIMS_ORIGINAL)
@@ -80,21 +146,26 @@ namespace EA {
 #endif
     }
 
-    namespace ResourceMan {
+    namespace ResourceMan
+    {
         class IRecord;
         class IDatabase;
         class IResource;
 
-        namespace PFIndexModifiable {
-            struct PFIndexModifiable {
-                void **mVTable;
+        namespace PFIndexModifiable
+        {
+            struct PFIndexModifiable
+            {
+                void** mVTable;
                 eastl::hash_map<Key, RecordInfo> mItemMap;
             };
         }
 
-        namespace DatabasePackedFile {
-            struct DatabasePackedFile {
-                void **mVTable;
+        namespace DatabasePackedFile
+        {
+            struct DatabasePackedFile
+            {
+                void** mVTable;
             };
 
             VIRTUAL(bool, DatabasePackedFile, OpenRecord, const Key& key, IRecord** pDstRecord,
@@ -110,8 +181,10 @@ namespace EA {
             VIRTUAL(wchar_t*, DatabasePackedFile, GetLocation);
         }
 
-        namespace Manager {
-            struct Manager {
+        namespace Manager
+        {
+            struct Manager
+            {
             };
 
             STATIC(Manager*, Manager, GetManager);
@@ -124,11 +197,13 @@ namespace EA {
             VIRTUAL(void, Manager, RegisterDatabase, bool bAdd, IDatabase* pDatabase, uint32_t priority);
         }
 
-        namespace DatabaseDirectoryFiles {
-            struct DatabaseDirectoryFiles {
-                void **mVtable;
+        namespace DatabaseDirectoryFiles
+        {
+            struct DatabaseDirectoryFiles
+            {
+                void** mVtable;
                 size_t _padding[2];
-                wchar_t *mLocation;
+                wchar_t* mLocation;
             };
 
             VIRTUAL(bool, DatabaseDirectoryFiles, OpenRecord, const Key& key, IRecord** ppDstRecord,
@@ -139,11 +214,13 @@ namespace EA {
         }
     }
 
-    namespace ScriptOs::LuaScriptingSystem {
-        struct LuaScriptingSystem {
-            void **mVtable;
+    namespace ScriptOs::LuaScriptingSystem
+    {
+        struct LuaScriptingSystem
+        {
+            void** mVtable;
             size_t _padding[3];
-            lua_State *mState;
+            lua_State* mState;
         };
 
         VIRTUAL(void, LuaScriptingSystem, Startup);
@@ -151,11 +228,14 @@ namespace EA {
     }
 }
 
-namespace UI {
+namespace UI
+{
 #ifdef VERSION_MYSIMS_COZYBUNDLE
     STATIC(void, UI, SetCursorLock, bool state);
 #else
-    inline void SetCursorLock(bool state){};
+    inline void SetCursorLock(bool state)
+    {
+    };
 #endif
 }
 
@@ -163,7 +243,8 @@ namespace UI {
 
 struct GraphicDevice;
 
-namespace TSS::Graphics {
+namespace TSS::Graphics
+{
     STATIC(GraphicDevice*, Graphics, GetDevice);
 }
 

@@ -107,9 +107,23 @@ namespace Msml::Core {
     #define MODULE_NAME "MySimsKingdom.exe"
 #endif
 
-    Signatures::Signatures() {
+    Signatures::Signatures() : mModule(MODULE_NAME) {
         const sigmatch::this_process_target kTarget;
-        mContext = kTarget.in_module(MODULE_NAME);
+        mContext = kTarget.in_module(mModule);
+    }
+
+    void Signatures::GetAddress(void *&pAddress, const uint64_t kLocation) const
+    {
+        HMODULE module = GetModuleHandleA(mModule.c_str());
+
+        if (module == nullptr)
+        {
+            pAddress = nullptr;
+            return;
+        }
+
+        const auto kBaseAddress = reinterpret_cast<uint64_t>(module);
+        pAddress = reinterpret_cast<void*>(kBaseAddress + kLocation);
     }
 
     bool Signatures::LoadDatabase() {

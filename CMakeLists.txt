@@ -22,6 +22,7 @@ add_subdirectory(libs/minhook)
 add_subdirectory(libs/sigmatch)
 add_subdirectory(libs/pugixml)
 add_subdirectory(libs/spdlog)
+add_subdirectory(libs/enet)
 
 set(SOURCES
         src/Main.cpp
@@ -122,6 +123,23 @@ set(SOURCES
         libs/imgui_hex_editor/imgui_hex.h
         libs/imgui_hex_editor/imgui_hex.cpp
         src/core/debug/lua_imgui.h
+        src/core/networking/base/Server.cpp
+        src/core/networking/base/Server.h
+        src/core/networking/base/Packet.cpp
+        src/core/networking/base/Packet.h
+        src/core/networking/base/Client.cpp
+        src/core/networking/base/Client.h
+        src/core/networking/MSNetOpen.cpp
+        src/core/networking/MSNetOpen.h
+        src/core/networking/MSNetClient.cpp
+        src/core/networking/MSNetClient.h
+        src/core/networking/base/SynchronizedClock.cpp
+        src/core/networking/base/SynchronizedClock.h
+        src/core/networking/packets/packets.h
+        src/core/networking/Network.cpp
+        src/core/networking/Network.h
+        src/core/debug/windows/NetworkWindow.h
+        src/EA/Math.h
 )
 
 if (CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
@@ -165,6 +183,7 @@ target_include_directories(MySimsModLoader PRIVATE libs/sigmatch/include)
 target_include_directories(MySimsModLoader PRIVATE libs/directxtex)
 target_include_directories(MySimsModLoader PRIVATE libs/imgui_hex_editor)
 target_include_directories(MySimsModLoader PRIVATE libs/spdlog/include)
+target_include_directories(MySimsModLoader PRIVATE libs/enet/include)
 
 target_link_libraries(MySimsModLoader PRIVATE
         imgui

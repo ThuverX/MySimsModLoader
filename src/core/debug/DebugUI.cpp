@@ -12,6 +12,7 @@
 #include "windows/HexWindow.h"
 #include "windows/LuaWindow.h"
 #include "windows/LuaWindowInstance.h"
+#include "windows/NetworkWindow.h"
 
 namespace Msml::Core {
     DebugUI &DebugUI::GetInstance() {
@@ -24,6 +25,7 @@ namespace Msml::Core {
         mWindows["assets"] = new AssetWindow;
         mWindows["hexviewer"] = new HexWindow;
         mWindows["lua"] = new LuaWindow;
+        mWindows["network"] = new NetworkWindow;
     }
 
     template<typename T>

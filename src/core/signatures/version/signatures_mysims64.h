@@ -43,4 +43,25 @@
 // ui
 #define SIG_UI_SetCursorLock "40 53 48 83 EC 20 0F B6 D9 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 88 1D FA 69 6C 00 48 83 C4 20 5B"
 
+
+// statemachine
+#define SIG_StateMachine_GetWorld "40 53 48 83 EC 20 48 8B D9 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 63 43 10 83 F8 07 77 16 48 8B 4C C3 20 48 85 C9 74 0C 48 8B 01 48 83 C4 20 5B 48 FF 60 20 33 C0 48 83 C4 20"
+
+// world
+#define SIG_World_AddObject "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 8B F1 49 8B F8 48 8D 0D ?? ?? ?? ?? 48 8B DA E8 ?? ?? ?? ?? 48 85 DB 74 1D 4C 8B C7 48 8B D3"
+
+// gameobject factory
+#define SIG_GameObjectFactory_Spawn "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 48 89 7C 24 20 41 56 48 83 EC 20 48 8B F1 49 8B F9 48 8D 0D ?? ?? ?? ?? 49 8B E8"
+#define SIG_GameObjectFactory_Constructor "40 53 48 83 EC 20 48 8B D9 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 33 D2 C7 83 08 04 00 00 00 00 00 00 41 B8 00 04 00 00 48 8B CB"
+
+// gameobject
+#define SIG_GameObject_GetTransform "48 89 5C 24 08 57 48 83 EC 20 48 8B D9 48 8B FA 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 0F 10 43 58 0F 11 07 0F 10 4B 68"
+#define SIG_GameObject_SetTransform "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 48 8B D9 48 8B F2 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 53 58 48 8B CE E8 ?? ?? ?? ??"
+
+// constants
+#define CONST_gSimulator 0xbb65e8
+#define CONST_gGameObjectFactory 0xbb66a0
+#define CONST_gBlockWorld 0xbabb08
+#define CONST_gWorld 0xbc7f18
+
 #endif //SIGNATURES_MYSIMS64_H

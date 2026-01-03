@@ -16,6 +16,7 @@
 
 #include "../hooks/LuaHook.h"
 #include "../hooks/ArgscriptHook.h"
+#include "../networking/Network.h"
 #include "../resource/IdResolver.h"
 #include "../signatures/Signatures.h"
 #include "../system/Logger.h"
@@ -76,6 +77,7 @@ namespace Msml::Core {
         Hooks::ArgscriptHook::Install();
         Hooks::LuaHook::Install();
         Hooks::Enable();
+        Networking::Network::Initialize();
     }
 
     void ModLoader::Message(const std::string &message) {

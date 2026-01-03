@@ -24,12 +24,14 @@ namespace Msml::Core {
 
     class Signatures {
     public:
+        std::string mModule;
         static Signatures& GetInstance();
         bool Search(const sigmatch::signature &sig, void*& pAddress, uint32_t kOffset, bool kbFirst) const;
         bool SearchAll();
 
         static void CleanSignatureCache();
         void Append(const std::string& name, SigSearchBase* pSig);
+        void GetAddress(void*& pAddress, uint64_t kLocation) const;
         static std::array<uint8_t, 32U> GetCheckSum();
 
     private:

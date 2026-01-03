@@ -23,3 +23,6 @@
 [submodule "libs/spdlog"]
 	path = libs/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "libs/enet"]
+	path = libs/enet
+	url = https://github.com/zpl-c/enet.git
