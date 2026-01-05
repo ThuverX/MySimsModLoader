@@ -24,7 +24,7 @@
 #define SIG_Graphics_GetDevice "48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? B8 E0 01 00 00 48 83 C4 28 C3"
 
 // the forge
-#define SIG_addFence "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 30 48 8B F2 48 8B D9 BA 10 00 00 00 8D 4A 08 FF 15 35 A2 84 00 0F 57 C0 4C 8D 0D 5B 8F 8E 00"
+#define SIG_addFence "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 30 48 8B F2 48 8B D9 BA 10 00 00 00 8D 4A 08 FF 15 3D C2 84 00 0F 57 C0 4C 8D 0D 5B B0 8E 00"
 
 
 #endif //SIGNATURES_KINGDOM64_H

@@ -105,7 +105,7 @@ public:
     SigSearch<name##_t> name ## Hook(#cls "::" #name, SIG_##cls##_##name, (void*&)name);
 
 #define CONSTANT(type, name) \
-    type* name = nullptr; \
+    type** name = nullptr; \
     Constant name ## Constant (#name, (void*&)name, CONST_##name);
 #else
 
@@ -125,7 +125,7 @@ public:
     extern SigSearch<name##_t> name ## Hook;
 
 #define CONSTANT(type, name) \
-    extern type* name; \
+    extern type** name; \
     extern Constant name ## Constant;
 
 #endif
@@ -136,13 +136,15 @@ public:
     inline type* Instance() \
     { \
         if (g ## type == nullptr) \
+            return nullptr; \
+        if (*g ## type == nullptr) \
         { \
             if (const auto data = malloc(size); data != nullptr) \
             { \
-                g ## type = Constructor(data); \
+                *g ## type = Constructor(data); \
             } \
         } \
-        return g ## type; \
+        return *g ## type; \
     }
 
 #endif //SIGNATURES_MACROS_H

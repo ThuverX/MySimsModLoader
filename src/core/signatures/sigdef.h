@@ -79,15 +79,25 @@ namespace Revo
             StateMachine::StateMachine mStateMachine;
         };
 
-        CONSTANT(Revo::BlockWorld::BlockWorld*, gBlockWorld);
+
+        SINGLETON_INSTANCE(BlockWorld, 0x328);
+        VIRTUAL(void, BlockWorld, GoToOps, void*, GameObject::GameObject*)
     };
 
     namespace World
     {
         struct World {};
 
-        CONSTANT(Revo::World::World, gWorld);
+        SINGLETON_INSTANCE(World, 0x200);
+        VIRTUAL(void, World, ReadWorldFromXML, void* xml, char* name);
         VIRTUAL(void*, World, AddObject, Revo::GameObject::GameObject*);
+    }
+
+    namespace StateOPS
+    {
+        struct StateOPS {};
+
+        VIRTUAL(int8_t, StateOPS, MaximumAllowedObjectsInLevel);
     }
 
     namespace GameObjectFactory
@@ -101,6 +111,13 @@ namespace Revo
         STATIC(Revo::GameObject::GameObject*, GameObjectFactory, Spawn,
                Revo::GameObjectFactory::GameObjectFactory* object_category, uint64_t type, const char* name,
                const char* def_file, EA::Math::Vector3* position, EA::Math::Vector3* rotation, const char* script);
+    }
+
+    namespace ObjectModule
+    {
+        struct ObjectModule {};
+
+        STATIC(void, ObjectModule, RegisterWorld, void*);
     }
 #endif
 #ifdef VERSION_MYSIMS_COZYBUNDLE
