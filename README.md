@@ -28,6 +28,14 @@ For any questions, visit the [MySims Clubhouse](https://discord.gg/2j9mU6zNJH) m
     - In the end you should have `mods`, `WSOCK32.dll` and `MySims.exe` in the same folder.
 4. Done! Launch the game like normal.
 
+#### Steam Deck
+
+If you're running the game on Steam Deck or Linux, you need to add the following to your Steam launch options:
+
+```
+WINEDLLOVERRIDES="WSOCK32=n,b" %command%
+```
+
 ### Taco Bell Edition
 
 1. Go to the latest [Release](https://github.com/ThuverX/MySimsModLoader/releases)
